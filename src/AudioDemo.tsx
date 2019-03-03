@@ -4,7 +4,7 @@ import {
   RoomDimensions,
   RoomMaterials
 } from "resonance-audio";
-import { Vector3 } from "./react-resonance/utils";
+import { Vector3 } from "three";
 
 const dimensions: RoomDimensions = {
   width: 8,
@@ -22,11 +22,12 @@ const materials: RoomMaterials = {
 };
 
 // Circular position based on timestamp
-const f = (t: number): Vector3 => [
-  3 * Math.sin((t / 4000) * 2 * Math.PI),
-  1,
-  3 * Math.cos((t / 4000) * 2 * Math.PI)
-];
+const f = (t: number) =>
+  new Vector3(
+    3 * Math.sin((t / 4000) * 2 * Math.PI),
+    1,
+    3 * Math.cos((t / 4000) * 2 * Math.PI)
+  );
 
 export default class AudioDemo {
   audioContext: AudioContext;
@@ -73,7 +74,7 @@ export default class AudioDemo {
   }
 
   update: FrameRequestCallback = t => {
-    const [x, y, z] = f(t);
+    const { x, y, z } = f(t);
     this.source.setPosition(x, y, z);
     console.log(x, y, z);
 
