@@ -38,7 +38,7 @@ jobs:
       # Deployment
       - add_ssh_keys:
           fingerprints:
-            - "59:ad:fd:64:71:eb:81:01:6a:d7:1a:c9:0c:19:39:af"
+            - "a3:16:64:81:e4:5d:2b:11:09:af:70:79:f3:a3:7a:4e"
       - run: |
           git config --global user.email "cibuild@niklaskorz.de"
           git config --global user.name "CI Build"
