@@ -164,7 +164,12 @@ export default class SceneCanvas extends React.Component {
   onWheel: React.WheelEventHandler = e => {
     e.preventDefault();
     //console.log('onWheel', e.deltaX, e.deltaY, e.deltaZ, e.deltaMode);
-    this.camera.translateZ(e.deltaY);
+    let delta = e.deltaY;
+    if (e.deltaMode === 0) {
+      // More granular zoom for pixel mode
+      delta /= 15;
+    }
+    this.camera.translateZ(delta);
   }
 
   onKeyDown: React.KeyboardEventHandler = e => {
