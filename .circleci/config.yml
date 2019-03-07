@@ -36,4 +36,7 @@ jobs:
       # Build
       - run: yarn build
       # Deployment
-      - run: yarn deploy
+      - run: |
+          git config --global user.email "cibuild@niklaskorz.de"
+          git config --global user.name "CI Build"
+          yarn deploy
