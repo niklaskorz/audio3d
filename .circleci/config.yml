@@ -33,9 +33,7 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      # run build!
+      # Build
       - run: yarn build
-    
       # Deployment
-      - run: npm install -g --silent gh-pages@2.0.1
-      - run: gh-pages --dotfiles --message "[skip ci] Updates" --dist build
+      - run: yarn deploy
