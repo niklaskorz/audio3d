@@ -13,6 +13,21 @@ import { MeshBasicMaterial } from "three";
 import { Raycaster } from "three";
 import { GridHelper } from "three";
 
+enum MouseButton {
+  Primary = 0,
+  Middle = 1,
+  Secondary = 2,
+}
+
+const directions = {
+  up: new Vector3(0, 1, 0),
+  down: new Vector3(0, -1, 0),
+  left: new Vector3(-1, 0, 0),
+  right: new Vector3(1, 0, 0),
+  forwards: new Vector3(0, 0, -1),
+  backwards: new Vector3(0, 0, 1),
+}
+
 // Circular position based on timestamp
 const f = (t: number) =>
   new Vector3(
@@ -107,27 +122,23 @@ export default class SceneCanvas extends React.Component {
     // this.cube.rotation.y += 0.01;
     // this.cube.position.copy(f(t));
 
-    const translationAxis = new Vector3();
-    if (this.isKeyPressed('a')) {
-      translationAxis.x -= 1;
-    }
-    if (this.isKeyPressed('d')) {
-      translationAxis.x += 1;
-    }
-    if (this.isKeyPressed('Shift')) {
-      translationAxis.y -= 1;
-    }
-    if (this.isKeyPressed(' ')) {
-      translationAxis.y += 1;
-    }
     if (this.isKeyPressed('w')) {
-      translationAxis.z -= 1;
+      this.camera.translateOnAxis(directions.forwards, 2 * dt);
     }
     if (this.isKeyPressed('s')) {
-      translationAxis.z += 1;
+      this.camera.translateOnAxis(directions.backwards, 2 * dt);
     }
-    if (translationAxis.x || translationAxis.y || translationAxis.z) {
-      this.camera.translateOnAxis(translationAxis, 2 * dt);
+    if (this.isKeyPressed('a')) {
+      this.camera.translateOnAxis(directions.left, 2 * dt);
+    }
+    if (this.isKeyPressed('d')) {
+      this.camera.translateOnAxis(directions.right, 2 * dt);
+    }
+    if (this.isKeyPressed(' ')) {
+      this.camera.position.y += 2 * dt;
+    }
+    if (this.isKeyPressed('Shift')) {
+      this.camera.position.y -= 2 * dt;
     }
 
     if (this.isKeyPressed('ArrowLeft')) {
@@ -151,6 +162,10 @@ export default class SceneCanvas extends React.Component {
   }
 
   onClick: React.MouseEventHandler<HTMLElement> = e => {
+    if (e.button !== MouseButton.Primary) {
+      return;
+    }
+
     const size = this.renderer.getSize(new Vector2());
     const x = ((e.pageX - e.currentTarget.offsetLeft) / size.x) * 2 - 1;
     const y = -((e.pageY - e.currentTarget.offsetTop) / size.y) * 2 + 1;
@@ -184,14 +199,14 @@ export default class SceneCanvas extends React.Component {
   }
 
   onMouseDown: React.MouseEventHandler = e => {
-    if (e.button === 2) {
+    if (e.button === MouseButton.Secondary) {
       this.isDraggingCamera = true;
       this.containerRef.current!.requestPointerLock();
     }
   }
 
   onMouseUp: React.MouseEventHandler = e => {
-    if (e.button === 2 && this.isDraggingCamera) {
+    if (e.button === MouseButton.Secondary && this.isDraggingCamera) {
       document.exitPointerLock();
       this.isDraggingCamera = false;
     }
