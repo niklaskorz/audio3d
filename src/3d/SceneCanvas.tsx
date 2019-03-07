@@ -114,13 +114,19 @@ export default class SceneCanvas extends React.Component {
     if (this.isKeyPressed('d')) {
       translationAxis.x += 1;
     }
-    if (this.isKeyPressed('w')) {
-      translationAxis.y += 1;
-    }
-    if (this.isKeyPressed('s')) {
+    if (this.isKeyPressed('Shift')) {
       translationAxis.y -= 1;
     }
-    if (translationAxis.x || translationAxis.y) {
+    if (this.isKeyPressed(' ')) {
+      translationAxis.y += 1;
+    }
+    if (this.isKeyPressed('w')) {
+      translationAxis.z -= 1;
+    }
+    if (this.isKeyPressed('s')) {
+      translationAxis.z += 1;
+    }
+    if (translationAxis.x || translationAxis.y || translationAxis.z) {
       this.camera.translateOnAxis(translationAxis, 2 * dt);
     }
 
@@ -203,11 +209,13 @@ export default class SceneCanvas extends React.Component {
   }
 
   onKeyDown: React.KeyboardEventHandler = e => {
+    e.preventDefault();
     this.keysPressed.add(e.key);
-    //console.log(e.key);
+    console.log(e.key);
   };
 
   onKeyUp: React.KeyboardEventHandler = e => {
+    e.preventDefault();
     this.keysPressed.delete(e.key);
   };
 
