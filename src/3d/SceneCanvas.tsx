@@ -44,6 +44,7 @@ export default class SceneCanvas extends React.Component {
   cube: Mesh;
 
   keysPressed = new Set<string>();
+  isDraggingCamera = false;
 
   constructor(props: any) {
     super(props);
@@ -56,12 +57,16 @@ export default class SceneCanvas extends React.Component {
     this.cube = new Mesh(geometry, material);
 
     const geometry2 = new BoxGeometry(0.25, 0.25, 0.25);
-    const cube2 = new Mesh(geometry2, material);
+    const material2 = new MeshBasicMaterial({
+      color: 0xffffff,
+    });
+    const cube2 = new Mesh(geometry2, material2);
     cube2.translateX(1);
 
     this.scene.add(cube2);
     this.scene.add(this.cube);
     this.scene.add(this.grid);
+    this.camera.position.y = 1;
     this.camera.position.z = 5;
   }
 
@@ -172,6 +177,31 @@ export default class SceneCanvas extends React.Component {
     this.camera.translateZ(delta);
   }
 
+  onMouseDown: React.MouseEventHandler = e => {
+    if (e.button === 2) {
+      this.isDraggingCamera = true;
+      this.containerRef.current!.requestPointerLock();
+    }
+  }
+
+  onMouseUp: React.MouseEventHandler = e => {
+    if (e.button === 2 && this.isDraggingCamera) {
+      document.exitPointerLock();
+      this.isDraggingCamera = false;
+    }
+  }
+
+  onMouseMove: React.MouseEventHandler = e => {
+    if (this.isDraggingCamera) {
+      if (e.movementX) {
+        this.camera.rotateOnWorldAxis(new Vector3(0, -1, 0), e.movementX / 100);
+      }
+      if (e.movementY) {
+        this.camera.rotateOnAxis(new Vector3(-1, 0, 0), e.movementY / 100);
+      }
+    }
+  }
+
   onKeyDown: React.KeyboardEventHandler = e => {
     this.keysPressed.add(e.key);
     //console.log(e.key);
@@ -188,8 +218,12 @@ export default class SceneCanvas extends React.Component {
         ref={this.containerRef}
         onClick={this.onClick}
         onWheel={this.onWheel}
+        onMouseDown={this.onMouseDown}
+        onMouseUp={this.onMouseUp}
+        onMouseMove={this.onMouseMove}
         onKeyDown={this.onKeyDown}
         onKeyUp={this.onKeyUp}
+        onContextMenu={e => e.preventDefault()}
       />
     );
   }
