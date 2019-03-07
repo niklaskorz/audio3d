@@ -36,6 +36,9 @@ jobs:
       # Build
       - run: yarn build
       # Deployment
+      - add_ssh_keys:
+          fingerprints:
+            - "59:ad:fd:64:71:eb:81:01:6a:d7:1a:c9:0c:19:39:af"
       - run: |
           git config --global user.email "cibuild@niklaskorz.de"
           git config --global user.name "CI Build"
