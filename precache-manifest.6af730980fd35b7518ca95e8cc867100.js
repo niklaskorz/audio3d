@@ -20,7 +20,7 @@ self.__precacheManifest = [
     "url": "/audio3d/static/js/runtime~main.55b42938.js"
   },
   {
-    "revision": "bfdcba97e5c025b41d8e76ddb4aec32b",
+    "revision": "60ad73703a978d1ccb19c73d3cf6c251",
     "url": "/audio3d/index.html"
   }
 ];
