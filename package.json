@@ -1,6 +1,7 @@
 {
   "name": "audio3d",
   "version": "0.1.0",
+  "homepage": "https://niklaskorz.github.io/audio3d",
   "private": true,
   "dependencies": {
     "@types/jest": "24.0.0",
