@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/audio3d/precache-manifest.d3b5e8207df368dd42274df625b52609.js"
+  "/audio3d/precache-manifest.a0e5cc24bf6484f9d591ebbe16551f56.js"
 );
 
 workbox.clientsClaim();
