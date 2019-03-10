@@ -1,10 +1,12 @@
 import * as React from "react";
 import styled from "styled-components";
 import {
+  BackSide,
   BoxGeometry,
   GridHelper,
   Mesh,
   MeshBasicMaterial,
+  MeshNormalMaterial,
   PerspectiveCamera,
   Raycaster,
   Scene,
@@ -12,6 +14,7 @@ import {
   Vector3,
   WebGLRenderer
 } from "three";
+import KeyboardListener from "./KeyboardListener";
 
 enum MouseButton {
   Primary = 0,
@@ -32,17 +35,13 @@ const directions = {
 const f = (time: number, orbitalPeriod: number, radius: number) =>
   new Vector3(
     radius * Math.sin((time / orbitalPeriod) * 2 * Math.PI),
-    0,
+    0.5,
     radius * Math.cos((time / orbitalPeriod) * 2 * Math.PI)
   );
 
 const Container = styled.div`
   width: 100%;
   height: 100%;
-
-  :focus {
-    border-left: 2px solid blue;
-  }
 `;
 
 export default class SceneCanvas extends React.Component {
@@ -56,41 +55,48 @@ export default class SceneCanvas extends React.Component {
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   renderer = new WebGLRenderer();
   grid = new GridHelper(10, 10);
-  cube: Mesh;
-  cube2: Mesh;
+  smallCube = new Mesh();
+  outlineMesh = new Mesh();
 
-  keysPressed = new Set<string>();
+  keys = new KeyboardListener();
   isDraggingCamera = false;
 
   constructor(props: any) {
     super(props);
 
     const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshBasicMaterial({
+    /* const material = new MeshBasicMaterial({
       color: 0xffffff,
       wireframe: true
-    });
-    this.cube = new Mesh(geometry, material);
+    }); */
+    const material = new MeshNormalMaterial();
+    const cube = new Mesh(geometry, material);
+    cube.position.y += 0.5;
 
-    const geometry2 = new BoxGeometry(0.25, 0.25, 0.25);
-    const material2 = new MeshBasicMaterial({
-      color: 0xffffff
-    });
-    this.cube2 = new Mesh(geometry2, material2);
-    this.cube2.translateX(1);
+    this.smallCube.geometry = new BoxGeometry(0.25, 0.25, 0.25);
+    this.smallCube.material = material;
 
-    this.scene.add(this.cube2);
-    this.scene.add(this.cube);
+    this.scene.add(cube);
+    this.scene.add(this.smallCube);
     this.scene.add(this.grid);
 
-    this.camera.position.y = 10;
-    this.camera.position.z = 5;
-    this.camera.lookAt(0, 0, 0);
+    this.camera.position.x = -2;
+    this.camera.position.y = 2;
+    this.camera.position.z = 3;
+    this.camera.lookAt(this.scene.position);
+
+    const outlineMaterial = new MeshBasicMaterial({
+      color: 0x00ff00,
+      side: BackSide
+    });
+    this.outlineMesh.material = outlineMaterial;
+    this.outlineMesh.scale.multiplyScalar(1.05);
 
     console.log(this.scene.toJSON());
   }
 
   componentDidMount(): void {
+    this.keys.listen();
     this.containerRef.current!.appendChild(this.renderer.domElement);
 
     this.containerRef.current!.focus();
@@ -100,6 +106,7 @@ export default class SceneCanvas extends React.Component {
   }
 
   componentWillUnmount(): void {
+    this.keys.stop();
     window.cancelAnimationFrame(this.rafHandle);
     window.removeEventListener("resize", this.resize);
   }
@@ -124,48 +131,44 @@ export default class SceneCanvas extends React.Component {
     const dt = (t - this.previousTimestamp) / 1000;
     this.previousTimestamp = t;
 
-    this.cube2.rotation.x += 0.01;
-    this.cube2.rotation.y += 0.01;
-    this.cube2.position.copy(f(t, 10000, 2));
+    this.smallCube.rotation.x += 0.01;
+    this.smallCube.rotation.y += 0.01;
+    this.smallCube.position.copy(f(t, 10000, 2));
 
-    if (this.isKeyPressed("w")) {
+    if (this.keys.isPressed("w")) {
       this.camera.translateOnAxis(directions.forwards, 2 * dt);
     }
-    if (this.isKeyPressed("s")) {
+    if (this.keys.isPressed("s")) {
       this.camera.translateOnAxis(directions.backwards, 2 * dt);
     }
-    if (this.isKeyPressed("a")) {
+    if (this.keys.isPressed("a")) {
       this.camera.translateOnAxis(directions.left, 2 * dt);
     }
-    if (this.isKeyPressed("d")) {
+    if (this.keys.isPressed("d")) {
       this.camera.translateOnAxis(directions.right, 2 * dt);
     }
-    if (this.isKeyPressed(" ")) {
+    if (this.keys.isPressed(" ")) {
       this.camera.position.y += 2 * dt;
     }
-    if (this.isKeyPressed("Shift")) {
+    if (this.keys.isPressed("Shift")) {
       this.camera.position.y -= 2 * dt;
     }
 
-    if (this.isKeyPressed("ArrowLeft")) {
+    if (this.keys.isPressed("ArrowLeft")) {
       this.camera.rotateOnWorldAxis(new Vector3(0, 1, 0), dt);
     }
-    if (this.isKeyPressed("ArrowRight")) {
+    if (this.keys.isPressed("ArrowRight")) {
       this.camera.rotateOnWorldAxis(new Vector3(0, -1, 0), dt);
     }
-    if (this.isKeyPressed("ArrowUp")) {
+    if (this.keys.isPressed("ArrowUp")) {
       this.camera.rotateOnAxis(new Vector3(1, 0, 0), dt);
     }
-    if (this.isKeyPressed("ArrowDown")) {
+    if (this.keys.isPressed("ArrowDown")) {
       this.camera.rotateOnAxis(new Vector3(-1, 0, 0), dt);
     }
 
     this.renderer.render(this.scene, this.camera);
   };
-
-  isKeyPressed(key: string): boolean {
-    return this.keysPressed.has(key);
-  }
 
   onClick: React.MouseEventHandler<HTMLElement> = e => {
     if (e.button !== MouseButton.Primary) {
@@ -181,14 +184,14 @@ export default class SceneCanvas extends React.Component {
     raycaster.setFromCamera({ x, y }, this.camera);
     const intersections = raycaster.intersectObjects(this.scene.children, true);
     if (this.target) {
-      (this.target.material as MeshBasicMaterial).color.set(0xffffff);
+      this.target.remove(this.outlineMesh);
       this.target = null;
     }
     for (let i = 0; i < intersections.length && !this.target; i++) {
       if (intersections[i].object !== this.grid) {
         this.target = intersections[i].object as Mesh;
-        console.log(this.target);
-        (this.target.material as MeshBasicMaterial).color.set(0xff0000);
+        this.outlineMesh.geometry = this.target.geometry;
+        this.target.add(this.outlineMesh);
       }
     }
   };
@@ -229,17 +232,6 @@ export default class SceneCanvas extends React.Component {
     }
   };
 
-  onKeyDown: React.KeyboardEventHandler = e => {
-    e.preventDefault();
-    this.keysPressed.add(e.key);
-    // console.log(e.key);
-  };
-
-  onKeyUp: React.KeyboardEventHandler = e => {
-    e.preventDefault();
-    this.keysPressed.delete(e.key);
-  };
-
   render(): React.ReactNode {
     return (
       <Container
@@ -250,8 +242,6 @@ export default class SceneCanvas extends React.Component {
         onMouseDown={this.onMouseDown}
         onMouseUp={this.onMouseUp}
         onMouseMove={this.onMouseMove}
-        onKeyDown={this.onKeyDown}
-        onKeyUp={this.onKeyUp}
         onContextMenu={e => e.preventDefault()}
       />
     );
