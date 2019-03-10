@@ -1,13 +1,21 @@
 import * as React from "react";
 import styled from "styled-components";
 import {
+  ArrowHelper,
   BackSide,
   BoxGeometry,
+  BoxHelper,
+  Color,
+  DoubleSide,
   GridHelper,
+  Group,
   Mesh,
   MeshBasicMaterial,
   MeshNormalMaterial,
   PerspectiveCamera,
+  Plane,
+  PlaneGeometry,
+  PlaneHelper,
   Raycaster,
   Scene,
   Vector2,
@@ -48,6 +56,7 @@ export default class SceneCanvas {
   activeMesh: Mesh | null = null;
 
   scene = new Scene();
+  controlsScene = new Scene();
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
@@ -55,10 +64,13 @@ export default class SceneCanvas {
   smallCube = new Mesh();
   outlineMesh = new Mesh();
 
+  arrows = new Group();
+
   keys = new KeyboardListener();
   isDraggingCamera = false;
 
   constructor() {
+    this.renderer.autoClear = false;
     this.canvas = this.renderer.domElement;
     this.canvas.addEventListener("click", this.onClick);
     this.canvas.addEventListener("wheel", this.onWheel);
@@ -87,14 +99,51 @@ export default class SceneCanvas {
     this.smallCube.geometry = new BoxGeometry(0.25, 0.25, 0.25);
     this.smallCube.material = material;
 
+    const arrowX = new ArrowHelper(new Vector3(1, 0, 0));
+    arrowX.setColor(new Color(0xff0000));
+    const arrowY = new ArrowHelper(new Vector3(0, 1, 0));
+    arrowY.setColor(new Color(0x00ff00));
+    const arrowZ = new ArrowHelper(new Vector3(0, 0, 1));
+    arrowZ.setColor(new Color(0x0000ff));
+
+    const planeGeometry = new PlaneGeometry(0.25, 0.25);
+    const planeXY = new Mesh(
+      planeGeometry,
+      new MeshBasicMaterial({ color: 0xffff00, side: DoubleSide })
+    );
+    planeXY.position.set(0.25, 0.25, 0.0);
+    const planeXZ = new Mesh(
+      planeGeometry,
+      new MeshBasicMaterial({ color: 0xff00ff, side: DoubleSide })
+    );
+    planeXZ.position.set(0.25, 0.0, 0.25);
+    planeXZ.rotation.x = Math.PI / 2;
+    const planeYZ = new Mesh(
+      planeGeometry,
+      new MeshBasicMaterial({ color: 0x00ffff, side: DoubleSide })
+    );
+    planeYZ.position.set(0.0, 0.25, 0.25);
+    planeYZ.rotation.y = Math.PI / 2;
+
+    this.arrows = new Group();
+
+    this.arrows.add(arrowX);
+    this.arrows.add(arrowY);
+    this.arrows.add(arrowZ);
+
+    this.arrows.add(planeXY);
+    this.arrows.add(planeXZ);
+    this.arrows.add(planeYZ);
+
+    this.controlsScene.add(this.arrows);
+
     this.scene.add(cube);
     this.scene.add(this.smallCube);
     this.scene.add(this.grid);
 
-    this.camera.position.x = -2;
-    this.camera.position.y = 2;
     this.camera.position.z = 3;
-    this.camera.lookAt(this.scene.position);
+    this.camera.position.y = 1;
+    this.camera.lookAt(cube.position);
 
     const outlineMaterial = new MeshBasicMaterial({
       color: 0x00ff00,
@@ -183,7 +232,14 @@ export default class SceneCanvas {
       this.camera.rotateOnAxis(new Vector3(-1, 0, 0), dt);
     }
 
+    if (this.activeMesh) {
+      this.arrows.position.copy(this.activeMesh.position);
+    }
+
+    this.renderer.clear();
     this.renderer.render(this.scene, this.camera);
+    this.renderer.clearDepth();
+    this.renderer.render(this.controlsScene, this.camera);
   };
 
   onClick = (e: MouseEvent) => {
@@ -191,21 +247,24 @@ export default class SceneCanvas {
       return;
     }
 
-    const size = this.renderer.getSize(new Vector2());
-    const x = ((e.pageX - this.canvas.offsetLeft) / size.x) * 2 - 1;
-    const y = -((e.pageY - this.canvas.offsetTop) / size.y) * 2 + 1;
-    console.log(size, x, y);
-
-    const raycaster = new Raycaster();
-    raycaster.setFromCamera({ x, y }, this.camera);
-    const intersections = raycaster.intersectObjects(this.scene.children, true);
     if (this.activeMesh) {
       this.activeMesh.remove(this.outlineMesh);
       this.activeMesh = null;
     }
+
+    const size = this.renderer.getSize(new Vector2());
+    const x = ((e.pageX - this.canvas.offsetLeft) / size.x) * 2 - 1;
+    const y = -((e.pageY - this.canvas.offsetTop) / size.y) * 2 + 1;
+    // console.log(size, x, y);
+
+    const raycaster = new Raycaster();
+    raycaster.setFromCamera({ x, y }, this.camera);
+    const intersections = raycaster.intersectObjects(this.scene.children);
+
     for (let i = 0; i < intersections.length && !this.activeMesh; i++) {
-      if (intersections[i].object !== this.grid) {
-        this.activeMesh = intersections[i].object as Mesh;
+      const o = intersections[i].object as Mesh;
+      if (o.isMesh) {
+        this.activeMesh = o;
         this.outlineMesh.geometry = this.activeMesh.geometry;
         this.activeMesh.add(this.outlineMesh);
       }
