@@ -5,13 +5,13 @@ import {
   WebGLRenderer,
   Mesh,
   Vector3,
-  Vector2
+  Vector2,
+  BoxGeometry,
+  MeshBasicMaterial,
+  Raycaster,
+  GridHelper,
 } from "three";
 import styled from "styled-components";
-import { BoxGeometry } from "three";
-import { MeshBasicMaterial } from "three";
-import { Raycaster } from "three";
-import { GridHelper } from "three";
 
 enum MouseButton {
   Primary = 0,
@@ -29,11 +29,11 @@ const directions = {
 }
 
 // Circular position based on timestamp
-const f = (t: number) =>
+const f = (time: number, orbitalPeriod: number, radius: number) =>
   new Vector3(
-    3 * Math.sin((t / 4000) * 2 * Math.PI),
-    1,
-    3 * Math.cos((t / 4000) * 2 * Math.PI)
+    radius * Math.sin((time / orbitalPeriod) * 2 * Math.PI),
+    0,
+    radius * Math.cos((time / orbitalPeriod) * 2 * Math.PI)
   );
 
 const Container = styled.div`
@@ -57,6 +57,7 @@ export default class SceneCanvas extends React.Component {
   renderer = new WebGLRenderer();
   grid = new GridHelper(10, 10)
   cube: Mesh;
+  cube2: Mesh;
 
   keysPressed = new Set<string>();
   isDraggingCamera = false;
@@ -67,7 +68,7 @@ export default class SceneCanvas extends React.Component {
     const geometry = new BoxGeometry(1, 1, 1);
     const material = new MeshBasicMaterial({
       color: 0xffffff,
-      // wireframe: true
+      wireframe: true
     });
     this.cube = new Mesh(geometry, material);
 
@@ -75,18 +76,23 @@ export default class SceneCanvas extends React.Component {
     const material2 = new MeshBasicMaterial({
       color: 0xffffff,
     });
-    const cube2 = new Mesh(geometry2, material2);
-    cube2.translateX(1);
+    this.cube2 = new Mesh(geometry2, material2);
+    this.cube2.translateX(1);
 
-    this.scene.add(cube2);
+    this.scene.add(this.cube2);
     this.scene.add(this.cube);
     this.scene.add(this.grid);
-    this.camera.position.y = 1;
+
+    this.camera.position.y = 10;
     this.camera.position.z = 5;
+    this.camera.lookAt(0, 0, 0);
+
+    console.log(this.scene.toJSON());
   }
 
   componentDidMount() {
     this.containerRef.current!.appendChild(this.renderer.domElement);
+
     this.containerRef.current!.focus();
     this.resize();
     this.animate(0);
@@ -118,9 +124,9 @@ export default class SceneCanvas extends React.Component {
     const dt = (t - this.previousTimestamp) / 1000;
     this.previousTimestamp = t;
 
-    // this.cube.rotation.x += 0.01;
-    // this.cube.rotation.y += 0.01;
-    // this.cube.position.copy(f(t));
+    this.cube2.rotation.x += 0.01;
+    this.cube2.rotation.y += 0.01;
+    this.cube2.position.copy(f(t, 10000, 2));
 
     if (this.isKeyPressed('w')) {
       this.camera.translateOnAxis(directions.forwards, 2 * dt);
@@ -226,7 +232,7 @@ export default class SceneCanvas extends React.Component {
   onKeyDown: React.KeyboardEventHandler = e => {
     e.preventDefault();
     this.keysPressed.add(e.key);
-    console.log(e.key);
+    //console.log(e.key);
   };
 
   onKeyUp: React.KeyboardEventHandler = e => {
