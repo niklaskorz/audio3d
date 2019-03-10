@@ -87,17 +87,7 @@ export default class SceneCanvas {
       true
     );
 
-    const geometry = new BoxGeometry(1, 1, 1);
-    /* const material = new MeshBasicMaterial({
-      color: 0xffffff,
-      wireframe: true
-    }); */
-    const material = new MeshNormalMaterial();
-    const cube = new Mesh(geometry, material);
-    cube.position.y += 0.5;
-
-    this.smallCube.geometry = new BoxGeometry(0.25, 0.25, 0.25);
-    this.smallCube.material = material;
+    // Setup controls for active mesh
 
     const arrowX = new ArrowHelper(new Vector3(1, 0, 0));
     arrowX.setColor(new Color(0xff0000));
@@ -125,24 +115,34 @@ export default class SceneCanvas {
     planeYZ.position.set(0.0, 0.25, 0.25);
     planeYZ.rotation.y = Math.PI / 2;
 
-    this.arrows = new Group();
+    this.controlsScene.add(arrowX);
+    this.controlsScene.add(arrowY);
+    this.controlsScene.add(arrowZ);
 
-    this.arrows.add(arrowX);
-    this.arrows.add(arrowY);
-    this.arrows.add(arrowZ);
+    this.controlsScene.add(planeXY);
+    this.controlsScene.add(planeXZ);
+    this.controlsScene.add(planeYZ);
 
-    this.arrows.add(planeXY);
-    this.arrows.add(planeXZ);
-    this.arrows.add(planeYZ);
+    // Setup scene
 
-    this.controlsScene.add(this.arrows);
+    const geometry = new BoxGeometry(1, 1, 1);
+    /* const material = new MeshBasicMaterial({
+      color: 0xffffff,
+      wireframe: true
+    }); */
+    const material = new MeshNormalMaterial();
+    const cube = new Mesh(geometry, material);
+    cube.position.y += 0.5;
+
+    this.smallCube.geometry = new BoxGeometry(0.25, 0.25, 0.25);
+    this.smallCube.material = material;
 
     this.scene.add(cube);
     this.scene.add(this.smallCube);
     this.scene.add(this.grid);
 
     this.camera.position.z = 3;
-    this.camera.position.y = 1;
+    this.camera.position.y = 3;
     this.camera.lookAt(cube.position);
 
     const outlineMaterial = new MeshBasicMaterial({
@@ -186,7 +186,7 @@ export default class SceneCanvas {
     this.camera.aspect = offsetWidth / offsetHeight;
     this.camera.updateProjectionMatrix();
 
-    // this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(offsetWidth, offsetHeight);
   };
 
@@ -236,7 +236,7 @@ export default class SceneCanvas {
     this.renderer.render(this.scene, this.camera);
 
     if (this.activeMesh) {
-      this.arrows.position.copy(this.activeMesh.position);
+      this.controlsScene.position.copy(this.activeMesh.position);
       this.renderer.clearDepth();
       this.renderer.render(this.controlsScene, this.camera);
     }
