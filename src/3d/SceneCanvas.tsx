@@ -232,14 +232,14 @@ export default class SceneCanvas {
       this.camera.rotateOnAxis(new Vector3(-1, 0, 0), dt);
     }
 
-    if (this.activeMesh) {
-      this.arrows.position.copy(this.activeMesh.position);
-    }
-
     this.renderer.clear();
     this.renderer.render(this.scene, this.camera);
-    this.renderer.clearDepth();
-    this.renderer.render(this.controlsScene, this.camera);
+
+    if (this.activeMesh) {
+      this.arrows.position.copy(this.activeMesh.position);
+      this.renderer.clearDepth();
+      this.renderer.render(this.controlsScene, this.camera);
+    }
   };
 
   onClick = (e: MouseEvent) => {
