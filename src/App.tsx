@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import SceneCanvas from "./3d/SceneCanvas";
-import "./App.css";
 import AudioDemo from "./AudioDemo";
 
 interface State {
@@ -34,7 +32,6 @@ class App extends Component<{}, State> {
             {this.state.isPlaying ? "Stop" : "Start"} audio
           </button>
         </header>
-        <SceneCanvas />
       </div>
     );
   }

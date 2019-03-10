@@ -27,13 +27,22 @@ const Main = styled.main`
 `;
 
 export default class Editor extends React.Component {
+  mainRef = React.createRef<HTMLElement>();
+  sceneCanvas = new SceneCanvas();
+
+  componentDidMount(): void {
+    this.sceneCanvas.attach(this.mainRef.current!);
+  }
+
+  componentWillUnmount(): void {
+    this.sceneCanvas.detach();
+  }
+
   render(): React.ReactNode {
     return (
       <Container>
         <Sidebar>Sidebar</Sidebar>
-        <Main>
-          <SceneCanvas />
-        </Main>
+        <Main ref={this.mainRef} />
       </Container>
     );
   }

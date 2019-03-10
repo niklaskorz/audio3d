@@ -39,21 +39,18 @@ const f = (time: number, orbitalPeriod: number, radius: number) =>
     radius * Math.cos((time / orbitalPeriod) * 2 * Math.PI)
   );
 
-const Container = styled.div`
-  width: 100%;
-  height: 100%;
-`;
+export default class SceneCanvas {
+  target: HTMLElement | null = null;
 
-export default class SceneCanvas extends React.Component {
-  containerRef = React.createRef<HTMLDivElement>();
   rafHandle = 0;
   previousTimestamp = 0;
 
-  target: Mesh | null = null;
+  activeMesh: Mesh | null = null;
 
   scene = new Scene();
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   renderer = new WebGLRenderer();
+  canvas: HTMLCanvasElement;
   grid = new GridHelper(10, 10);
   smallCube = new Mesh();
   outlineMesh = new Mesh();
@@ -61,8 +58,22 @@ export default class SceneCanvas extends React.Component {
   keys = new KeyboardListener();
   isDraggingCamera = false;
 
-  constructor(props: any) {
-    super(props);
+  constructor() {
+    this.canvas = this.renderer.domElement;
+    this.canvas.addEventListener("click", this.onClick);
+    this.canvas.addEventListener("wheel", this.onWheel);
+    this.canvas.addEventListener("mousedown", this.onMouseDown);
+    this.canvas.addEventListener("mouseup", this.onMouseUp);
+    this.canvas.addEventListener("mousemove", this.onMouseMove);
+    this.canvas.addEventListener(
+      "contextmenu",
+      e => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      },
+      true
+    );
 
     const geometry = new BoxGeometry(1, 1, 1);
     /* const material = new MeshBasicMaterial({
@@ -95,28 +106,33 @@ export default class SceneCanvas extends React.Component {
     console.log(this.scene.toJSON());
   }
 
-  componentDidMount(): void {
+  attach(target: HTMLElement): void {
     this.keys.listen();
-    this.containerRef.current!.appendChild(this.renderer.domElement);
+    this.target = target;
+    target.appendChild(this.canvas);
 
-    this.containerRef.current!.focus();
     this.resize();
     this.animate(0);
     window.addEventListener("resize", this.resize);
   }
 
-  componentWillUnmount(): void {
-    this.keys.stop();
+  detach(): void {
     window.cancelAnimationFrame(this.rafHandle);
     window.removeEventListener("resize", this.resize);
+
+    this.keys.stop();
+    if (this.target) {
+      this.target.removeChild(this.canvas);
+      this.target = null;
+    }
   }
 
   resize = (): void => {
-    if (!this.containerRef.current) {
+    if (!this.target) {
       return;
     }
 
-    const { offsetWidth, offsetHeight } = this.containerRef.current;
+    const { offsetWidth, offsetHeight } = this.target;
 
     this.camera.aspect = offsetWidth / offsetHeight;
     this.camera.updateProjectionMatrix();
@@ -170,33 +186,33 @@ export default class SceneCanvas extends React.Component {
     this.renderer.render(this.scene, this.camera);
   };
 
-  onClick: React.MouseEventHandler<HTMLElement> = e => {
+  onClick = (e: MouseEvent) => {
     if (e.button !== MouseButton.Primary) {
       return;
     }
 
     const size = this.renderer.getSize(new Vector2());
-    const x = ((e.pageX - e.currentTarget.offsetLeft) / size.x) * 2 - 1;
-    const y = -((e.pageY - e.currentTarget.offsetTop) / size.y) * 2 + 1;
+    const x = ((e.pageX - this.canvas.offsetLeft) / size.x) * 2 - 1;
+    const y = -((e.pageY - this.canvas.offsetTop) / size.y) * 2 + 1;
     console.log(size, x, y);
 
     const raycaster = new Raycaster();
     raycaster.setFromCamera({ x, y }, this.camera);
     const intersections = raycaster.intersectObjects(this.scene.children, true);
-    if (this.target) {
-      this.target.remove(this.outlineMesh);
-      this.target = null;
+    if (this.activeMesh) {
+      this.activeMesh.remove(this.outlineMesh);
+      this.activeMesh = null;
     }
-    for (let i = 0; i < intersections.length && !this.target; i++) {
+    for (let i = 0; i < intersections.length && !this.activeMesh; i++) {
       if (intersections[i].object !== this.grid) {
-        this.target = intersections[i].object as Mesh;
-        this.outlineMesh.geometry = this.target.geometry;
-        this.target.add(this.outlineMesh);
+        this.activeMesh = intersections[i].object as Mesh;
+        this.outlineMesh.geometry = this.activeMesh.geometry;
+        this.activeMesh.add(this.outlineMesh);
       }
     }
   };
 
-  onWheel: React.WheelEventHandler = e => {
+  onWheel = (e: WheelEvent): void => {
     e.preventDefault();
     // console.log('onWheel', e.deltaX, e.deltaY, e.deltaZ, e.deltaMode);
     let delta = e.deltaY;
@@ -207,21 +223,21 @@ export default class SceneCanvas extends React.Component {
     this.camera.translateZ(delta);
   };
 
-  onMouseDown: React.MouseEventHandler = e => {
+  onMouseDown = (e: MouseEvent): void => {
     if (e.button === MouseButton.Secondary) {
       this.isDraggingCamera = true;
-      this.containerRef.current!.requestPointerLock();
+      this.canvas.requestPointerLock();
     }
   };
 
-  onMouseUp: React.MouseEventHandler = e => {
+  onMouseUp = (e: MouseEvent): void => {
     if (e.button === MouseButton.Secondary && this.isDraggingCamera) {
       document.exitPointerLock();
       this.isDraggingCamera = false;
     }
   };
 
-  onMouseMove: React.MouseEventHandler = e => {
+  onMouseMove = (e: MouseEvent): void => {
     if (this.isDraggingCamera) {
       if (e.movementX) {
         this.camera.rotateOnWorldAxis(new Vector3(0, -1, 0), e.movementX / 100);
@@ -231,19 +247,4 @@ export default class SceneCanvas extends React.Component {
       }
     }
   };
-
-  render(): React.ReactNode {
-    return (
-      <Container
-        tabIndex={-1}
-        ref={this.containerRef}
-        onClick={this.onClick}
-        onWheel={this.onWheel}
-        onMouseDown={this.onMouseDown}
-        onMouseUp={this.onMouseUp}
-        onMouseMove={this.onMouseMove}
-        onContextMenu={e => e.preventDefault()}
-      />
-    );
-  }
 }
