@@ -1,0 +1,21 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended",
+    "tslint-react",
+    "tslint-eslint-rules",
+    "tslint-config-prettier"
+  ],
+  "jsRules": {},
+  "rules": {
+    "prettier": true,
+    "no-console": false,
+    "interface-name": false,
+    "jsx-no-lambda": false,
+    "member-access": false,
+    "object-literal-sort-keys": false,
+    "triple-equals": [true, "allow-null-check", "allow-undefined-check"],
+    "typedef": [true, "call-signature", "parameter"]
+  },
+  "rulesDirectory": ["tslint-plugin-prettier"]
+}

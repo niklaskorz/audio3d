@@ -1,9 +1,9 @@
 import "normalize.css";
 import React from "react";
 import ReactDOM from "react-dom";
+import Editor from "./editor/Editor";
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
-import Editor from "./editor/Editor";
 
 ReactDOM.render(<Editor />, document.getElementById("root"));
 

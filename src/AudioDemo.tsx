@@ -1,8 +1,8 @@
 import {
   ResonanceAudio,
-  Source,
   RoomDimensions,
-  RoomMaterials
+  RoomMaterials,
+  Source
 } from "resonance-audio";
 import { Vector3 } from "three";
 
@@ -22,7 +22,7 @@ const materials: RoomMaterials = {
 };
 
 // Circular position based on timestamp
-const f = (t: number) =>
+const f = (t: number): Vector3 =>
   new Vector3(
     3 * Math.sin((t / 4000) * 2 * Math.PI),
     1,
@@ -56,7 +56,7 @@ export default class AudioDemo {
     this.audioSource.connect(this.source.input);
   }
 
-  async start(src: string) {
+  async start(src: string): Promise<void> {
     const resp = await fetch(src);
     const data = await resp.arrayBuffer();
     const buffer = await this.audioContext.decodeAudioData(data);
@@ -67,7 +67,7 @@ export default class AudioDemo {
     this.raf = requestAnimationFrame(this.update);
   }
 
-  stop() {
+  stop(): void {
     cancelAnimationFrame(this.raf);
     this.audioSource.stop();
     this.audioSource.buffer = null;

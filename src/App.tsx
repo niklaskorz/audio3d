@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import AudioDemo from "./AudioDemo";
-import "./App.css";
 import SceneCanvas from "./3d/SceneCanvas";
+import "./App.css";
+import AudioDemo from "./AudioDemo";
 
 interface State {
   isPlaying: boolean;
@@ -13,7 +13,7 @@ class App extends Component<{}, State> {
   };
   demo = new AudioDemo();
 
-  togglePlayback = () => {
+  togglePlayback = (): void => {
     if (!this.state.isPlaying) {
       this.setState({ isPlaying: true });
       this.demo.start("/audio/breakbeat.wav");
@@ -23,7 +23,7 @@ class App extends Component<{}, State> {
     }
   };
 
-  render() {
+  render(): React.ReactNode {
     return (
       <div className="App">
         <header className="App-header">

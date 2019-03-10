@@ -1,12 +1,12 @@
 interface Element {
-    requestPointerLock(): void;
+  requestPointerLock(): void;
 }
 
 interface Document {
-    exitPointerLock(): void;
+  exitPointerLock(): void;
 }
 
 interface MouseEvent {
-    movementX: number;
-    movementY: number;
+  movementX: number;
+  movementY: number;
 }

@@ -1,22 +1,22 @@
 import * as React from "react";
-import {
-  Scene,
-  PerspectiveCamera,
-  WebGLRenderer,
-  Mesh,
-  Vector3,
-  Vector2,
-  BoxGeometry,
-  MeshBasicMaterial,
-  Raycaster,
-  GridHelper,
-} from "three";
 import styled from "styled-components";
+import {
+  BoxGeometry,
+  GridHelper,
+  Mesh,
+  MeshBasicMaterial,
+  PerspectiveCamera,
+  Raycaster,
+  Scene,
+  Vector2,
+  Vector3,
+  WebGLRenderer
+} from "three";
 
 enum MouseButton {
   Primary = 0,
   Middle = 1,
-  Secondary = 2,
+  Secondary = 2
 }
 
 const directions = {
@@ -25,8 +25,8 @@ const directions = {
   left: new Vector3(-1, 0, 0),
   right: new Vector3(1, 0, 0),
   forwards: new Vector3(0, 0, -1),
-  backwards: new Vector3(0, 0, 1),
-}
+  backwards: new Vector3(0, 0, 1)
+};
 
 // Circular position based on timestamp
 const f = (time: number, orbitalPeriod: number, radius: number) =>
@@ -55,7 +55,7 @@ export default class SceneCanvas extends React.Component {
   scene = new Scene();
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   renderer = new WebGLRenderer();
-  grid = new GridHelper(10, 10)
+  grid = new GridHelper(10, 10);
   cube: Mesh;
   cube2: Mesh;
 
@@ -74,7 +74,7 @@ export default class SceneCanvas extends React.Component {
 
     const geometry2 = new BoxGeometry(0.25, 0.25, 0.25);
     const material2 = new MeshBasicMaterial({
-      color: 0xffffff,
+      color: 0xffffff
     });
     this.cube2 = new Mesh(geometry2, material2);
     this.cube2.translateX(1);
@@ -90,7 +90,7 @@ export default class SceneCanvas extends React.Component {
     console.log(this.scene.toJSON());
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.containerRef.current!.appendChild(this.renderer.domElement);
 
     this.containerRef.current!.focus();
@@ -99,12 +99,12 @@ export default class SceneCanvas extends React.Component {
     window.addEventListener("resize", this.resize);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     window.cancelAnimationFrame(this.rafHandle);
     window.removeEventListener("resize", this.resize);
   }
 
-  resize = () => {
+  resize = (): void => {
     if (!this.containerRef.current) {
       return;
     }
@@ -128,42 +128,42 @@ export default class SceneCanvas extends React.Component {
     this.cube2.rotation.y += 0.01;
     this.cube2.position.copy(f(t, 10000, 2));
 
-    if (this.isKeyPressed('w')) {
+    if (this.isKeyPressed("w")) {
       this.camera.translateOnAxis(directions.forwards, 2 * dt);
     }
-    if (this.isKeyPressed('s')) {
+    if (this.isKeyPressed("s")) {
       this.camera.translateOnAxis(directions.backwards, 2 * dt);
     }
-    if (this.isKeyPressed('a')) {
+    if (this.isKeyPressed("a")) {
       this.camera.translateOnAxis(directions.left, 2 * dt);
     }
-    if (this.isKeyPressed('d')) {
+    if (this.isKeyPressed("d")) {
       this.camera.translateOnAxis(directions.right, 2 * dt);
     }
-    if (this.isKeyPressed(' ')) {
+    if (this.isKeyPressed(" ")) {
       this.camera.position.y += 2 * dt;
     }
-    if (this.isKeyPressed('Shift')) {
+    if (this.isKeyPressed("Shift")) {
       this.camera.position.y -= 2 * dt;
     }
 
-    if (this.isKeyPressed('ArrowLeft')) {
+    if (this.isKeyPressed("ArrowLeft")) {
       this.camera.rotateOnWorldAxis(new Vector3(0, 1, 0), dt);
     }
-    if (this.isKeyPressed('ArrowRight')) {
+    if (this.isKeyPressed("ArrowRight")) {
       this.camera.rotateOnWorldAxis(new Vector3(0, -1, 0), dt);
     }
-    if (this.isKeyPressed('ArrowUp')) {
+    if (this.isKeyPressed("ArrowUp")) {
       this.camera.rotateOnAxis(new Vector3(1, 0, 0), dt);
     }
-    if (this.isKeyPressed('ArrowDown')) {
+    if (this.isKeyPressed("ArrowDown")) {
       this.camera.rotateOnAxis(new Vector3(-1, 0, 0), dt);
     }
 
     this.renderer.render(this.scene, this.camera);
   };
 
-  isKeyPressed(key: string) {
+  isKeyPressed(key: string): boolean {
     return this.keysPressed.has(key);
   }
 
@@ -195,28 +195,28 @@ export default class SceneCanvas extends React.Component {
 
   onWheel: React.WheelEventHandler = e => {
     e.preventDefault();
-    //console.log('onWheel', e.deltaX, e.deltaY, e.deltaZ, e.deltaMode);
+    // console.log('onWheel', e.deltaX, e.deltaY, e.deltaZ, e.deltaMode);
     let delta = e.deltaY;
     if (e.deltaMode === 0) {
       // More granular zoom for pixel mode
       delta /= 15;
     }
     this.camera.translateZ(delta);
-  }
+  };
 
   onMouseDown: React.MouseEventHandler = e => {
     if (e.button === MouseButton.Secondary) {
       this.isDraggingCamera = true;
       this.containerRef.current!.requestPointerLock();
     }
-  }
+  };
 
   onMouseUp: React.MouseEventHandler = e => {
     if (e.button === MouseButton.Secondary && this.isDraggingCamera) {
       document.exitPointerLock();
       this.isDraggingCamera = false;
     }
-  }
+  };
 
   onMouseMove: React.MouseEventHandler = e => {
     if (this.isDraggingCamera) {
@@ -227,12 +227,12 @@ export default class SceneCanvas extends React.Component {
         this.camera.rotateOnAxis(new Vector3(-1, 0, 0), e.movementY / 100);
       }
     }
-  }
+  };
 
   onKeyDown: React.KeyboardEventHandler = e => {
     e.preventDefault();
     this.keysPressed.add(e.key);
-    //console.log(e.key);
+    // console.log(e.key);
   };
 
   onKeyUp: React.KeyboardEventHandler = e => {
