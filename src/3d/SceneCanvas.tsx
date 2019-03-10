@@ -146,7 +146,7 @@ export default class SceneCanvas {
     this.camera.lookAt(cube.position);
 
     const outlineMaterial = new MeshBasicMaterial({
-      color: 0x00ff00,
+      color: 0xffffff,
       side: BackSide
     });
     this.outlineMesh.material = outlineMaterial;
