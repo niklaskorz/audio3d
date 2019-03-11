@@ -43,6 +43,10 @@ const f = (time: number, orbitalPeriod: number, radius: number) =>
     radius * Math.cos((time / orbitalPeriod) * 2 * Math.PI)
   );
 
+interface Options {
+  onSelect(object: Mesh): void;
+}
+
 export default class SceneCanvas {
   target: HTMLElement | null = null;
 
@@ -66,7 +70,7 @@ export default class SceneCanvas {
   isDraggingCamera = false;
   isDraggingAxis = false;
 
-  constructor() {
+  constructor(private options: Options) {
     this.renderer.autoClear = false;
     this.canvas = this.renderer.domElement;
     this.canvas.addEventListener("click", this.onClick);
@@ -268,6 +272,7 @@ export default class SceneCanvas {
         this.activeMesh = o;
         this.outlineMesh.geometry = this.activeMesh.geometry;
         this.activeMesh.add(this.outlineMesh);
+        this.options.onSelect(o);
         return true;
       }
     }
