@@ -1,10 +1,7 @@
-import * as React from "react";
-import styled from "styled-components";
 import {
   ArrowHelper,
   BackSide,
   BoxGeometry,
-  BoxHelper,
   Color,
   DoubleSide,
   GridHelper,
@@ -13,9 +10,7 @@ import {
   MeshBasicMaterial,
   MeshNormalMaterial,
   PerspectiveCamera,
-  Plane,
   PlaneGeometry,
-  PlaneHelper,
   Raycaster,
   Scene,
   Vector2,
