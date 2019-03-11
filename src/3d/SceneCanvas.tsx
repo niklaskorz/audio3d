@@ -6,6 +6,7 @@ import {
   DoubleSide,
   GridHelper,
   Group,
+  LineBasicMaterial,
   Mesh,
   MeshBasicMaterial,
   MeshNormalMaterial,
@@ -63,15 +64,16 @@ export default class SceneCanvas {
 
   keys = new KeyboardListener();
   isDraggingCamera = false;
+  isDraggingAxis = false;
 
   constructor() {
     this.renderer.autoClear = false;
     this.canvas = this.renderer.domElement;
     this.canvas.addEventListener("click", this.onClick);
-    this.canvas.addEventListener("wheel", this.onWheel);
     this.canvas.addEventListener("mousedown", this.onMouseDown);
     this.canvas.addEventListener("mouseup", this.onMouseUp);
     this.canvas.addEventListener("mousemove", this.onMouseMove);
+    this.canvas.addEventListener("wheel", this.onWheel);
     this.canvas.addEventListener(
       "contextmenu",
       e => {
@@ -86,6 +88,7 @@ export default class SceneCanvas {
 
     const arrowX = new ArrowHelper(new Vector3(1, 0, 0));
     arrowX.setColor(new Color(0xff0000));
+    (arrowX.line.material as LineBasicMaterial).linewidth = 42;
     const arrowY = new ArrowHelper(new Vector3(0, 1, 0));
     arrowY.setColor(new Color(0x00ff00));
     const arrowZ = new ArrowHelper(new Vector3(0, 0, 1));
@@ -237,14 +240,50 @@ export default class SceneCanvas {
     }
   };
 
-  onClick = (e: MouseEvent) => {
-    if (e.button !== MouseButton.Primary) {
-      return;
+  checkControlsClick(raycaster: Raycaster): boolean {
+    const intersections = raycaster.intersectObjects(
+      this.controlsScene.children
+    );
+    for (const intersection of intersections) {
+      const o = intersection.object;
+      if (o) {
+        this.isDraggingAxis = true;
+        this.canvas.requestPointerLock();
+        return true;
+      }
     }
+    return false;
+  }
 
+  checkSceneClick(raycaster: Raycaster): boolean {
     if (this.activeMesh) {
       this.activeMesh.remove(this.outlineMesh);
       this.activeMesh = null;
+    }
+
+    const intersections = raycaster.intersectObjects(this.scene.children);
+    for (const intersection of intersections) {
+      const o = intersection.object as Mesh;
+      if (o.isMesh) {
+        this.activeMesh = o;
+        this.outlineMesh.geometry = this.activeMesh.geometry;
+        this.activeMesh.add(this.outlineMesh);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  onClick = (e: MouseEvent) => {};
+
+  onMouseDown = (e: MouseEvent): void => {
+    if (e.button === MouseButton.Secondary) {
+      this.isDraggingCamera = true;
+      this.canvas.requestPointerLock();
+    }
+
+    if (e.button !== MouseButton.Primary) {
+      return;
     }
 
     const size = this.renderer.getSize(new Vector2());
@@ -254,40 +293,20 @@ export default class SceneCanvas {
 
     const raycaster = new Raycaster();
     raycaster.setFromCamera({ x, y }, this.camera);
-    const intersections = raycaster.intersectObjects(this.scene.children);
-
-    for (let i = 0; i < intersections.length && !this.activeMesh; i++) {
-      const o = intersections[i].object as Mesh;
-      if (o.isMesh) {
-        this.activeMesh = o;
-        this.outlineMesh.geometry = this.activeMesh.geometry;
-        this.activeMesh.add(this.outlineMesh);
-      }
-    }
-  };
-
-  onWheel = (e: WheelEvent): void => {
-    e.preventDefault();
-    // console.log('onWheel', e.deltaX, e.deltaY, e.deltaZ, e.deltaMode);
-    let delta = e.deltaY;
-    if (e.deltaMode === 0) {
-      // More granular zoom for pixel mode
-      delta /= 15;
-    }
-    this.camera.translateZ(delta);
-  };
-
-  onMouseDown = (e: MouseEvent): void => {
-    if (e.button === MouseButton.Secondary) {
-      this.isDraggingCamera = true;
-      this.canvas.requestPointerLock();
+    if (!this.checkControlsClick(raycaster)) {
+      this.checkSceneClick(raycaster);
     }
   };
 
   onMouseUp = (e: MouseEvent): void => {
     if (e.button === MouseButton.Secondary && this.isDraggingCamera) {
-      document.exitPointerLock();
       this.isDraggingCamera = false;
+    }
+    if (e.button === MouseButton.Primary && this.isDraggingAxis) {
+      this.isDraggingAxis = false;
+    }
+    if (!this.isDraggingCamera && !this.isDraggingAxis) {
+      document.exitPointerLock();
     }
   };
 
@@ -300,5 +319,22 @@ export default class SceneCanvas {
         this.camera.rotateOnAxis(new Vector3(-1, 0, 0), e.movementY / 100);
       }
     }
+    if (this.isDraggingAxis && this.activeMesh) {
+      this.activeMesh.translateOnAxis(
+        new Vector3(e.movementX, 0, e.movementY),
+        1 / 100
+      );
+    }
+  };
+
+  onWheel = (e: WheelEvent): void => {
+    e.preventDefault();
+    // console.log('onWheel', e.deltaX, e.deltaY, e.deltaZ, e.deltaMode);
+    let delta = e.deltaY;
+    if (e.deltaMode === 0) {
+      // More granular zoom for pixel mode
+      delta /= 15;
+    }
+    this.camera.translateZ(delta);
   };
 }
