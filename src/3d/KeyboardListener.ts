@@ -1,7 +1,8 @@
 export default class KeyboardListener {
   keysPressed = new Set<string>();
+  lastKeyUp = new Map<string, number>();
 
-  constructor(private target: Document = document) {}
+  constructor(private target: Document = document) { }
 
   listen(): void {
     this.target.addEventListener("blur", this.reset);
@@ -30,12 +31,17 @@ export default class KeyboardListener {
 
   onKeyDown = (e: KeyboardEvent): void => {
     e.preventDefault();
-    this.keysPressed.add(e.key);
+    // Workaround for browsers firing a queued keydown shortly after a keyup
+    // Ignore keydown if the last keyup was triggered +-100ms from now
+    if (Math.abs(e.timeStamp - (this.lastKeyUp.get(e.key) || 0)) >= 100) {
+      this.keysPressed.add(e.key);
+    }
   };
 
   onKeyUp = (e: KeyboardEvent): void => {
     e.preventDefault();
     this.keysPressed.delete(e.key);
+    this.lastKeyUp.set(e.key, e.timeStamp);
   };
 
   onClick = (e: MouseEvent): void => {

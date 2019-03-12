@@ -277,7 +277,6 @@ export default class SceneCanvas {
     for (const intersection of intersections) {
       const o = intersection.object;
       if (o.userData.hasOwnProperty("direction")) {
-        console.log("Drag object:", o.userData.direction);
         this.objectDragDirection = o.userData.direction;
         this.canvas.requestPointerLock();
         return true;
@@ -362,7 +361,7 @@ export default class SceneCanvas {
 
       const d = new Vector3(e.movementX, -e.movementY, 0);
       d.applyQuaternion(q);
-      d.divideScalar(100);
+      d.divideScalar(50);
 
       switch (this.objectDragDirection) {
         case ObjectDragDirection.AxisX:
