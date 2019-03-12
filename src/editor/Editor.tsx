@@ -30,15 +30,15 @@ const Main = styled.main`
 `;
 
 interface State {
-  selectedObject?: Mesh;
+  selectedObject: Mesh | null;
 }
 
 export default class Editor extends React.Component<{}, State> {
-  state: State = {};
+  state: State = { selectedObject: null };
   mainRef = React.createRef<HTMLElement>();
   sceneCanvas = new SceneCanvas({
-    onSelect: o => {
-      this.setState({ selectedObject: o });
+    onSelect: selectedObject => {
+      this.setState({ selectedObject });
     }
   });
 

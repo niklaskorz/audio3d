@@ -6,12 +6,15 @@ import {
   DoubleSide,
   GridHelper,
   Group,
+  Line3,
   LineBasicMaterial,
   Mesh,
   MeshBasicMaterial,
   MeshNormalMaterial,
   PerspectiveCamera,
+  Plane,
   PlaneGeometry,
+  Quaternion,
   Raycaster,
   Scene,
   Vector2,
@@ -24,6 +27,15 @@ enum MouseButton {
   Primary = 0,
   Middle = 1,
   Secondary = 2
+}
+
+enum ObjectDragDirection {
+  AxisX,
+  AxisY,
+  AxisZ,
+  PlaneYZ,
+  PlaneXZ,
+  PlaneXY
 }
 
 const directions = {
@@ -44,7 +56,7 @@ const f = (time: number, orbitalPeriod: number, radius: number) =>
   );
 
 interface Options {
-  onSelect(object: Mesh): void;
+  onSelect(object: Mesh | null): void;
 }
 
 export default class SceneCanvas {
@@ -68,7 +80,7 @@ export default class SceneCanvas {
 
   keys = new KeyboardListener();
   isDraggingCamera = false;
-  isDraggingAxis = false;
+  objectDragDirection: ObjectDragDirection | null = null;
 
   constructor(private options: Options) {
     this.renderer.autoClear = false;
@@ -90,54 +102,68 @@ export default class SceneCanvas {
 
     // Setup controls for active mesh
 
-    const arrowX = new ArrowHelper(new Vector3(1, 0, 0));
-    arrowX.setColor(new Color(0xff0000));
-    (arrowX.line.material as LineBasicMaterial).linewidth = 42;
-    const arrowY = new ArrowHelper(new Vector3(0, 1, 0));
-    arrowY.setColor(new Color(0x00ff00));
-    const arrowZ = new ArrowHelper(new Vector3(0, 0, 1));
-    arrowZ.setColor(new Color(0x0000ff));
+    const axisGeometry = new BoxGeometry(0.05, 0.05, 0.5);
+    const axisX = new Mesh(
+      axisGeometry,
+      new MeshBasicMaterial({ color: 0xff0000 })
+    );
+    axisX.position.set(0.25, 0.0, 0.0);
+    axisX.rotation.y = Math.PI / 2;
+    axisX.userData.direction = ObjectDragDirection.AxisX;
+    const axisY = new Mesh(
+      axisGeometry,
+      new MeshBasicMaterial({ color: 0x00ff00 })
+    );
+    axisY.position.set(0.0, 0.25, 0.0);
+    axisY.rotation.x = Math.PI / 2;
+    axisY.userData.direction = ObjectDragDirection.AxisY;
+    const axisZ = new Mesh(
+      axisGeometry,
+      new MeshBasicMaterial({ color: 0x0000ff })
+    );
+    axisZ.position.set(0.0, 0.0, 0.25);
+    axisZ.userData.direction = ObjectDragDirection.AxisZ;
 
     const planeGeometry = new PlaneGeometry(0.25, 0.25);
-    const planeXY = new Mesh(
-      planeGeometry,
-      new MeshBasicMaterial({ color: 0xffff00, side: DoubleSide })
-    );
-    planeXY.position.set(0.25, 0.25, 0.0);
-    const planeXZ = new Mesh(
-      planeGeometry,
-      new MeshBasicMaterial({ color: 0xff00ff, side: DoubleSide })
-    );
-    planeXZ.position.set(0.25, 0.0, 0.25);
-    planeXZ.rotation.x = Math.PI / 2;
     const planeYZ = new Mesh(
       planeGeometry,
       new MeshBasicMaterial({ color: 0x00ffff, side: DoubleSide })
     );
     planeYZ.position.set(0.0, 0.25, 0.25);
     planeYZ.rotation.y = Math.PI / 2;
+    planeYZ.userData.direction = ObjectDragDirection.PlaneYZ;
+    const planeXZ = new Mesh(
+      planeGeometry,
+      new MeshBasicMaterial({ color: 0xff00ff, side: DoubleSide })
+    );
+    planeXZ.position.set(0.25, 0.0, 0.25);
+    planeXZ.rotation.x = Math.PI / 2;
+    planeXZ.userData.direction = ObjectDragDirection.PlaneXZ;
+    const planeXY = new Mesh(
+      planeGeometry,
+      new MeshBasicMaterial({ color: 0xffff00, side: DoubleSide })
+    );
+    planeXY.position.set(0.25, 0.25, 0.0);
+    planeXY.userData.direction = ObjectDragDirection.PlaneXY;
 
-    this.controlsScene.add(arrowX);
-    this.controlsScene.add(arrowY);
-    this.controlsScene.add(arrowZ);
+    this.controlsScene.add(axisX);
+    this.controlsScene.add(axisY);
+    this.controlsScene.add(axisZ);
 
-    this.controlsScene.add(planeXY);
-    this.controlsScene.add(planeXZ);
     this.controlsScene.add(planeYZ);
+    this.controlsScene.add(planeXZ);
+    this.controlsScene.add(planeXY);
 
     // Setup scene
 
     const geometry = new BoxGeometry(1, 1, 1);
-    /* const material = new MeshBasicMaterial({
-      color: 0xffffff,
-      wireframe: true
-    }); */
     const material = new MeshNormalMaterial();
     const cube = new Mesh(geometry, material);
     cube.position.y += 0.5;
 
     this.smallCube.geometry = new BoxGeometry(0.25, 0.25, 0.25);
     this.smallCube.material = material;
+    this.smallCube.translateX(2);
 
     this.scene.add(cube);
     this.scene.add(this.smallCube);
@@ -163,7 +189,7 @@ export default class SceneCanvas {
     target.appendChild(this.canvas);
 
     this.resize();
-    this.animate(0);
+    window.requestAnimationFrame(this.animate);
     window.addEventListener("resize", this.resize);
   }
 
@@ -188,7 +214,7 @@ export default class SceneCanvas {
     this.camera.aspect = offsetWidth / offsetHeight;
     this.camera.updateProjectionMatrix();
 
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    // this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(offsetWidth, offsetHeight);
   };
 
@@ -200,7 +226,7 @@ export default class SceneCanvas {
 
     this.smallCube.rotation.x += 0.01;
     this.smallCube.rotation.y += 0.01;
-    this.smallCube.position.copy(f(t, 10000, 2));
+    // this.smallCube.position.copy(f(t, 10000, 2));
 
     if (this.keys.isPressed("w")) {
       this.camera.translateOnAxis(directions.forwards, 2 * dt);
@@ -250,8 +276,9 @@ export default class SceneCanvas {
     );
     for (const intersection of intersections) {
       const o = intersection.object;
-      if (o) {
-        this.isDraggingAxis = true;
+      if (o.userData.hasOwnProperty("direction")) {
+        console.log("Drag object:", o.userData.direction);
+        this.objectDragDirection = o.userData.direction;
         this.canvas.requestPointerLock();
         return true;
       }
@@ -272,14 +299,19 @@ export default class SceneCanvas {
         this.activeMesh = o;
         this.outlineMesh.geometry = this.activeMesh.geometry;
         this.activeMesh.add(this.outlineMesh);
+
         this.options.onSelect(o);
         return true;
       }
     }
+
+    this.options.onSelect(null);
     return false;
   }
 
-  onClick = (e: MouseEvent) => {};
+  onClick = (e: MouseEvent) => {
+    /* Nothing here yet */
+  };
 
   onMouseDown = (e: MouseEvent): void => {
     if (e.button === MouseButton.Secondary) {
@@ -307,10 +339,10 @@ export default class SceneCanvas {
     if (e.button === MouseButton.Secondary && this.isDraggingCamera) {
       this.isDraggingCamera = false;
     }
-    if (e.button === MouseButton.Primary && this.isDraggingAxis) {
-      this.isDraggingAxis = false;
+    if (e.button === MouseButton.Primary && this.objectDragDirection !== null) {
+      this.objectDragDirection = null;
     }
-    if (!this.isDraggingCamera && !this.isDraggingAxis) {
+    if (!this.isDraggingCamera && this.objectDragDirection === null) {
       document.exitPointerLock();
     }
   };
@@ -324,11 +356,36 @@ export default class SceneCanvas {
         this.camera.rotateOnAxis(new Vector3(-1, 0, 0), e.movementY / 100);
       }
     }
-    if (this.isDraggingAxis && this.activeMesh) {
-      this.activeMesh.translateOnAxis(
-        new Vector3(e.movementX, 0, e.movementY),
-        1 / 100
-      );
+    if (this.objectDragDirection !== null && this.activeMesh) {
+      const q = new Quaternion();
+      this.camera.getWorldQuaternion(q);
+
+      const d = new Vector3(e.movementX, -e.movementY, 0);
+      d.applyQuaternion(q);
+      d.divideScalar(100);
+
+      switch (this.objectDragDirection) {
+        case ObjectDragDirection.AxisX:
+          d.y = d.z = 0;
+          break;
+        case ObjectDragDirection.AxisY:
+          d.x = d.z = 0;
+          break;
+        case ObjectDragDirection.AxisZ:
+          d.x = d.y = 0;
+          break;
+        case ObjectDragDirection.PlaneYZ:
+          d.x = 0;
+          break;
+        case ObjectDragDirection.PlaneXZ:
+          d.y = 0;
+          break;
+        case ObjectDragDirection.PlaneXY:
+          d.z = 0;
+          break;
+      }
+
+      this.activeMesh.position.add(d);
     }
   };
 
