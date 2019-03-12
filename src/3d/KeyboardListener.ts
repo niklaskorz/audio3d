@@ -2,7 +2,7 @@ export default class KeyboardListener {
   keysPressed = new Set<string>();
   lastKeyUp = new Map<string, number>();
 
-  constructor(private target: Document = document) { }
+  constructor(private target: HTMLElement) { }
 
   listen(): void {
     this.target.addEventListener("blur", this.reset);

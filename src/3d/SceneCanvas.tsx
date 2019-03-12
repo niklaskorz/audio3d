@@ -57,6 +57,7 @@ const f = (time: number, orbitalPeriod: number, radius: number) =>
 
 interface Options {
   onSelect(object: Mesh | null): void;
+  onTranslate(position: Vector3): void;
 }
 
 export default class SceneCanvas {
@@ -76,15 +77,14 @@ export default class SceneCanvas {
   smallCube = new Mesh();
   outlineMesh = new Mesh();
 
-  arrows = new Group();
-
-  keys = new KeyboardListener();
+  keys = new KeyboardListener(this.renderer.domElement);
   isDraggingCamera = false;
   objectDragDirection: ObjectDragDirection | null = null;
 
   constructor(private options: Options) {
     this.renderer.autoClear = false;
     this.canvas = this.renderer.domElement;
+    this.canvas.tabIndex = -1; // Make element focusable
     this.canvas.addEventListener("click", this.onClick);
     this.canvas.addEventListener("mousedown", this.onMouseDown);
     this.canvas.addEventListener("mouseup", this.onMouseUp);
@@ -160,10 +160,12 @@ export default class SceneCanvas {
     const material = new MeshNormalMaterial();
     const cube = new Mesh(geometry, material);
     cube.position.y += 0.5;
+    cube.name = "New cube";
 
     this.smallCube.geometry = new BoxGeometry(0.25, 0.25, 0.25);
     this.smallCube.material = material;
     this.smallCube.translateX(2);
+    this.smallCube.name = "Small cube";
 
     this.scene.add(cube);
     this.scene.add(this.smallCube);
@@ -191,6 +193,7 @@ export default class SceneCanvas {
     this.resize();
     window.requestAnimationFrame(this.animate);
     window.addEventListener("resize", this.resize);
+    this.canvas.focus();
   }
 
   detach(): void {
@@ -271,6 +274,10 @@ export default class SceneCanvas {
   };
 
   checkControlsClick(raycaster: Raycaster): boolean {
+    if (!this.activeMesh) {
+      return false;
+    }
+
     const intersections = raycaster.intersectObjects(
       this.controlsScene.children
     );
@@ -385,6 +392,7 @@ export default class SceneCanvas {
       }
 
       this.activeMesh.position.add(d);
+      this.options.onTranslate(this.activeMesh.position);
     }
   };
 
