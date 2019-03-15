@@ -1,7 +1,10 @@
 import {
   BackSide,
   BoxGeometry,
+  DoubleSide,
   GridHelper,
+  LineBasicMaterial,
+  LineDashedMaterial,
   Mesh,
   MeshBasicMaterial,
   MeshNormalMaterial,
@@ -100,7 +103,8 @@ export default class SceneCanvas {
     this.scene.add(this.smallCube);
     this.scene.add(this.grid);
 
-    this.scene.add(new PlaneHelper(this.controls.plane, 10, 0xff0000));
+    const ph = new PlaneHelper(this.controls.plane, 10, 0x999999);
+    this.scene.add(ph);
 
     this.camera.position.z = 3;
     this.camera.position.y = 3;
