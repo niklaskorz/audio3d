@@ -12,7 +12,7 @@ export default class KeyboardListener {
     this.target.addEventListener("contextmenu", this.reset);
     this.target.addEventListener("keydown", this.onKeyDown);
     this.target.addEventListener("keyup", this.onKeyUp);
-    this.target.addEventListener("click", this.onClick);
+    document.addEventListener("click", this.onClick);
   }
 
   stop(): void {
@@ -20,7 +20,7 @@ export default class KeyboardListener {
     this.target.removeEventListener("contextmenu", this.reset);
     this.target.removeEventListener("keydown", this.onKeyDown);
     this.target.removeEventListener("keyup", this.onKeyUp);
-    this.target.removeEventListener("click", this.onClick);
+    document.removeEventListener("click", this.onClick);
     this.reset();
   }
 
