@@ -1,17 +1,24 @@
 import {
+  AmbientLight,
   BackSide,
   BoxGeometry,
+  Color,
+  DirectionalLight,
   DoubleSide,
   GridHelper,
   LineBasicMaterial,
   LineDashedMaterial,
   Mesh,
   MeshBasicMaterial,
+  MeshLambertMaterial,
   MeshNormalMaterial,
+  MeshPhongMaterial,
   PerspectiveCamera,
   PlaneHelper,
+  PointLight,
   Raycaster,
   Scene,
+  SpotLight,
   Vector2,
   Vector3,
   WebGLRenderer
@@ -58,7 +65,7 @@ export default class SceneCanvas {
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
-  grid = new GridHelper(10, 10);
+  grid = new GridHelper(10, 10, 0xffffff, 0xffffff);
   smallCube = new Mesh();
   outlineMesh = new Mesh();
 
@@ -69,6 +76,7 @@ export default class SceneCanvas {
 
   constructor(private options: Options) {
     this.renderer.autoClear = false;
+    this.renderer.setClearColor(new Color(0x192a56));
     this.canvas = this.renderer.domElement;
     this.canvas.tabIndex = -1; // Make element focusable
     this.canvas.addEventListener("click", this.onClick);
@@ -88,8 +96,15 @@ export default class SceneCanvas {
 
     // Setup scene
 
+    const ambientLight = new AmbientLight(0xffffff, 0.5);
+    this.scene.add(ambientLight);
+    const light = new PointLight(0xffffff, 0.5);
+    light.position.set(5, 5, 0);
+    light.lookAt(0, 0, 0);
+    this.scene.add(light);
+
     const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshNormalMaterial();
+    const material = new MeshLambertMaterial();
     const cube = new Mesh(geometry, material);
     cube.position.y += 0.5;
     cube.name = "New cube";
