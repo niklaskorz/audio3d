@@ -7,10 +7,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   Plane,
-  PlaneBufferGeometry,
   PlaneGeometry,
-  Quaternion,
-  Ray,
   Raycaster,
   Scene,
   Vector3
@@ -28,7 +25,7 @@ export enum ObjectDragDirection {
   PlaneXY
 }
 
-// Inspired by https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/TransformControls.js:
+// Inspired by https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/TransformControls.js
 // As in the example, we are using ray casting for calculating the movements of planes and axes.
 // Everything else in this implementation has resulted either from trial and error or by
 // consulting the Three.js documentation.
