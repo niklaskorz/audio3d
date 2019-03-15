@@ -14,6 +14,7 @@ import {
   PerspectiveCamera,
   Plane,
   PlaneGeometry,
+  PlaneHelper,
   Quaternion,
   Raycaster,
   Scene,
@@ -107,6 +108,8 @@ export default class SceneCanvas {
     this.scene.add(cube);
     this.scene.add(this.smallCube);
     this.scene.add(this.grid);
+
+    this.scene.add(new PlaneHelper(this.controls.plane, 10, 0xff0000));
 
     this.camera.position.z = 3;
     this.camera.position.y = 3;
@@ -238,8 +241,10 @@ export default class SceneCanvas {
 
   updateRaycaster(e: MouseEvent): void {
     const size = this.renderer.getSize(new Vector2());
+    // Normalize screen coordinates
     const x = ((e.pageX - this.canvas.offsetLeft) / size.x) * 2 - 1;
     const y = -((e.pageY - this.canvas.offsetTop) / size.y) * 2 + 1;
+    // Update raycaster
     this.raycaster.setFromCamera({ x, y }, this.camera);
   }
 
