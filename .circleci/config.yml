@@ -6,13 +6,7 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version you desire here
       - image: circleci/node:11
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
 
     working_directory: ~/repo
 
@@ -35,13 +29,43 @@ jobs:
 
       # Lint
       - run: yarn lint
+
       # Build
       - run: yarn build
-      # Deployment
+
+      # Cache for deployment
+      - save_cache:
+          paths:
+            - build
+          key: v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+
+  # Deployment job
+  deploy:
+    docker:
+      - image: circleci/node:11
+    working_directory: ~/project
+    steps:
       - add_ssh_keys:
           fingerprints:
             - "a3:16:64:81:e4:5d:2b:11:09:af:70:79:f3:a3:7a:4e"
       - run: |
           git config --global user.email "cibuild@niklaskorz.de"
           git config --global user.name "CI Build"
-          yarn deploy
+      - run: npm install -g gh-pages
+      - restore_cache:
+          keys:
+            - v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+      - run: gh-pages --dotfiles --message \"[skip ci] Updates\" --dist build
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
