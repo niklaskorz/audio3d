@@ -6,6 +6,7 @@ import {
   DoubleSide,
   Mesh,
   MeshBasicMaterial,
+  Object3D,
   Plane,
   PlaneGeometry,
   Raycaster,
@@ -128,13 +129,9 @@ export default class ControlsScene extends Scene {
     this.add(this.planeXY);
   }
 
-  // As we don't have access to the camera here and to avoid creating the ray caster
-  // twice, we just pass it from the initial mouse click handler and use it here.
-  // The original mouse event and screen coordinates are not required for the functionality
-  // of the controls, so they will not be taken as parameters here.
-  onClick(raycaster: Raycaster): boolean {
+  getControlFromRaycaster(raycaster: Raycaster): Object3D | null {
     if (!this.activeMesh) {
-      return false;
+      return null;
     }
 
     this.position.copy(this.activeMesh.position);
@@ -143,11 +140,23 @@ export default class ControlsScene extends Scene {
     for (const intersection of intersections) {
       const o = intersection.object;
       if (o.userData.hasOwnProperty("direction")) {
-        this.objectDragDirection = o.userData.direction;
         this.dragOffset.copy(intersection.point).sub(this.activeMesh.position);
-        this.onMove(raycaster);
-        return true;
+        return o;
       }
+    }
+    return null;
+  }
+
+  // As we don't have access to the camera here and to avoid creating the ray caster
+  // twice, we just pass it from the initial mouse click handler and use it here.
+  // The original mouse event and screen coordinates are not required for the functionality
+  // of the controls, so they will not be taken as parameters here.
+  onClick(raycaster: Raycaster): boolean {
+    const o = this.getControlFromRaycaster(raycaster);
+    if (o && o.userData.hasOwnProperty("direction")) {
+      this.objectDragDirection = o.userData.direction;
+      this.onMove(raycaster);
+      return true;
     }
     return false;
   }

@@ -258,7 +258,9 @@ export default class SceneCanvas {
     }
 
     this.updateRaycaster(e);
-    if (!this.controls.onClick(this.raycaster)) {
+    if (this.controls.onClick(this.raycaster)) {
+      this.canvas.style.cursor = "grabbing";
+    } else {
       this.checkSceneClick(this.raycaster);
     }
   };
@@ -273,6 +275,11 @@ export default class SceneCanvas {
       this.controls.objectDragDirection !== null
     ) {
       this.controls.objectDragDirection = null;
+      if (this.controls.getControlFromRaycaster(this.raycaster)) {
+        this.canvas.style.cursor = "grab";
+      } else {
+        this.canvas.style.cursor = null;
+      }
     }
   };
 
@@ -286,7 +293,13 @@ export default class SceneCanvas {
       }
     } else {
       this.updateRaycaster(e);
-      this.controls.onMove(this.raycaster);
+      if (this.controls.objectDragDirection !== null) {
+        this.controls.onMove(this.raycaster);
+      } else if (this.controls.getControlFromRaycaster(this.raycaster)) {
+        this.canvas.style.cursor = "grab";
+      } else {
+        this.canvas.style.cursor = null;
+      }
     }
   };
 
