@@ -43,7 +43,7 @@ jobs:
   deploy:
     docker:
       - image: circleci/node:11
-    working_directory: ~/project
+    working_directory: ~/repo
     steps:
       - add_ssh_keys:
           fingerprints:
