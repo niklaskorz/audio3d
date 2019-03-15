@@ -147,8 +147,10 @@ export default class SceneCanvas {
         audio.setLoop(true);
         audio.play();
       },
-      () => {},
-      () => {}
+      () => {
+        /* pass */
+      },
+      (err: Error) => console.error(err)
     );
     cube.add(audio);
     this.camera.add(listener);
