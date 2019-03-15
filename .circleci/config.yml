@@ -34,10 +34,11 @@ jobs:
       - run: yarn build
 
       # Cache for deployment
-      - save_cache:
+      - persist_to_workspace:
+          root: ~/repo
           paths:
             - build
-          key: v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+            - .git
 
   # Deployment job
   deploy:
@@ -45,6 +46,8 @@ jobs:
       - image: circleci/node:11
     working_directory: ~/repo
     steps:
+      - attach_workspace:
+          at: ~/repo
       - add_ssh_keys:
           fingerprints:
             - "a3:16:64:81:e4:5d:2b:11:09:af:70:79:f3:a3:7a:4e"
@@ -52,10 +55,7 @@ jobs:
           git config --global user.email "cibuild@niklaskorz.de"
           git config --global user.name "CI Build"
       - run: sudo npm install -g gh-pages
-      - restore_cache:
-          keys:
-            - v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
-      - run: gh-pages --dotfiles --message "[skip ci] Updates" --dist build --repo git@github.com:niklaskorz/audio3d.git
+      - run: gh-pages --dotfiles --message "[skip ci] Updates" --dist build
 
 workflows:
   version: 2
