@@ -77,7 +77,7 @@ export default class Editor extends React.Component<{}, State> {
   }
 
   updateName(name: string): void {
-    this.sceneCanvas.activeMesh!.name = name;
+    this.sceneCanvas.controls.activeMesh!.name = name;
     this.setState(({ selectedObject }) => ({
       selectedObject: {
         ...selectedObject!,
@@ -87,7 +87,7 @@ export default class Editor extends React.Component<{}, State> {
   }
 
   updatePosition(x: number, y: number, z: number): void {
-    this.sceneCanvas.activeMesh!.position.set(x, y, z);
+    this.sceneCanvas.controls.activeMesh!.position.set(x, y, z);
     this.setState(({ selectedObject }) => ({
       selectedObject: {
         ...selectedObject!,
