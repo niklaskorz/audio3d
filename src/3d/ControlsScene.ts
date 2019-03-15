@@ -202,7 +202,8 @@ export default class ControlsScene extends Scene {
     // check which one is farther away from the ray's origin.
     if (
       altPlane &&
-      altPlane.distanceToPoint(ray.origin) > p.distanceToPoint(ray.origin)
+      Math.abs(altPlane.distanceToPoint(ray.origin)) >
+        Math.abs(p.distanceToPoint(ray.origin))
     ) {
       p.copy(altPlane);
     }
