@@ -51,7 +51,7 @@ jobs:
       - run: |
           git config --global user.email "cibuild@niklaskorz.de"
           git config --global user.name "CI Build"
-      - run: npm install -g gh-pages
+      - run: sudo npm install -g gh-pages
       - restore_cache:
           keys:
             - v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
