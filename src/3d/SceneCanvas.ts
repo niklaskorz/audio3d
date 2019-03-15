@@ -1,5 +1,7 @@
 import {
   AmbientLight,
+  AudioListener,
+  AudioLoader,
   BackSide,
   BoxGeometry,
   Color,
@@ -16,6 +18,7 @@ import {
   PerspectiveCamera,
   PlaneHelper,
   PointLight,
+  PositionalAudio,
   Raycaster,
   Scene,
   SpotLight,
@@ -133,6 +136,22 @@ export default class SceneCanvas {
     this.outlineMesh.scale.multiplyScalar(1.05);
 
     console.log(this.scene.toJSON());
+
+    const listener = new AudioListener();
+    const audio = new PositionalAudio(listener);
+    const loader = new AudioLoader();
+    loader.load(
+      "audio/breakbeat.wav",
+      (audioBuffer: AudioBuffer) => {
+        audio.setBuffer(audioBuffer);
+        audio.setLoop(true);
+        audio.play();
+      },
+      () => {},
+      () => {}
+    );
+    cube.add(audio);
+    this.camera.add(listener);
   }
 
   attach(target: HTMLElement): void {
