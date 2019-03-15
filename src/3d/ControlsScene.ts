@@ -163,32 +163,51 @@ export default class ControlsScene extends Scene {
   // Similar to the Three.js transform controls example, this now uses a ray
   // casted from the camera origin onto a plane that represents the axes to move
   // on and sets the position of the object to the intersection point.
-  onMove(raycaster: Raycaster): void {
+  onMove({ ray }: Raycaster): void {
     if (this.objectDragDirection === null || !this.activeMesh) {
       return;
     }
 
     const c = this.activeMesh.position;
     const p = this.plane;
+    let altPlane: Plane | null = null;
 
-    // Update the normal and position of the plane
+    // Update the normal and constant (^= position) of the plane
     // TODO: The origin of the plane has to be negative somehow, otherwise everything is mirrored. Why?
     switch (this.objectDragDirection) {
       case ObjectDragDirection.AxisX:
+        p.set(new Vector3(0, 1, 0), -c.y);
+        altPlane = new Plane(new Vector3(0, 0, 1), -c.z);
+        break;
+      case ObjectDragDirection.AxisY:
+        p.set(new Vector3(1, 0, 0), -c.x);
+        altPlane = new Plane(new Vector3(0, 0, 1), -c.z);
+        break;
+      case ObjectDragDirection.AxisZ:
+        p.set(new Vector3(1, 0, 0), -c.x);
+        altPlane = new Plane(new Vector3(0, 1, 0), -c.y);
+        break;
       case ObjectDragDirection.PlaneXY:
         p.set(new Vector3(0, 0, 1), -c.z);
         break;
-      case ObjectDragDirection.AxisY:
       case ObjectDragDirection.PlaneYZ:
         p.set(new Vector3(1, 0, 0), -c.x);
         break;
-      case ObjectDragDirection.AxisZ:
       case ObjectDragDirection.PlaneXZ:
         p.set(new Vector3(0, 1, 0), -c.y);
         break;
     }
 
-    const point = raycaster.ray.intersectPlane(p, new Vector3());
+    // If there is an alternative plane (i.e., for axes),
+    // check which one is farther away from the ray's origin.
+    if (
+      altPlane &&
+      altPlane.distanceToPoint(ray.origin) > p.distanceToPoint(ray.origin)
+    ) {
+      p.copy(altPlane);
+    }
+
+    const point = ray.intersectPlane(p, new Vector3());
     if (!point) {
       // No intersection
       return;
