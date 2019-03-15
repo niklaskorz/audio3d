@@ -55,7 +55,7 @@ jobs:
       - restore_cache:
           keys:
             - v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
-      - run: gh-pages --dotfiles --message \"[skip ci] Updates\" --dist build
+      - run: gh-pages --dotfiles --message "[skip ci] Updates" --dist build --repo git@github.com:niklaskorz/audio3d.git
 
 workflows:
   version: 2
