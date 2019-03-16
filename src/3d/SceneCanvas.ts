@@ -8,6 +8,7 @@ import {
   DirectionalLight,
   DoubleSide,
   GridHelper,
+  HemisphereLight,
   LineBasicMaterial,
   LineDashedMaterial,
   Mesh,
@@ -105,6 +106,8 @@ export default class SceneCanvas {
     light.position.set(5, 5, 0);
     light.lookAt(0, 0, 0);
     this.scene.add(light);
+    // const hemiLight = new HemisphereLight(0xffffff, 0x000000, 0.6);
+    // this.scene.add(hemiLight);
 
     const geometry = new BoxGeometry(1, 1, 1);
     const material = new MeshLambertMaterial();
@@ -188,7 +191,7 @@ export default class SceneCanvas {
     this.camera.aspect = offsetWidth / offsetHeight;
     this.camera.updateProjectionMatrix();
 
-    // this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(offsetWidth, offsetHeight);
   };
 
