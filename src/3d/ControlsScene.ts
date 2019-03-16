@@ -72,7 +72,7 @@ export default class ControlsScene extends Scene {
       axisGeometry,
       new MeshBasicMaterial({ color: 0xff0000 })
     );
-    this.axisX.position.set(0.25, 0.0, 0.0);
+    this.axisX.position.set(0.275, 0.0, 0.0);
     this.axisX.rotation.y = Math.PI / 2;
     this.axisX.userData.direction = ObjectDragDirection.AxisX;
 
@@ -80,7 +80,7 @@ export default class ControlsScene extends Scene {
       axisGeometry,
       new MeshBasicMaterial({ color: 0x00ff00 })
     );
-    this.axisY.position.set(0.0, 0.25, 0.0);
+    this.axisY.position.set(0.0, 0.275, 0.0);
     this.axisY.rotation.x = Math.PI / 2;
     this.axisY.userData.direction = ObjectDragDirection.AxisY;
 
@@ -88,7 +88,7 @@ export default class ControlsScene extends Scene {
       axisGeometry,
       new MeshBasicMaterial({ color: 0x0000ff })
     );
-    this.axisZ.position.set(0.0, 0.0, 0.25);
+    this.axisZ.position.set(0.0, 0.0, 0.275);
     this.axisZ.userData.direction = ObjectDragDirection.AxisZ;
 
     this.add(this.axisX);
@@ -212,7 +212,7 @@ export default class ControlsScene extends Scene {
     if (
       altPlane &&
       Math.abs(altPlane.distanceToPoint(ray.origin)) >
-        Math.abs(p.distanceToPoint(ray.origin))
+      Math.abs(p.distanceToPoint(ray.origin))
     ) {
       p.copy(altPlane);
     }
