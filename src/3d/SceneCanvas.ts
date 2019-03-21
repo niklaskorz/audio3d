@@ -206,7 +206,22 @@ export default class SceneCanvas {
 
     const dt = (t - this.previousTimestamp) / 1000;
     this.previousTimestamp = t;
+    this.update(dt);
 
+    this.renderer.clear();
+    this.renderer.render(this.scene, this.camera);
+
+    if (this.controls.activeMesh) {
+      // Draw controls in front of all other objects
+      // https://stackoverflow.com/questions/12666570/how-to-change-the-zorder-of-object-with-threejs/12666937#12666937
+      // this.controls.position.copy(this.controls.activeMesh.position);
+      this.controls.position.copy(this.controls.activeMesh.position);
+      this.renderer.clearDepth();
+      this.renderer.render(this.controls, this.camera);
+    }
+  };
+
+  update(dt: number): void {
     this.smallCube.rotation.x += 0.01;
     this.smallCube.rotation.y += 0.01;
     // this.smallCube.position.copy(f(t, 10000, 2));
@@ -243,18 +258,26 @@ export default class SceneCanvas {
       this.camera.rotateOnAxis(new Vector3(-1, 0, 0), dt);
     }
 
-    this.renderer.clear();
-    this.renderer.render(this.scene, this.camera);
-
-    if (this.controls.activeMesh) {
-      // Draw controls in front of all other objects
-      // https://stackoverflow.com/questions/12666570/how-to-change-the-zorder-of-object-with-threejs/12666937#12666937
-      // this.controls.position.copy(this.controls.activeMesh.position);
-      this.controls.position.copy(this.controls.activeMesh.position);
-      this.renderer.clearDepth();
-      this.renderer.render(this.controls, this.camera);
+    const axes = {
+      x: this.gamepads.getAxis(0),
+      y: this.gamepads.getAxis(1),
+      rX: this.gamepads.getAxis(2),
+      rY: this.gamepads.getAxis(3)
+    };
+    // console.log(axes);
+    if (axes.x) {
+      this.camera.translateOnAxis(new Vector3(axes.x, 0, 0), 2 * dt);
     }
-  };
+    if (axes.y) {
+      this.camera.translateOnAxis(new Vector3(0, 0, axes.y), 2 * dt);
+    }
+    if (axes.rX) {
+      this.camera.rotateOnWorldAxis(new Vector3(0, -axes.rX, 0), dt);
+    }
+    if (axes.rY) {
+      this.camera.rotateOnAxis(new Vector3(-axes.rY, 0, 0), dt);
+    }
+  }
 
   checkSceneClick(raycaster: Raycaster): boolean {
     if (this.controls.activeMesh) {
