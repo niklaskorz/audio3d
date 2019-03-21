@@ -4,7 +4,6 @@ export default class GamepadListener {
   listen(): void {
     window.addEventListener("gamepadconnected", this.onGamepadConnected);
     window.addEventListener("gamepaddisconnected", this.onGamepadDisconnected);
-    (window as any).g = this;
   }
 
   stop(): void {
@@ -28,14 +27,25 @@ export default class GamepadListener {
 
     let value = 0;
     for (const gamepad of gamepads) {
-      if (
-        gamepad !== null &&
-        gamepad.mapping === "standard" &&
-        gamepad.axes.length > index &&
-        Math.abs(gamepad.axes[index]) >= AXIS_THRESHOLD &&
-        Math.abs(gamepad.axes[index]) > Math.abs(value)
-      ) {
-        value = gamepad.axes[index];
+      if (!gamepad || gamepad.mapping !== "standard") {
+        continue;
+      }
+
+      if (index < 4) {
+        const axis = gamepad.axes[index];
+        if (
+          Math.abs(axis) >= AXIS_THRESHOLD &&
+          Math.abs(axis) > Math.abs(value)
+        ) {
+          value = axis;
+        }
+      } else if (index === 4) {
+        const v1 = gamepad.buttons[6].value;
+        const v2 = gamepad.buttons[7].value;
+        const axis = v2 - v1;
+        if (Math.abs(axis) > Math.abs(value)) {
+          value = axis;
+        }
       }
     }
     return value;

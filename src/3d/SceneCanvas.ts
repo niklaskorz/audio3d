@@ -262,20 +262,24 @@ export default class SceneCanvas {
       x: this.gamepads.getAxis(0),
       y: this.gamepads.getAxis(1),
       rX: this.gamepads.getAxis(2),
-      rY: this.gamepads.getAxis(3)
+      rY: this.gamepads.getAxis(3),
+      b: this.gamepads.getAxis(4)
     };
     // console.log(axes);
     if (axes.x) {
-      this.camera.translateOnAxis(new Vector3(axes.x, 0, 0), 2 * dt);
+      this.camera.translateOnAxis(new Vector3(1, 0, 0), 2 * dt * axes.x);
     }
     if (axes.y) {
-      this.camera.translateOnAxis(new Vector3(0, 0, axes.y), 2 * dt);
+      this.camera.translateOnAxis(new Vector3(0, 0, 1), 2 * dt * axes.y);
+    }
+    if (axes.b) {
+      this.camera.translateOnAxis(new Vector3(0, 1, 0), 2 * dt * axes.b);
     }
     if (axes.rX) {
-      this.camera.rotateOnWorldAxis(new Vector3(0, -axes.rX, 0), dt);
+      this.camera.rotateOnWorldAxis(new Vector3(0, -1, 0), dt * axes.rX);
     }
     if (axes.rY) {
-      this.camera.rotateOnAxis(new Vector3(-axes.rY, 0, 0), dt);
+      this.camera.rotateOnAxis(new Vector3(-1, 0, 0), dt * axes.rY);
     }
   }
 
