@@ -110,7 +110,7 @@ export default class ControlsScene extends Scene {
     this.add(this.axisY);
     this.add(this.axisZ);
 
-    // The YZ, XZ, XY planes, represented as... planes. :)
+    // The YZ, XZ, XY planes, represented as areas on each plane.
     // Declaration is ordered by the normal of the plane, i.e.
     // the axis that will not be moved by it.
 
