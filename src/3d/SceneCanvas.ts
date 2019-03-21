@@ -27,8 +27,9 @@ import {
   Vector3,
   WebGLRenderer
 } from "three";
+import GamepadListener from "../input/GamepadListener";
+import KeyboardListener from "../input/KeyboardListener";
 import ControlsScene from "./ControlsScene";
-import KeyboardListener from "./KeyboardListener";
 
 enum MouseButton {
   Primary = 0,
@@ -76,6 +77,7 @@ export default class SceneCanvas {
   raycaster = new Raycaster();
 
   keys = new KeyboardListener(this.renderer.domElement);
+  gamepads = new GamepadListener();
   isDraggingCamera = false;
 
   constructor(private options: Options) {
@@ -161,6 +163,8 @@ export default class SceneCanvas {
 
   attach(target: HTMLElement): void {
     this.keys.listen();
+    this.gamepads.listen();
+
     this.target = target;
     target.appendChild(this.canvas);
 
@@ -174,11 +178,13 @@ export default class SceneCanvas {
     window.cancelAnimationFrame(this.rafHandle);
     window.removeEventListener("resize", this.resize);
 
-    this.keys.stop();
     if (this.target) {
       this.target.removeChild(this.canvas);
       this.target = null;
     }
+
+    this.keys.stop();
+    this.gamepads.stop();
   }
 
   resize = (): void => {
