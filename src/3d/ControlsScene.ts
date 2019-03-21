@@ -64,13 +64,22 @@ export default class ControlsScene extends Scene {
 
     // Setup visual controls for transformation
 
+    const materialConfig = {
+      transparent: true,
+      opacity: 0.75,
+      side: DoubleSide
+    };
+
     // The X, Y and Z axes, represented as cuboids
 
     const axisGeometry = new BoxGeometry(0.05, 0.05, 0.5);
 
     this.axisX = new Mesh(
       axisGeometry,
-      new MeshBasicMaterial({ color: 0xff0000 })
+      new MeshBasicMaterial({
+        ...materialConfig,
+        color: 0xff0000
+      })
     );
     this.axisX.position.set(0.275, 0.0, 0.0);
     this.axisX.rotation.y = Math.PI / 2;
@@ -78,7 +87,10 @@ export default class ControlsScene extends Scene {
 
     this.axisY = new Mesh(
       axisGeometry,
-      new MeshBasicMaterial({ color: 0x00ff00 })
+      new MeshBasicMaterial({
+        ...materialConfig,
+        color: 0x00ff00
+      })
     );
     this.axisY.position.set(0.0, 0.275, 0.0);
     this.axisY.rotation.x = Math.PI / 2;
@@ -86,7 +98,10 @@ export default class ControlsScene extends Scene {
 
     this.axisZ = new Mesh(
       axisGeometry,
-      new MeshBasicMaterial({ color: 0x0000ff })
+      new MeshBasicMaterial({
+        ...materialConfig,
+        color: 0x0000ff
+      })
     );
     this.axisZ.position.set(0.0, 0.0, 0.275);
     this.axisZ.userData.direction = ObjectDragDirection.AxisZ;
@@ -103,7 +118,7 @@ export default class ControlsScene extends Scene {
 
     this.planeYZ = new Mesh(
       planeGeometry,
-      new MeshBasicMaterial({ color: 0x00ffff, side: DoubleSide })
+      new MeshBasicMaterial({ ...materialConfig, color: 0x00ffff })
     );
     this.planeYZ.position.set(0.0, 0.25, 0.25);
     this.planeYZ.rotation.y = Math.PI / 2;
@@ -111,7 +126,7 @@ export default class ControlsScene extends Scene {
 
     this.planeXZ = new Mesh(
       planeGeometry,
-      new MeshBasicMaterial({ color: 0xff00ff, side: DoubleSide })
+      new MeshBasicMaterial({ ...materialConfig, color: 0xff00ff })
     );
     this.planeXZ.position.set(0.25, 0.0, 0.25);
     this.planeXZ.rotation.x = Math.PI / 2;
@@ -119,7 +134,7 @@ export default class ControlsScene extends Scene {
 
     this.planeXY = new Mesh(
       planeGeometry,
-      new MeshBasicMaterial({ color: 0xffff00, side: DoubleSide })
+      new MeshBasicMaterial({ ...materialConfig, color: 0xffff00 })
     );
     this.planeXY.position.set(0.25, 0.25, 0.0);
     this.planeXY.userData.direction = ObjectDragDirection.PlaneXY;
@@ -212,7 +227,7 @@ export default class ControlsScene extends Scene {
     if (
       altPlane &&
       Math.abs(altPlane.distanceToPoint(ray.origin)) >
-      Math.abs(p.distanceToPoint(ray.origin))
+        Math.abs(p.distanceToPoint(ray.origin))
     ) {
       p.copy(altPlane);
     }
