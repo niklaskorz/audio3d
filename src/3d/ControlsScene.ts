@@ -71,7 +71,7 @@ export default class ControlsScene extends Scene {
     const materialConfig = {
       transparent: true,
       opacity: 0.75,
-      side: DoubleSide
+      side: DoubleSide // Needed to make the planes viewable from both sides
     };
 
     // The X, Y and Z axes, represented as cuboids
