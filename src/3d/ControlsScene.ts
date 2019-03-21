@@ -43,6 +43,10 @@ export enum ObjectDragDirection {
 export default class ControlsScene extends Scene {
   activeMesh: Mesh | null = null;
   objectDragDirection: ObjectDragDirection | null = null;
+  // The drag offset is used to determine the distance of the point where the
+  // user started dragging and the center of the object.
+  // This way, the cursor will always have the same relative position to the
+  // object while dragging.
   dragOffset = new Vector3();
 
   // In contrast to the Three.js example, we will be using a real plane instead of a
@@ -155,6 +159,8 @@ export default class ControlsScene extends Scene {
     for (const intersection of intersections) {
       const o = intersection.object;
       if (o.userData.hasOwnProperty("direction")) {
+        // Save the drag offset by subtracting the absolute position of the cursor
+        // (absolute meaning world coordinates) from the object's absolute position.
         this.dragOffset.copy(intersection.point).sub(this.activeMesh.position);
         return o;
       }
@@ -224,6 +230,8 @@ export default class ControlsScene extends Scene {
 
     // If there is an alternative plane (i.e., for axes),
     // check which one is farther away from the ray's origin.
+    // This is needed to prevent issues when the camera comes too close to the
+    // plane.
     if (
       altPlane &&
       Math.abs(altPlane.distanceToPoint(ray.origin)) >
