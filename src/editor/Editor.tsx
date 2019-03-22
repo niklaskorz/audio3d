@@ -41,12 +41,12 @@ const Input = styled.input`
   border: 1px solid rgba(0, 0, 0, 0.5);
   color: #fff;
   width: 100%;
-  padding: 5px 10px;
+  padding: 10px 15px;
   margin: 5px 0;
 
   transition: 0.2s ease border-color;
   :focus {
-    border-color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
   }
 `;
 
@@ -145,6 +145,7 @@ export default class Editor extends React.Component<{}, State> {
             <div>
               Selected object with id {o.id}
               <Group>
+                <label>Name</label>
                 <Input
                   type="text"
                   value={o.name}
@@ -152,10 +153,11 @@ export default class Editor extends React.Component<{}, State> {
                 />
               </Group>
               <Group>
+                <label>Position (x, y, z)</label>
                 <Input
                   type="number"
-                  step={0.001}
-                  value={o.position.x.toFixed(3)}
+                  step="any"
+                  value={o.position.x}
                   onChange={e =>
                     this.updatePosition(
                       e.currentTarget.valueAsNumber,
@@ -166,8 +168,8 @@ export default class Editor extends React.Component<{}, State> {
                 />
                 <Input
                   type="number"
-                  step={0.001}
-                  value={o.position.y.toFixed(3)}
+                  step="any"
+                  value={o.position.y}
                   onChange={e =>
                     this.updatePosition(
                       o.position.x,
@@ -178,8 +180,8 @@ export default class Editor extends React.Component<{}, State> {
                 />
                 <Input
                   type="number"
-                  step={0.001}
-                  value={o.position.z.toFixed(3)}
+                  step="any"
+                  value={o.position.z}
                   onChange={e =>
                     this.updatePosition(
                       o.position.x,
@@ -190,10 +192,11 @@ export default class Editor extends React.Component<{}, State> {
                 />
               </Group>
               <Group>
+                <label>Euler-Rotation (x, y, z)</label>
                 <Input
                   type="number"
-                  step={0.01}
-                  value={o.rotation.x.toFixed(2)}
+                  step="any"
+                  value={o.rotation.x}
                   onChange={e =>
                     this.updateRotation(
                       e.currentTarget.valueAsNumber,
@@ -204,8 +207,8 @@ export default class Editor extends React.Component<{}, State> {
                 />
                 <Input
                   type="number"
-                  step={0.01}
-                  value={o.rotation.y.toFixed(2)}
+                  step="any"
+                  value={o.rotation.y}
                   onChange={e =>
                     this.updateRotation(
                       o.rotation.x,
@@ -216,8 +219,8 @@ export default class Editor extends React.Component<{}, State> {
                 />
                 <Input
                   type="number"
-                  step={0.01}
-                  value={o.rotation.z.toFixed(2)}
+                  step="any"
+                  value={o.rotation.z}
                   onChange={e =>
                     this.updateRotation(
                       o.rotation.x,
