@@ -1,3 +1,7 @@
+/**
+ * @author Niklas Korz
+ */
+
 const AXIS_THRESHOLD = 0.1;
 
 export default class GamepadListener {

@@ -1,3 +1,6 @@
+/**
+ * @author Niklas Korz
+ */
 import React from "react";
 import styled from "styled-components";
 import { Euler, Vector3 } from "three";

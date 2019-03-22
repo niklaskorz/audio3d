@@ -1,3 +1,6 @@
+/**
+ * @author Niklas Korz
+ */
 import {
   AmbientLight,
   AudioListener,
@@ -5,24 +8,15 @@ import {
   BackSide,
   BoxGeometry,
   Color,
-  DirectionalLight,
-  DoubleSide,
   GridHelper,
-  HemisphereLight,
-  LineBasicMaterial,
-  LineDashedMaterial,
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
-  MeshNormalMaterial,
-  MeshPhongMaterial,
   PerspectiveCamera,
-  PlaneHelper,
   PointLight,
   PositionalAudio,
   Raycaster,
   Scene,
-  SpotLight,
   Vector2,
   Vector3,
   WebGLRenderer

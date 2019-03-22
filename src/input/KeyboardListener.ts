@@ -1,3 +1,7 @@
+/**
+ * @author Niklas Korz
+ */
+
 export default class KeyboardListener {
   target: HTMLElement;
   keysPressed = new Set<string>();
