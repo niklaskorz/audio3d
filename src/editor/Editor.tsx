@@ -39,17 +39,18 @@ const Group = styled.div`
 const Input = styled.input`
   display: block;
   appearance: none;
-  background: rgba(0, 0, 0, 0.2);
+  background: #2c3e50;
   border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.5);
+  border: 2px solid #2c3e50;
   color: #fff;
   width: 100%;
-  padding: 10px 15px;
+  padding: 10px 12px;
   margin: 5px 0;
 
   transition: 0.2s ease border-color;
   :focus {
-    border-color: rgba(255, 255, 255, 0.5);
+    outline: none;
+    border-color: #3498db;
   }
 `;
 
