@@ -29,7 +29,7 @@ import {
 } from "three";
 import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
-import ControlsScene from "./ControlsScene";
+import ControlsScene, { ControlsOptions } from "./ControlsScene";
 
 enum MouseButton {
   Primary = 0,
@@ -54,9 +54,8 @@ const f = (time: number, orbitalPeriod: number, radius: number) =>
     radius * Math.cos((time / orbitalPeriod) * 2 * Math.PI)
   );
 
-interface Options {
+interface Options extends ControlsOptions {
   onSelect(object: Mesh | null): void;
-  onTranslate(position: Vector3): void;
 }
 
 export default class SceneCanvas {
@@ -66,7 +65,7 @@ export default class SceneCanvas {
   previousTimestamp = 0;
 
   scene = new Scene();
-  controls = new ControlsScene();
+  controls = new ControlsScene({ onTranslate: this.options.onTranslate });
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
@@ -150,7 +149,7 @@ export default class SceneCanvas {
       (audioBuffer: AudioBuffer) => {
         audio.setBuffer(audioBuffer);
         audio.setLoop(true);
-        audio.play();
+        // audio.play();
       },
       () => {
         /* pass */
@@ -222,8 +221,8 @@ export default class SceneCanvas {
   };
 
   update(dt: number): void {
-    this.smallCube.rotation.x += 0.01;
-    this.smallCube.rotation.y += 0.01;
+    // this.smallCube.rotation.x += 0.01;
+    // this.smallCube.rotation.y += 0.01;
     // this.smallCube.position.copy(f(t, 10000, 2));
 
     if (this.keys.isPressed("w")) {

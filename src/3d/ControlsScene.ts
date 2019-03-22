@@ -26,6 +26,10 @@ export enum ObjectDragDirection {
   PlaneXY
 }
 
+export interface ControlsOptions {
+  onTranslate(position: Vector3): void;
+}
+
 // Inspired by https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/TransformControls.js
 // As in the example, we are using ray casting for calculating the movements of planes and axes.
 // Everything else in this implementation has resulted either from trial and error or by
@@ -63,7 +67,7 @@ export default class ControlsScene extends Scene {
   planeXZ: Mesh;
   planeXY: Mesh;
 
-  constructor() {
+  constructor(private options: ControlsOptions) {
     super();
 
     // Setup visual controls for transformation
@@ -235,7 +239,7 @@ export default class ControlsScene extends Scene {
     if (
       altPlane &&
       Math.abs(altPlane.distanceToPoint(ray.origin)) >
-        Math.abs(p.distanceToPoint(ray.origin))
+      Math.abs(p.distanceToPoint(ray.origin))
     ) {
       p.copy(altPlane);
     }
@@ -264,5 +268,7 @@ export default class ControlsScene extends Scene {
         // intersection point.
         this.activeMesh.position.copy(point);
     }
+
+    this.options.onTranslate(this.activeMesh.position);
   }
 }

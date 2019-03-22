@@ -29,6 +29,27 @@ const Main = styled.main`
   height: 100%;
 `;
 
+const Group = styled.div`
+  margin: 20px 0;
+`;
+
+const Input = styled.input`
+  display: block;
+  appearance: none;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  color: #fff;
+  width: 100%;
+  padding: 5px 10px;
+  margin: 5px 0;
+
+  transition: 0.2s ease border-color;
+  :focus {
+    border-color: #fff;
+  }
+`;
+
 interface WorldObject {
   id: number;
   name: string;
@@ -102,6 +123,18 @@ export default class Editor extends React.Component<{}, State> {
     }));
   }
 
+  updateRotation(x: number, y: number, z: number): void {
+    if (this.sceneCanvas.controls.activeMesh) {
+      this.sceneCanvas.controls.activeMesh.rotation.set(x, y, z);
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        rotation: new Euler(x, y, z)
+      }
+    }));
+  }
+
   render(): React.ReactNode {
     const o = this.state.selectedObject;
     return (
@@ -111,17 +144,18 @@ export default class Editor extends React.Component<{}, State> {
           {o && (
             <div>
               Selected object with id {o.id}
-              <div>
-                <input
+              <Group>
+                <Input
                   type="text"
                   value={o.name}
                   onChange={e => this.updateName(e.currentTarget.value)}
                 />
-              </div>
-              <div>
-                <input
+              </Group>
+              <Group>
+                <Input
                   type="number"
-                  value={o.position.x}
+                  step={0.001}
+                  value={o.position.x.toFixed(3)}
                   onChange={e =>
                     this.updatePosition(
                       e.currentTarget.valueAsNumber,
@@ -130,9 +164,10 @@ export default class Editor extends React.Component<{}, State> {
                     )
                   }
                 />
-                <input
+                <Input
                   type="number"
-                  value={o.position.y}
+                  step={0.001}
+                  value={o.position.y.toFixed(3)}
                   onChange={e =>
                     this.updatePosition(
                       o.position.x,
@@ -141,9 +176,10 @@ export default class Editor extends React.Component<{}, State> {
                     )
                   }
                 />
-                <input
+                <Input
                   type="number"
-                  value={o.position.z}
+                  step={0.001}
+                  value={o.position.z.toFixed(3)}
                   onChange={e =>
                     this.updatePosition(
                       o.position.x,
@@ -152,12 +188,45 @@ export default class Editor extends React.Component<{}, State> {
                     )
                   }
                 />
-              </div>
-              {/*<div>
-                <input type="number" value={o.rotation.x} />
-                <input type="number" value={o.rotation.y} />
-                <input type="number" value={o.rotation.z} />
-              </div>*/}
+              </Group>
+              <Group>
+                <Input
+                  type="number"
+                  step={0.01}
+                  value={o.rotation.x.toFixed(2)}
+                  onChange={e =>
+                    this.updateRotation(
+                      e.currentTarget.valueAsNumber,
+                      o.rotation.y,
+                      o.rotation.z
+                    )
+                  }
+                />
+                <Input
+                  type="number"
+                  step={0.01}
+                  value={o.rotation.y.toFixed(2)}
+                  onChange={e =>
+                    this.updateRotation(
+                      o.rotation.x,
+                      e.currentTarget.valueAsNumber,
+                      o.rotation.z
+                    )
+                  }
+                />
+                <Input
+                  type="number"
+                  step={0.01}
+                  value={o.rotation.z.toFixed(2)}
+                  onChange={e =>
+                    this.updateRotation(
+                      o.rotation.x,
+                      o.rotation.y,
+                      e.currentTarget.valueAsNumber
+                    )
+                  }
+                />
+              </Group>
             </div>
           )}
         </Sidebar>
