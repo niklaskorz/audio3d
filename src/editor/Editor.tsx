@@ -1,6 +1,6 @@
-import React, { KeyboardEventHandler } from "react";
+import React from "react";
 import styled from "styled-components";
-import { Euler, Mesh, Vector3 } from "three";
+import { Euler, Vector3 } from "three";
 import SceneCanvas from "../3d/SceneCanvas";
 
 const Container = styled.div`
@@ -60,8 +60,8 @@ export default class Editor extends React.Component<{}, State> {
     },
     onTranslate: p => {
       this.setState(({ selectedObject }) => ({
-        selectedObject: {
-          ...selectedObject!,
+        selectedObject: selectedObject && {
+          ...selectedObject,
           position: p
         }
       }));
@@ -69,7 +69,9 @@ export default class Editor extends React.Component<{}, State> {
   });
 
   componentDidMount(): void {
-    this.sceneCanvas.attach(this.mainRef.current!);
+    if (this.mainRef.current) {
+      this.sceneCanvas.attach(this.mainRef.current);
+    }
   }
 
   componentWillUnmount(): void {
@@ -77,20 +79,24 @@ export default class Editor extends React.Component<{}, State> {
   }
 
   updateName(name: string): void {
-    this.sceneCanvas.controls.activeMesh!.name = name;
+    if (this.sceneCanvas.controls.activeMesh) {
+      this.sceneCanvas.controls.activeMesh.name = name;
+    }
     this.setState(({ selectedObject }) => ({
-      selectedObject: {
-        ...selectedObject!,
+      selectedObject: selectedObject && {
+        ...selectedObject,
         name
       }
     }));
   }
 
   updatePosition(x: number, y: number, z: number): void {
-    this.sceneCanvas.controls.activeMesh!.position.set(x, y, z);
+    if (this.sceneCanvas.controls.activeMesh) {
+      this.sceneCanvas.controls.activeMesh.position.set(x, y, z);
+    }
     this.setState(({ selectedObject }) => ({
-      selectedObject: {
-        ...selectedObject!,
+      selectedObject: selectedObject && {
+        ...selectedObject,
         position: new Vector3(x, y, z)
       }
     }));
