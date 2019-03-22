@@ -3,7 +3,7 @@
  */
 import React from "react";
 import styled from "styled-components";
-import { Euler, Vector3 } from "three";
+import { BoxGeometry, Euler, Vector3 } from "three";
 import SceneCanvas from "../3d/SceneCanvas";
 
 const Container = styled.div`
@@ -59,6 +59,11 @@ interface WorldObject {
   name: string;
   position: Vector3;
   rotation: Euler;
+  size: {
+    width: number;
+    height: number;
+    depth: number;
+  };
 }
 
 interface State {
@@ -71,12 +76,18 @@ export default class Editor extends React.Component<{}, State> {
   sceneCanvas = new SceneCanvas({
     onSelect: o => {
       if (o) {
+        const { width, height, depth } = (o.geometry as BoxGeometry).parameters;
         this.setState({
           selectedObject: {
             id: o.id,
             name: o.name,
             position: o.position,
-            rotation: o.rotation
+            rotation: o.rotation,
+            size: {
+              width,
+              height,
+              depth
+            }
           }
         });
       } else {
@@ -111,6 +122,21 @@ export default class Editor extends React.Component<{}, State> {
       selectedObject: selectedObject && {
         ...selectedObject,
         name
+      }
+    }));
+  }
+
+  updateSize(width: number, height: number, depth: number): void {
+    if (this.sceneCanvas.controls.activeMesh) {
+      // Box geometries cannot be updated after creation, so we will have to create a new one
+      const geometry = new BoxGeometry(width, height, depth);
+      this.sceneCanvas.controls.activeMesh.geometry = geometry;
+      this.sceneCanvas.outlineMesh.geometry = geometry;
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        size: { width, height, depth }
       }
     }));
   }
@@ -229,6 +255,51 @@ export default class Editor extends React.Component<{}, State> {
                     this.updateRotation(
                       o.rotation.x,
                       o.rotation.y,
+                      e.currentTarget.valueAsNumber
+                    )
+                  }
+                />
+              </Group>
+              <Group>
+                <label>Size (width, height, depth)</label>
+                <Input
+                  type="number"
+                  step="any"
+                  min={0.1}
+                  max={10}
+                  value={o.size.width}
+                  onChange={e =>
+                    this.updateSize(
+                      e.currentTarget.valueAsNumber,
+                      o.size.height,
+                      o.size.depth
+                    )
+                  }
+                />
+                <Input
+                  type="number"
+                  step="any"
+                  min={0.1}
+                  max={10}
+                  value={o.size.height}
+                  onChange={e =>
+                    this.updateSize(
+                      o.size.width,
+                      e.currentTarget.valueAsNumber,
+                      o.size.depth
+                    )
+                  }
+                />
+                <Input
+                  type="number"
+                  step="any"
+                  min={0.1}
+                  max={10}
+                  value={o.size.depth}
+                  onChange={e =>
+                    this.updateSize(
+                      o.size.width,
+                      o.size.height,
                       e.currentTarget.valueAsNumber
                     )
                   }
