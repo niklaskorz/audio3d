@@ -239,7 +239,7 @@ export default class ControlsScene extends Scene {
     if (
       altPlane &&
       Math.abs(altPlane.distanceToPoint(ray.origin)) >
-      Math.abs(p.distanceToPoint(ray.origin))
+        Math.abs(p.distanceToPoint(ray.origin))
     ) {
       p.copy(altPlane);
     }
