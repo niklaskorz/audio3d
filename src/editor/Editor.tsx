@@ -182,7 +182,7 @@ export default class Editor extends React.Component<{}, State> {
     }
     console.log("Selected file:", file);
 
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {
       console.log("File too big, aborting");
       return;
     }
