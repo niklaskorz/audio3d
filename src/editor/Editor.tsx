@@ -78,7 +78,6 @@ export default class Editor extends React.Component<{}, State> {
   sceneCanvas = new SceneCanvas({
     onSelect: o => {
       if (o) {
-        const { width, height, depth } = (o.geometry as BoxGeometry).parameters;
         this.setState({
           selectedObject: {
             id: o.id,
@@ -86,9 +85,9 @@ export default class Editor extends React.Component<{}, State> {
             position: o.position,
             rotation: o.rotation,
             size: {
-              width,
-              height,
-              depth
+              width: o.scale.x,
+              height: o.scale.y,
+              depth: o.scale.z
             }
           }
         });
@@ -130,10 +129,7 @@ export default class Editor extends React.Component<{}, State> {
 
   updateSize(width: number, height: number, depth: number): void {
     if (this.sceneCanvas.controls.activeMesh) {
-      // Box geometries cannot be updated after creation, so we will have to create a new one
-      const geometry = new BoxGeometry(width, height, depth);
-      this.sceneCanvas.controls.activeMesh.geometry = geometry;
-      this.sceneCanvas.outlineMesh.geometry = geometry;
+      this.sceneCanvas.controls.activeMesh.scale.set(width, height, depth);
     }
     this.setState(({ selectedObject }) => ({
       selectedObject: selectedObject && {

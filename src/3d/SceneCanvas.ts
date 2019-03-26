@@ -67,6 +67,8 @@ export default class SceneCanvas {
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
   grid = new GridHelper(10, 10, 0xffffff, 0xffffff);
+  cubeGeometry = new BoxGeometry(1, 1, 1);
+  cubeMaterial = new MeshLambertMaterial();
   smallCube = new Mesh();
   outlineMesh = new Mesh();
 
@@ -107,16 +109,15 @@ export default class SceneCanvas {
     // const hemiLight = new HemisphereLight(0xffffff, 0x000000, 0.6);
     // this.scene.add(hemiLight);
 
-    const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshLambertMaterial();
-    const cube = new Mesh(geometry, material);
+    const cube = new Mesh(this.cubeGeometry, this.cubeMaterial);
     cube.position.y += 0.5;
     cube.name = "New cube";
 
-    this.smallCube.geometry = new BoxGeometry(0.25, 0.25, 0.25);
-    this.smallCube.material = material;
+    this.smallCube.geometry = this.cubeGeometry;
+    this.smallCube.material = this.cubeMaterial;
     this.smallCube.translateX(2);
     this.smallCube.name = "Small cube";
+    this.smallCube.scale.set(0.25, 0.25, 0.25);
 
     this.scene.add(cube);
     this.scene.add(this.smallCube);
@@ -168,9 +169,7 @@ export default class SceneCanvas {
   }
 
   addCube(): void {
-    const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshLambertMaterial();
-    const cube = new Mesh(geometry, material);
+    const cube = new Mesh(this.cubeGeometry, this.cubeMaterial);
     cube.position.y += 0.5;
     cube.name = "New cube";
 
