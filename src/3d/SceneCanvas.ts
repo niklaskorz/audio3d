@@ -62,7 +62,10 @@ export default class SceneCanvas {
   listener = new AudioListener();
 
   scene = new Scene();
-  controls = new ControlsScene({ onTranslate: this.options.onTranslate });
+  controls = new ControlsScene({
+    onTranslate: this.options.onTranslate,
+    onScale: this.options.onScale
+  });
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;

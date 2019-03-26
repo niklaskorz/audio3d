@@ -11,6 +11,7 @@ import {
   PlaneGeometry,
   Raycaster,
   Scene,
+  SphereGeometry,
   Vector3
 } from "three";
 
@@ -28,6 +29,7 @@ export enum ObjectDragDirection {
 
 export interface ControlsOptions {
   onTranslate(position: Vector3): void;
+  onScale(scale: Vector3): void;
 }
 
 // Inspired by https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/TransformControls.js
@@ -47,6 +49,7 @@ export interface ControlsOptions {
 export default class ControlsScene extends Scene {
   activeMesh: Mesh | null = null;
   objectDragDirection: ObjectDragDirection | null = null;
+  isScaling: boolean = false;
   // The drag offset is used to determine the distance of the point where the
   // user started dragging and the center of the object.
   // This way, the cursor will always have the same relative position to the
@@ -118,6 +121,38 @@ export default class ControlsScene extends Scene {
     this.add(this.axisY);
     this.add(this.axisZ);
 
+    // Scaling controls per axis, represented as spheres
+
+    const scaleGeometry = new SphereGeometry(0.05, 16, 16);
+
+    const scaleX = new Mesh(
+      scaleGeometry,
+      new MeshBasicMaterial({ ...materialConfig, color: 0xff0000 })
+    );
+    scaleX.position.set(0.65, 0, 0);
+    scaleX.userData.direction = ObjectDragDirection.AxisX;
+    scaleX.userData.isScale = true;
+
+    const scaleY = new Mesh(
+      scaleGeometry,
+      new MeshBasicMaterial({ ...materialConfig, color: 0x00ff00 })
+    );
+    scaleY.position.set(0, 0.65, 0);
+    scaleY.userData.direction = ObjectDragDirection.AxisY;
+    scaleY.userData.isScale = true;
+
+    const scaleZ = new Mesh(
+      scaleGeometry,
+      new MeshBasicMaterial({ ...materialConfig, color: 0x0000ff })
+    );
+    scaleZ.position.set(0, 0, 0.65);
+    scaleZ.userData.direction = ObjectDragDirection.AxisZ;
+    scaleZ.userData.isScale = true;
+
+    this.add(scaleX);
+    this.add(scaleY);
+    this.add(scaleZ);
+
     // The YZ, XZ, XY planes, represented as areas on each plane.
     // Declaration is ordered by the normal of the plane, i.e.
     // the axis that will not be moved by it.
@@ -180,6 +215,7 @@ export default class ControlsScene extends Scene {
     const o = this.getControlFromRaycaster(raycaster);
     if (o && o.userData.hasOwnProperty("direction")) {
       this.objectDragDirection = o.userData.direction;
+      this.isScaling = !!o.userData.isScale;
       this.onMove(raycaster);
       return true;
     }
@@ -249,26 +285,45 @@ export default class ControlsScene extends Scene {
       // No intersection
       return;
     }
-    point.sub(this.dragOffset);
 
-    // If we are operating on an axis instead of a plane, ensure only the relevant
-    // coordinate is changed.
-    switch (this.objectDragDirection) {
-      case ObjectDragDirection.AxisX:
-        this.activeMesh.position.x = point.x;
-        break;
-      case ObjectDragDirection.AxisY:
-        this.activeMesh.position.y = point.y;
-        break;
-      case ObjectDragDirection.AxisZ:
-        this.activeMesh.position.z = point.z;
-        break;
-      default:
-        // The selected direction is a plane, so we can just copy the
-        // intersection point.
-        this.activeMesh.position.copy(point);
+    if (this.isScaling) {
+      point.sub(this.activeMesh.position);
+
+      switch (this.objectDragDirection) {
+        case ObjectDragDirection.AxisX:
+          this.activeMesh.scale.x = point.x * 2;
+          break;
+        case ObjectDragDirection.AxisY:
+          this.activeMesh.scale.y = point.y * 2;
+          break;
+        case ObjectDragDirection.AxisZ:
+          this.activeMesh.scale.z = point.z * 2;
+          break;
+      }
+
+      this.options.onScale(this.activeMesh.scale);
+    } else {
+      point.sub(this.dragOffset);
+
+      // If we are operating on an axis instead of a plane, ensure only the relevant
+      // coordinate is changed.
+      switch (this.objectDragDirection) {
+        case ObjectDragDirection.AxisX:
+          this.activeMesh.position.x = point.x;
+          break;
+        case ObjectDragDirection.AxisY:
+          this.activeMesh.position.y = point.y;
+          break;
+        case ObjectDragDirection.AxisZ:
+          this.activeMesh.position.z = point.z;
+          break;
+        default:
+          // The selected direction is a plane, so we can just copy the
+          // intersection point.
+          this.activeMesh.position.copy(point);
+      }
+
+      this.options.onTranslate(this.activeMesh.position);
     }
-
-    this.options.onTranslate(this.activeMesh.position);
   }
 }

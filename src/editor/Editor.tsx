@@ -102,6 +102,18 @@ export default class Editor extends React.Component<{}, State> {
           position: p
         }
       }));
+    },
+    onScale: s => {
+      this.setState(({ selectedObject }) => ({
+        selectedObject: selectedObject && {
+          ...selectedObject,
+          size: {
+            width: s.x,
+            height: s.y,
+            depth: s.z
+          }
+        }
+      }));
     }
   });
 
