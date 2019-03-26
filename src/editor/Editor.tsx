@@ -25,6 +25,8 @@ const Sidebar = styled.aside`
   background: #34495e;
   color: #fff;
   padding: 10px 15px;
+  overflow-x: hidden;
+  overflow-y: auto;
 `;
 
 const Main = styled.main`
@@ -165,12 +167,48 @@ export default class Editor extends React.Component<{}, State> {
     }));
   }
 
+  onAddCubeClick = () => {
+    this.sceneCanvas.addCube();
+  };
+
+  onAudioFileSelected: React.ChangeEventHandler<HTMLInputElement> = e => {
+    const { files } = e.currentTarget;
+    if (!files) {
+      return;
+    }
+    const file = files.item(0);
+    if (!file) {
+      return;
+    }
+    console.log("Selected file:", file);
+
+    if (file.size > 10 * 1024 * 1024) {
+      console.log("File too big, aborting");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (!reader.result) {
+        console.error("Failed reading file:", e);
+        return;
+      }
+
+      const data = reader.result as ArrayBuffer;
+      this.sceneCanvas.addAudioToActiveMesh(data);
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
   render(): React.ReactNode {
     const o = this.state.selectedObject;
     return (
       <Container>
         <Sidebar>
           <p>Sidebar</p>
+          <div>
+            <button onClick={this.onAddCubeClick}>Add cube</button>
+          </div>
           {o && (
             <div>
               Selected object with id {o.id}
@@ -303,6 +341,14 @@ export default class Editor extends React.Component<{}, State> {
                       e.currentTarget.valueAsNumber
                     )
                   }
+                />
+              </Group>
+              <Group>
+                <label>Audio source (file)</label>
+                <Input
+                  type="file"
+                  accept="audio/*"
+                  onChange={this.onAudioFileSelected}
                 />
               </Group>
             </div>

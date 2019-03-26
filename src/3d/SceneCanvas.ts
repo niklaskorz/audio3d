@@ -58,6 +58,9 @@ export default class SceneCanvas {
   rafHandle = 0;
   previousTimestamp = 0;
 
+  audioContext = new AudioContext();
+  listener = new AudioListener();
+
   scene = new Scene();
   controls = new ControlsScene({ onTranslate: this.options.onTranslate });
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
@@ -135,23 +138,7 @@ export default class SceneCanvas {
 
     console.log(this.scene.toJSON());
 
-    const listener = new AudioListener();
-    const audio = new PositionalAudio(listener);
-    const loader = new AudioLoader();
-    loader.load(
-      "audio/breakbeat.wav",
-      (audioBuffer: AudioBuffer) => {
-        audio.setBuffer(audioBuffer);
-        audio.setLoop(true);
-        // audio.play();
-      },
-      () => {
-        /* pass */
-      },
-      (err: Error) => console.error(err)
-    );
-    cube.add(audio);
-    this.camera.add(listener);
+    this.camera.add(this.listener);
   }
 
   attach(target: HTMLElement): void {
@@ -178,6 +165,51 @@ export default class SceneCanvas {
 
     this.keys.stop();
     this.gamepads.stop();
+  }
+
+  addCube(): void {
+    const geometry = new BoxGeometry(1, 1, 1);
+    const material = new MeshLambertMaterial();
+    const cube = new Mesh(geometry, material);
+    cube.position.y += 0.5;
+    cube.name = "New cube";
+
+    this.scene.add(cube);
+    this.selectMesh(cube);
+  }
+
+  selectMesh(o: Mesh): void {
+    this.controls.activeMesh = o;
+    this.outlineMesh.geometry = this.controls.activeMesh.geometry;
+    this.controls.activeMesh.add(this.outlineMesh);
+
+    this.options.onSelect(o);
+  }
+
+  async addAudioToActiveMesh(data: ArrayBuffer): Promise<void> {
+    if (!this.controls.activeMesh) {
+      return;
+    }
+
+    const previousAudio = this.controls.activeMesh.getObjectByName(
+      "audio"
+    ) as PositionalAudio;
+    if (previousAudio) {
+      this.controls.activeMesh.remove(previousAudio);
+      previousAudio.stop();
+    }
+
+    const buffer = await this.audioContext.decodeAudioData(data);
+
+    const audio = new PositionalAudio(this.listener);
+    audio.name = "audio";
+    audio.setBuffer(buffer);
+    audio.setLoop(true);
+    audio.play();
+
+    this.controls.activeMesh.add(audio);
+
+    console.log("Successfully added new audio to selected mesh");
   }
 
   resize = (): void => {
@@ -286,11 +318,7 @@ export default class SceneCanvas {
     for (const intersection of intersections) {
       const o = intersection.object as Mesh;
       if (o.isMesh) {
-        this.controls.activeMesh = o;
-        this.outlineMesh.geometry = this.controls.activeMesh.geometry;
-        this.controls.activeMesh.add(this.outlineMesh);
-
-        this.options.onSelect(o);
+        this.selectMesh(o);
         return true;
       }
     }
