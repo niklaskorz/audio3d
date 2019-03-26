@@ -55,6 +55,7 @@ export default class ControlsScene extends Scene {
   // This way, the cursor will always have the same relative position to the
   // object while dragging.
   dragOffset = new Vector3();
+  lastPoint = new Vector3();
 
   // In contrast to the Three.js example, we will be using a real plane instead of a
   // mesh that only represents an area on a plane.
@@ -201,6 +202,7 @@ export default class ControlsScene extends Scene {
         // Save the drag offset by subtracting the absolute position of the cursor
         // (absolute meaning world coordinates) from the object's absolute position.
         this.dragOffset.copy(intersection.point).sub(this.activeMesh.position);
+        this.lastPoint.copy(intersection.point);
         return o;
       }
     }
@@ -287,17 +289,24 @@ export default class ControlsScene extends Scene {
     }
 
     if (this.isScaling) {
-      point.sub(this.activeMesh.position);
-
       switch (this.objectDragDirection) {
         case ObjectDragDirection.AxisX:
-          this.activeMesh.scale.x = point.x * 2;
+          this.activeMesh.scale.x = Math.max(
+            0.1,
+            this.activeMesh.scale.x + (point.x - this.lastPoint.x)
+          );
           break;
         case ObjectDragDirection.AxisY:
-          this.activeMesh.scale.y = point.y * 2;
+          this.activeMesh.scale.y = Math.max(
+            0.1,
+            this.activeMesh.scale.y + (point.y - this.lastPoint.y)
+          );
           break;
         case ObjectDragDirection.AxisZ:
-          this.activeMesh.scale.z = point.z * 2;
+          this.activeMesh.scale.z = Math.max(
+            0.1,
+            this.activeMesh.scale.z + (point.z - this.lastPoint.z)
+          );
           break;
       }
 
@@ -325,5 +334,7 @@ export default class ControlsScene extends Scene {
 
       this.options.onTranslate(this.activeMesh.position);
     }
+
+    this.lastPoint.copy(point);
   }
 }
