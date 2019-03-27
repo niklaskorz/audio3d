@@ -67,6 +67,9 @@ export default class ControlsScene extends Scene {
   axisX: Mesh;
   axisY: Mesh;
   axisZ: Mesh;
+  scaleX: Mesh;
+  scaleY: Mesh;
+  scaleZ: Mesh;
   planeYZ: Mesh;
   planeXZ: Mesh;
   planeXY: Mesh;
@@ -126,33 +129,33 @@ export default class ControlsScene extends Scene {
 
     const scaleGeometry = new SphereGeometry(0.05, 16, 16);
 
-    const scaleX = new Mesh(
+    this.scaleX = new Mesh(
       scaleGeometry,
       new MeshBasicMaterial({ ...materialConfig, color: 0xff0000 })
     );
-    scaleX.position.set(0.65, 0, 0);
-    scaleX.userData.direction = ObjectDragDirection.AxisX;
-    scaleX.userData.isScale = true;
+    this.scaleX.position.set(0.65, 0, 0);
+    this.scaleX.userData.direction = ObjectDragDirection.AxisX;
+    this.scaleX.userData.isScale = true;
 
-    const scaleY = new Mesh(
+    this.scaleY = new Mesh(
       scaleGeometry,
       new MeshBasicMaterial({ ...materialConfig, color: 0x00ff00 })
     );
-    scaleY.position.set(0, 0.65, 0);
-    scaleY.userData.direction = ObjectDragDirection.AxisY;
-    scaleY.userData.isScale = true;
+    this.scaleY.position.set(0, 0.65, 0);
+    this.scaleY.userData.direction = ObjectDragDirection.AxisY;
+    this.scaleY.userData.isScale = true;
 
-    const scaleZ = new Mesh(
+    this.scaleZ = new Mesh(
       scaleGeometry,
       new MeshBasicMaterial({ ...materialConfig, color: 0x0000ff })
     );
-    scaleZ.position.set(0, 0, 0.65);
-    scaleZ.userData.direction = ObjectDragDirection.AxisZ;
-    scaleZ.userData.isScale = true;
+    this.scaleZ.position.set(0, 0, 0.65);
+    this.scaleZ.userData.direction = ObjectDragDirection.AxisZ;
+    this.scaleZ.userData.isScale = true;
 
-    this.add(scaleX);
-    this.add(scaleY);
-    this.add(scaleZ);
+    this.add(this.scaleX);
+    this.add(this.scaleY);
+    this.add(this.scaleZ);
 
     // The YZ, XZ, XY planes, represented as areas on each plane.
     // Declaration is ordered by the normal of the plane, i.e.
@@ -289,23 +292,36 @@ export default class ControlsScene extends Scene {
     }
 
     if (this.isScaling) {
+      // For scaling, we are using the relative movement instead of the position
+      // as no movement at all should leave the scale as is.
+      // I.e., we are adding the distance to the previously recorded intersection point
+      // to the object's scale.
       switch (this.objectDragDirection) {
         case ObjectDragDirection.AxisX:
-          this.activeMesh.scale.x = Math.max(
-            0.1,
-            this.activeMesh.scale.x + (point.x - this.lastPoint.x)
+          this.activeMesh.scale.x = Math.min(
+            Math.max(
+              this.activeMesh.scale.x + (point.x - this.lastPoint.x),
+              0.1
+            ),
+            10
           );
           break;
         case ObjectDragDirection.AxisY:
-          this.activeMesh.scale.y = Math.max(
-            0.1,
-            this.activeMesh.scale.y + (point.y - this.lastPoint.y)
+          this.activeMesh.scale.y = Math.min(
+            Math.max(
+              this.activeMesh.scale.y + (point.y - this.lastPoint.y),
+              0.1
+            ),
+            10
           );
           break;
         case ObjectDragDirection.AxisZ:
-          this.activeMesh.scale.z = Math.max(
-            0.1,
-            this.activeMesh.scale.z + (point.z - this.lastPoint.z)
+          this.activeMesh.scale.z = Math.min(
+            Math.max(
+              this.activeMesh.scale.z + (point.z - this.lastPoint.z),
+              0.1
+            ),
+            10
           );
           break;
       }
