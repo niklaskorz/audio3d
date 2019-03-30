@@ -72,7 +72,6 @@ export default class SceneCanvas {
   grid = new GridHelper(10, 10, 0xffffff, 0xffffff);
   cubeGeometry = new BoxGeometry(1, 1, 1);
   cubeMaterial = new MeshLambertMaterial();
-  smallCube = new Mesh();
   outlineMesh = new Mesh();
 
   raycaster = new Raycaster();
@@ -112,18 +111,6 @@ export default class SceneCanvas {
     // const hemiLight = new HemisphereLight(0xffffff, 0x000000, 0.6);
     // this.scene.add(hemiLight);
 
-    const cube = new Mesh(this.cubeGeometry, this.cubeMaterial);
-    cube.position.y += 0.5;
-    cube.name = "New cube";
-
-    this.smallCube.geometry = this.cubeGeometry;
-    this.smallCube.material = this.cubeMaterial;
-    this.smallCube.translateX(2);
-    this.smallCube.name = "Small cube";
-    this.smallCube.scale.set(0.25, 0.25, 0.25);
-
-    this.scene.add(cube);
-    this.scene.add(this.smallCube);
     this.scene.add(this.grid);
 
     // const ph = new PlaneHelper(this.controls.plane, 10, 0x999999);
@@ -131,7 +118,7 @@ export default class SceneCanvas {
 
     this.camera.position.z = 3;
     this.camera.position.y = 3;
-    this.camera.lookAt(cube.position);
+    this.camera.lookAt(new Vector3(0, 0.5, 0));
 
     const outlineMaterial = new MeshBasicMaterial({
       color: 0xffffff,
@@ -143,6 +130,8 @@ export default class SceneCanvas {
     console.log(this.scene.toJSON());
 
     this.camera.add(this.listener);
+
+    this.addCube();
   }
 
   attach(target: HTMLElement): void {
