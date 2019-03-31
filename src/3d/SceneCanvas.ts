@@ -60,7 +60,7 @@ export default class SceneCanvas {
   gamepads = new GamepadListener();
   isDraggingCamera = false;
 
-  constructor(private room: Room, private events: Events) {
+  constructor(public room: Room, public events: Events) {
     this.renderer.autoClear = false;
     this.renderer.setClearColor(new Color(0x192a56));
     this.canvas = this.renderer.domElement;
@@ -125,11 +125,17 @@ export default class SceneCanvas {
     this.gamepads.stop();
   }
 
-  selectMesh(o: Mesh): void {
-    this.controls.activeMesh = o;
-    this.outlineMesh.geometry = this.controls.activeMesh.geometry;
-    this.controls.activeMesh.add(this.outlineMesh);
+  selectMesh(o: Mesh | null): void {
+    if (this.controls.activeMesh) {
+      this.controls.activeMesh.remove(this.outlineMesh);
+    }
 
+    if (o) {
+      this.outlineMesh.geometry = o.geometry;
+      o.add(this.outlineMesh);
+    }
+
+    this.controls.activeMesh = o;
     this.events.onSelect(o);
   }
 
@@ -251,11 +257,6 @@ export default class SceneCanvas {
   }
 
   checkSceneClick(raycaster: Raycaster): boolean {
-    if (this.controls.activeMesh) {
-      this.controls.activeMesh.remove(this.outlineMesh);
-      this.controls.activeMesh = null;
-    }
-
     const intersections = raycaster.intersectObjects(this.room.children);
     for (const intersection of intersections) {
       const o = intersection.object as Mesh;
@@ -265,7 +266,7 @@ export default class SceneCanvas {
       }
     }
 
-    this.events.onSelect(null);
+    this.selectMesh(null);
     return false;
   }
 

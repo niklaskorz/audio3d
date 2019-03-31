@@ -2,82 +2,24 @@
  * @author Niklas Korz
  */
 import React from "react";
-import styled from "styled-components";
+import { RoomDimensions } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import Room from "../3d/Room";
 import SceneCanvas from "../3d/SceneCanvas";
-
-const Container = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #000;
-  display: flex;
-`;
-
-const Sidebar = styled.aside`
-  width: 250px;
-  height: 100%;
-  background: #34495e;
-  color: #fff;
-  padding: 10px 15px;
-  overflow-x: hidden;
-  overflow-y: auto;
-`;
-
-const Main = styled.main`
-  flex: 1;
-  height: 100%;
-`;
-
-const Group = styled.div`
-  margin: 20px 0;
-`;
-
-const Input = styled.input`
-  display: block;
-  appearance: none;
-  background: #2c3e50;
-  border-radius: 3px;
-  border: 2px solid #2c3e50;
-  color: #fff;
-  width: 100%;
-  padding: 10px 12px;
-  margin: 5px 0;
-
-  transition: 0.2s ease border-color;
-  :focus {
-    outline: none;
-    border-color: #3498db;
-  }
-`;
-
-interface WorldObject {
-  id: number;
-  name: string;
-  position: Vector3;
-  rotation: Euler;
-  size: {
-    width: number;
-    height: number;
-    depth: number;
-  };
-}
+import ObjectEditor from "./ObjectEditor";
+import RoomEditor from "./RoomEditor";
+import { Container, Main, Sidebar } from "./styled";
+import { EditorObject, EditorRoom } from "./types";
 
 interface State {
-  selectedObject: WorldObject | null;
+  rooms: EditorRoom[];
+  selectedRoomId: number;
+  selectedObject: EditorObject | null;
 }
 
 export default class Editor extends React.Component<{}, State> {
-  state: State = { selectedObject: null };
-  mainRef = React.createRef<HTMLElement>();
-  room = new Room();
-  sceneCanvas = new SceneCanvas(this.room, {
+  rooms: Room[] = [new Room("First room", { width: 15, depth: 10, height: 3 })];
+  sceneCanvas = new SceneCanvas(this.rooms[0], {
     onSelect: o => {
       if (o) {
         this.setState({
@@ -85,12 +27,8 @@ export default class Editor extends React.Component<{}, State> {
             id: o.id,
             name: o.name,
             position: o.position,
-            rotation: o.rotation,
-            size: {
-              width: o.scale.x,
-              height: o.scale.y,
-              depth: o.scale.z
-            }
+            scale: o.scale,
+            rotation: o.rotation
           }
         });
       } else {
@@ -119,6 +57,17 @@ export default class Editor extends React.Component<{}, State> {
     }
   });
 
+  state: State = {
+    rooms: this.rooms.map(r => ({
+      id: r.id,
+      name: r.name,
+      dimensions: r.dimensions
+    })),
+    selectedRoomId: 0,
+    selectedObject: null
+  };
+  mainRef = React.createRef<HTMLElement>();
+
   componentDidMount(): void {
     if (this.mainRef.current) {
       this.sceneCanvas.attach(this.mainRef.current);
@@ -129,7 +78,41 @@ export default class Editor extends React.Component<{}, State> {
     this.sceneCanvas.detach();
   }
 
-  updateName(name: string): void {
+  selectRoom(id: number): void {
+    this.sceneCanvas.selectMesh(null);
+    this.sceneCanvas.room = this.rooms[id];
+    this.setState({ selectedRoomId: id, selectedObject: null });
+  }
+
+  updateRoomName = (name: string) => {
+    this.sceneCanvas.room.name = name;
+    this.setState(({ rooms, selectedRoomId }) => ({
+      rooms: [
+        ...rooms.slice(0, selectedRoomId),
+        {
+          ...rooms[selectedRoomId],
+          name
+        },
+        ...rooms.slice(selectedRoomId + 1)
+      ]
+    }));
+  };
+
+  updateRoomDimensions = (dimensions: RoomDimensions) => {
+    this.sceneCanvas.room.updateDimensions(dimensions);
+    this.setState(({ rooms, selectedRoomId }) => ({
+      rooms: [
+        ...rooms.slice(0, selectedRoomId),
+        {
+          ...rooms[selectedRoomId],
+          dimensions
+        },
+        ...rooms.slice(selectedRoomId + 1)
+      ]
+    }));
+  };
+
+  updateName = (name: string) => {
     if (this.sceneCanvas.controls.activeMesh) {
       this.sceneCanvas.controls.activeMesh.name = name;
     }
@@ -139,21 +122,21 @@ export default class Editor extends React.Component<{}, State> {
         name
       }
     }));
-  }
+  };
 
-  updateSize(width: number, height: number, depth: number): void {
+  updateScale = (x: number, y: number, z: number) => {
     if (this.sceneCanvas.controls.activeMesh) {
-      this.sceneCanvas.controls.activeMesh.scale.set(width, height, depth);
+      this.sceneCanvas.controls.activeMesh.scale.set(x, y, z);
     }
     this.setState(({ selectedObject }) => ({
       selectedObject: selectedObject && {
         ...selectedObject,
-        size: { width, height, depth }
+        scale: new Vector3(x, y, z)
       }
     }));
-  }
+  };
 
-  updatePosition(x: number, y: number, z: number): void {
+  updatePosition = (x: number, y: number, z: number) => {
     if (this.sceneCanvas.controls.activeMesh) {
       this.sceneCanvas.controls.activeMesh.position.set(x, y, z);
     }
@@ -163,9 +146,9 @@ export default class Editor extends React.Component<{}, State> {
         position: new Vector3(x, y, z)
       }
     }));
-  }
+  };
 
-  updateRotation(x: number, y: number, z: number): void {
+  updateRotation = (x: number, y: number, z: number) => {
     if (this.sceneCanvas.controls.activeMesh) {
       this.sceneCanvas.controls.activeMesh.rotation.set(x, y, z);
     }
@@ -175,39 +158,32 @@ export default class Editor extends React.Component<{}, State> {
         rotation: new Euler(x, y, z)
       }
     }));
-  }
-
-  onAddCubeClick = () => {
-    this.room.addCube();
   };
 
-  onAudioFileSelected: React.ChangeEventHandler<HTMLInputElement> = e => {
-    const { files } = e.currentTarget;
-    if (!files) {
-      return;
-    }
-    const file = files.item(0);
-    if (!file) {
-      return;
-    }
-    console.log("Selected file:", file);
+  updateAudio = (data: ArrayBuffer) => {
+    this.sceneCanvas.addAudioToActiveMesh(data);
+  };
 
-    if (file.size > 5 * 1024 * 1024) {
-      console.log("File too big, aborting");
-      return;
-    }
+  onAddRoomClick = () => {
+    const room = new Room("New room", { width: 10, depth: 10, height: 3 });
+    this.rooms.push(room);
+    this.sceneCanvas.selectMesh(null);
+    this.sceneCanvas.room = room;
+    this.setState(s => ({
+      rooms: [
+        ...s.rooms,
+        {
+          id: room.id,
+          name: room.name,
+          dimensions: room.dimensions
+        }
+      ],
+      selectedRoomId: s.rooms.length
+    }));
+  };
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (!reader.result) {
-        console.error("Failed reading file:", e);
-        return;
-      }
-
-      const data = reader.result as ArrayBuffer;
-      this.sceneCanvas.addAudioToActiveMesh(data);
-    };
-    reader.readAsArrayBuffer(file);
+  onAddCubeClick = () => {
+    this.sceneCanvas.room.addCube();
   };
 
   render(): React.ReactNode {
@@ -217,151 +193,36 @@ export default class Editor extends React.Component<{}, State> {
         <Sidebar>
           <p>Sidebar</p>
           <div>
+            <button onClick={this.onAddRoomClick}>Add room</button>
             <button onClick={this.onAddCubeClick}>Add cube</button>
           </div>
+          <ol>
+            {this.state.rooms.map((r, i) => (
+              <li
+                key={r.id}
+                onClick={() => this.selectRoom(i)}
+                style={{ cursor: "pointer" }}
+              >
+                {r.name}
+              </li>
+            ))}
+          </ol>
+          {!o && (
+            <RoomEditor
+              room={this.state.rooms[this.state.selectedRoomId]}
+              onUpdateName={this.updateRoomName}
+              onUpdateDimensions={this.updateRoomDimensions}
+            />
+          )}
           {o && (
-            <div>
-              Selected object with id {o.id}
-              <Group>
-                <label>Name</label>
-                <Input
-                  type="text"
-                  value={o.name}
-                  onChange={e => this.updateName(e.currentTarget.value)}
-                />
-              </Group>
-              <Group>
-                <label>Position (x, y, z)</label>
-                <Input
-                  type="number"
-                  step="any"
-                  value={o.position.x}
-                  onChange={e =>
-                    this.updatePosition(
-                      e.currentTarget.valueAsNumber,
-                      o.position.y,
-                      o.position.z
-                    )
-                  }
-                />
-                <Input
-                  type="number"
-                  step="any"
-                  value={o.position.y}
-                  onChange={e =>
-                    this.updatePosition(
-                      o.position.x,
-                      e.currentTarget.valueAsNumber,
-                      o.position.z
-                    )
-                  }
-                />
-                <Input
-                  type="number"
-                  step="any"
-                  value={o.position.z}
-                  onChange={e =>
-                    this.updatePosition(
-                      o.position.x,
-                      o.position.y,
-                      e.currentTarget.valueAsNumber
-                    )
-                  }
-                />
-              </Group>
-              <Group>
-                <label>Euler-Rotation (x, y, z)</label>
-                <Input
-                  type="number"
-                  step="any"
-                  value={o.rotation.x}
-                  onChange={e =>
-                    this.updateRotation(
-                      e.currentTarget.valueAsNumber,
-                      o.rotation.y,
-                      o.rotation.z
-                    )
-                  }
-                />
-                <Input
-                  type="number"
-                  step="any"
-                  value={o.rotation.y}
-                  onChange={e =>
-                    this.updateRotation(
-                      o.rotation.x,
-                      e.currentTarget.valueAsNumber,
-                      o.rotation.z
-                    )
-                  }
-                />
-                <Input
-                  type="number"
-                  step="any"
-                  value={o.rotation.z}
-                  onChange={e =>
-                    this.updateRotation(
-                      o.rotation.x,
-                      o.rotation.y,
-                      e.currentTarget.valueAsNumber
-                    )
-                  }
-                />
-              </Group>
-              <Group>
-                <label>Size (width, height, depth)</label>
-                <Input
-                  type="number"
-                  step="any"
-                  min={0.1}
-                  max={10}
-                  value={o.size.width}
-                  onChange={e =>
-                    this.updateSize(
-                      e.currentTarget.valueAsNumber,
-                      o.size.height,
-                      o.size.depth
-                    )
-                  }
-                />
-                <Input
-                  type="number"
-                  step="any"
-                  min={0.1}
-                  max={10}
-                  value={o.size.height}
-                  onChange={e =>
-                    this.updateSize(
-                      o.size.width,
-                      e.currentTarget.valueAsNumber,
-                      o.size.depth
-                    )
-                  }
-                />
-                <Input
-                  type="number"
-                  step="any"
-                  min={0.1}
-                  max={10}
-                  value={o.size.depth}
-                  onChange={e =>
-                    this.updateSize(
-                      o.size.width,
-                      o.size.height,
-                      e.currentTarget.valueAsNumber
-                    )
-                  }
-                />
-              </Group>
-              <Group>
-                <label>Audio source (file)</label>
-                <Input
-                  type="file"
-                  accept="audio/*"
-                  onChange={this.onAudioFileSelected}
-                />
-              </Group>
-            </div>
+            <ObjectEditor
+              object={o}
+              onUpdateName={this.updateName}
+              onUpdatePosition={this.updatePosition}
+              onUpdateRotation={this.updateRotation}
+              onUpdateScale={this.updateScale}
+              onUpdateAudio={this.updateAudio}
+            />
           )}
         </Sidebar>
         <Main ref={this.mainRef} />
