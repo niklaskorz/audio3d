@@ -21,6 +21,7 @@ import {
   Vector3,
   WebGLRenderer
 } from "three";
+import ResAudio from "../audio/ResAudio"
 import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
 import ControlsScene, { ControlsOptions } from "./ControlsScene";
@@ -182,23 +183,30 @@ export default class SceneCanvas {
       return;
     }
 
-    const previousAudio = this.controls.activeMesh.getObjectByName(
-      "audio"
-    ) as PositionalAudio;
-    if (previousAudio) {
-      this.controls.activeMesh.remove(previousAudio);
-      previousAudio.stop();
-    }
+    // const previousAudio = this.controls.activeMesh.getObjectByName(
+    //   "audio"
+    // ) as PositionalAudio;
+    // if (previousAudio) {
+    //   this.controls.activeMesh.remove(previousAudio);
+    //   previousAudio.stop();
+    // }
 
-    const buffer = await this.audioContext.decodeAudioData(data);
+    // const buffer = await this.audioContext.decodeAudioData(data);
 
-    const audio = new PositionalAudio(this.listener);
-    audio.name = "audio";
-    audio.setBuffer(buffer);
-    audio.setLoop(true);
-    audio.play();
+    // const audio = new PositionalAudio(this.listener);
+    // audio.name = "audio";
+    // audio.setBuffer(buffer);
+    // audio.setLoop(true);
+    // audio.play();
+    
+    const audio = new ResAudio();
+    audio.play("/audio/breakbeat.wav")
+
 
     this.controls.activeMesh.add(audio);
+
+
+
 
     console.log("Successfully added new audio to selected mesh");
   }

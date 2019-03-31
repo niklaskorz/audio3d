@@ -2,20 +2,8 @@
  * @author Leon Erath / https://leonerath.de/
  */
 
-import {
-  ResonanceAudio,
-  RoomDimensions,
-  RoomMaterials,
-  Source
-} from "resonance-audio";
-import { Object3D, Vector3 } from "three";
-
-const f = t =>
-  new Vector3(
-    3 * Math.sin((t / 4000) * 2 * Math.PI),
-    1,
-    3 * Math.cos((t / 4000) * 2 * Math.PI)
-  );
+import { ResonanceAudio } from "resonance-audio";
+import { Object3D, Vector3, Quaternion } from "three";
 
 /**
  * Class extends Object3D in order to work with the SceneCanvas.
@@ -24,18 +12,10 @@ const f = t =>
  */
 
 export default class ResAudio extends Object3D {
-  lastT = 0;
-  raf = 0;
-
   constructor() {
     super();
     this.audioContext = new AudioContext();
-    this.scene = new ResonanceAudio(this.audioContext, {
-      ambisonicOrder: 3,
-      listenerPosition: new Float32Array([0, 1, 0]),
-      dimensions,
-      materials
-    });
+    this.scene = new ResonanceAudio(this.audioContext);
     this.scene.output.connect(this.audioContext.destination);
     this.audioSource = this.audioContext.createBufferSource();
     this.audioSource.loop = true;
@@ -48,8 +28,26 @@ export default class ResAudio extends Object3D {
     this.isPlaying = false;
   }
 
-  //example to override
-  rotateOnAxis() {}
+  updateMatrix() {
+    var position = new Vector3();
+    var quaternion = new Quaternion();
+    var scale = new Vector3();
+
+    var orientation = new Vector3();
+
+    return function updateMatrixWorld(force) {
+      Object3D.prototype.updateMatrixWorld.call(this, force);
+
+      if (this.hasPlaybackControl === true && this.isPlaying === false) return;
+
+      this.matrixWorld.decompose(position, quaternion, scale);
+
+      orientation.set(0, 0, 1).applyQuaternion(quaternion);
+
+      this.source.setPosition(position.x, position.y, position.z);
+      this.source.setOrientation(orientation.x, orientation.y, orientation.z);
+    };
+  }
 
   async play(src) {
     if (this.isPlaying === true) {
@@ -63,7 +61,6 @@ export default class ResAudio extends Object3D {
     this.audioSource.buffer = buffer;
     this.audioSource.start();
     this.isPlaying = true;
-    this.raf = requestAnimationFrame(this.update);
   }
 
   pause() {
@@ -72,16 +69,8 @@ export default class ResAudio extends Object3D {
   }
 
   stop() {
-    cancelAnimationFrame(this.raf);
     this.audioSource.stop();
+    this.isPlaying = false;
     this.audioSource.buffer = null;
-  }
-
-  update(t) {
-    const { x, y, z } = f(t);
-    this.source.setPosition(x, y, z);
-    console.log(x, y, z);
-
-    this.raf = requestAnimationFrame(this.update);
   }
 }
