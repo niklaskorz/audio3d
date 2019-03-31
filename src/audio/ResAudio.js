@@ -24,29 +24,25 @@ export default class ResAudio extends Object3D {
       forward: new Float32Array([1, 0, 0])
     });
     this.audioSource.connect(this.source.input);
-    this.loop = false;
     this.isPlaying = false;
   }
 
-  updateMatrix() {
-    var position = new Vector3();
-    var quaternion = new Quaternion();
-    var scale = new Vector3();
+  updateMatrixWorld(force) {
+    const position = new Vector3();
+    const quaternion = new Quaternion();
+    const scale = new Vector3();
+    const orientation = new Vector3();
 
-    var orientation = new Vector3();
+    Object3D.prototype.updateMatrixWorld.call(this, force);
 
-    return function updateMatrixWorld(force) {
-      Object3D.prototype.updateMatrixWorld.call(this, force);
+    this.matrixWorld.decompose(position, quaternion, scale);
 
-      if (this.hasPlaybackControl === true && this.isPlaying === false) return;
+    console.log(position.x, position.y, position.z);
 
-      this.matrixWorld.decompose(position, quaternion, scale);
+    orientation.set(0, 0, 1).applyQuaternion(quaternion);
 
-      orientation.set(0, 0, 1).applyQuaternion(quaternion);
-
-      this.source.setPosition(position.x, position.y, position.z);
-      this.source.setOrientation(orientation.x, orientation.y, orientation.z);
-    };
+    this.source.setPosition(position.x, position.y, position.z);
+    this.source.setOrientation(orientation.x, orientation.y, orientation.z);
   }
 
   async play(src) {
