@@ -27,7 +27,7 @@ export enum ObjectDragDirection {
   PlaneXY
 }
 
-export interface ControlsOptions {
+export interface VisualControlsEvents {
   onTranslate(position: Vector3): void;
   onScale(scale: Vector3): void;
 }
@@ -46,7 +46,7 @@ export interface ControlsOptions {
 // but this would result in the rotation being copied as well, which is not desirable
 // in this case.
 // Beware though that intersection points are always given in absolute world coordinates.
-export default class ControlsScene extends Scene {
+export default class VisualControls extends Scene {
   activeMesh: Mesh | null = null;
   objectDragDirection: ObjectDragDirection | null = null;
   isScaling: boolean = false;
@@ -74,7 +74,7 @@ export default class ControlsScene extends Scene {
   planeXZ: Mesh;
   planeXY: Mesh;
 
-  constructor(private options: ControlsOptions) {
+  constructor(private events: VisualControlsEvents) {
     super();
 
     // Setup visual controls for transformation
@@ -326,7 +326,7 @@ export default class ControlsScene extends Scene {
           break;
       }
 
-      this.options.onScale(this.activeMesh.scale);
+      this.events.onScale(this.activeMesh.scale);
     } else {
       point.sub(this.dragOffset);
 
@@ -348,7 +348,7 @@ export default class ControlsScene extends Scene {
           this.activeMesh.position.copy(point);
       }
 
-      this.options.onTranslate(this.activeMesh.position);
+      this.events.onTranslate(this.activeMesh.position);
     }
 
     this.lastPoint.copy(point);

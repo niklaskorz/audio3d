@@ -3,7 +3,8 @@
  */
 import React from "react";
 import styled from "styled-components";
-import { BoxGeometry, Euler, Vector3 } from "three";
+import { Euler, Vector3 } from "three";
+import Room from "../3d/Room";
 import SceneCanvas from "../3d/SceneCanvas";
 
 const Container = styled.div`
@@ -75,7 +76,8 @@ interface State {
 export default class Editor extends React.Component<{}, State> {
   state: State = { selectedObject: null };
   mainRef = React.createRef<HTMLElement>();
-  sceneCanvas = new SceneCanvas({
+  room = new Room();
+  sceneCanvas = new SceneCanvas(this.room, {
     onSelect: o => {
       if (o) {
         this.setState({
@@ -176,7 +178,7 @@ export default class Editor extends React.Component<{}, State> {
   }
 
   onAddCubeClick = () => {
-    this.sceneCanvas.addCube();
+    this.room.addCube();
   };
 
   onAudioFileSelected: React.ChangeEventHandler<HTMLInputElement> = e => {
