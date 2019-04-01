@@ -3,6 +3,7 @@
  * This module defines functions for loading and importing projects from the local filesystem.
  */
 import Zip, { JSZipObject } from "jszip";
+import { SerializedData } from "./Serializable";
 
 /**
  * Iterates over all files at the root of a zip folder and returns them as an array.
@@ -16,7 +17,7 @@ const getFilesInFolder = (folder: Zip): JSZipObject[] => {
 };
 
 interface LoadedData {
-  metadata: object;
+  metadata: SerializedData;
   audios: ArrayBuffer[];
 }
 
