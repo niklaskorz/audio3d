@@ -18,6 +18,17 @@ export default class Room extends Scene {
     return this.roomDimensions;
   }
 
+  set dimensions(dimensions: RoomDimensions) {
+    this.roomDimensions = dimensions;
+
+    this.remove(this.grid);
+
+    const gridSize = Math.max(dimensions.width, dimensions.depth);
+    this.grid = new GridHelper(gridSize, gridSize, 0xffffff, 0xffffff);
+
+    this.add(this.grid);
+  }
+
   constructor(name: string, private roomDimensions: RoomDimensions) {
     super();
 
@@ -45,16 +56,5 @@ export default class Room extends Scene {
 
     this.add(cube);
     // this.selectMesh(cube);
-  }
-
-  updateDimensions(dimensions: RoomDimensions): void {
-    this.roomDimensions = dimensions;
-
-    this.remove(this.grid);
-
-    const gridSize = Math.max(dimensions.width, dimensions.depth);
-    this.grid = new GridHelper(gridSize, gridSize, 0xffffff, 0xffffff);
-
-    this.add(this.grid);
   }
 }

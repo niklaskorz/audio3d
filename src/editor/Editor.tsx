@@ -99,7 +99,7 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   updateRoomDimensions = (dimensions: RoomDimensions) => {
-    this.sceneCanvas.room.updateDimensions(dimensions);
+    this.sceneCanvas.room.dimensions = dimensions;
     this.setState(({ rooms, selectedRoomId }) => ({
       rooms: [
         ...rooms.slice(0, selectedRoomId),
