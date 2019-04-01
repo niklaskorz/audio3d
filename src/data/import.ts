@@ -12,7 +12,8 @@ import { SerializedData } from "./Serializable";
  */
 const getFilesInFolder = (folder: Zip): JSZipObject[] => {
   return Object.keys(folder.files)
-    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+    .map(key => parseInt(key, 10))
+    .sort((a, b) => a - b)
     .map(key => folder.files[key]);
 };
 
