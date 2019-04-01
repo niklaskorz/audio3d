@@ -2,24 +2,16 @@
  * @author Niklas Korz
  */
 import { RoomDimensions } from "resonance-audio";
-import {
-  AmbientLight,
-  BoxGeometry,
-  GridHelper,
-  Mesh,
-  MeshLambertMaterial,
-  PointLight,
-  Scene
-} from "three";
+import { AmbientLight, GridHelper, Object3D, PointLight, Scene } from "three";
+import Serializable, { SerializedData } from "../data/Serializable";
+import GameObject from "./GameObject";
 
 // A "room" is analog to levels of a game.
 // The user will only hear sounds that are part of the current room.
 // Also, this abstraction is necessary to support Resonance Audio as one of many
 // spatial audio implementations.
-export default class Room extends Scene {
+export default class Room extends Scene implements Serializable {
   grid: GridHelper;
-  cubeGeometry = new BoxGeometry(1, 1, 1);
-  cubeMaterial = new MeshLambertMaterial();
 
   get dimensions(): RoomDimensions {
     return this.roomDimensions;
@@ -36,7 +28,10 @@ export default class Room extends Scene {
     this.add(this.grid);
   }
 
-  constructor(name: string, private roomDimensions: RoomDimensions) {
+  constructor(
+    name: string = "",
+    private roomDimensions: RoomDimensions = { width: 1, height: 1, depth: 1 }
+  ) {
     super();
 
     this.name = name;
@@ -57,11 +52,33 @@ export default class Room extends Scene {
   }
 
   addCube(): void {
-    const cube = new Mesh(this.cubeGeometry, this.cubeMaterial);
+    const cube = new GameObject();
     cube.position.y += 0.5;
     cube.name = "New cube";
 
     this.add(cube);
     // this.selectMesh(cube);
+  }
+
+  toData(): SerializedData {
+    return {
+      name: this.name,
+      dimensions: this.dimensions,
+      objects: this.children
+        .filter((c: Object3D): c is GameObject => c instanceof GameObject)
+        .map(go => go.toData())
+    };
+  }
+
+  fromData(data: SerializedData): this {
+    this.name = data.name;
+    this.dimensions = data.dimensions;
+
+    const gameObjects = data.objects.map((o: SerializedData) =>
+      new GameObject().fromData(o)
+    );
+    this.add(...gameObjects);
+
+    return this;
   }
 }
