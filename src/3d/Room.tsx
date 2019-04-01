@@ -1,3 +1,6 @@
+/**
+ * @author Niklas Korz
+ */
 import { RoomDimensions } from "resonance-audio";
 import {
   AmbientLight,
@@ -9,6 +12,10 @@ import {
   Scene
 } from "three";
 
+// A "room" is analog to levels of a game.
+// The user will only hear sounds that are part of the current room.
+// Also, this abstraction is necessary to support Resonance Audio as one of many
+// spatial audio implementations.
 export default class Room extends Scene {
   grid: GridHelper;
   cubeGeometry = new BoxGeometry(1, 1, 1);

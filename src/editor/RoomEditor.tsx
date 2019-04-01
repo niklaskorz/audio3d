@@ -1,3 +1,6 @@
+/**
+ * @author Niklas Korz
+ */
 import React from "react";
 import { RoomDimensions } from "resonance-audio";
 import { Group, Input } from "./styled";
@@ -9,6 +12,7 @@ interface Props {
   onUpdateDimensions(dimensions: RoomDimensions): void;
 }
 
+// UI component for editing properties specific to a room itself
 export default class RoomEditor extends React.Component<Props> {
   render(): React.ReactNode {
     const { room: r, onUpdateName, onUpdateDimensions } = this.props;

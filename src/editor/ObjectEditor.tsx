@@ -1,3 +1,6 @@
+/**
+ * @author Niklas Korz
+ */
 import React from "react";
 import { Group, Input } from "./styled";
 import { EditorObject } from "./types";
@@ -11,6 +14,7 @@ interface Props {
   onUpdateAudio(data: ArrayBuffer): void;
 }
 
+// UI component for editing properties specific to objects inside a room
 export default class ObjectEditor extends React.Component<Props> {
   onAudioFileSelected: React.ChangeEventHandler<HTMLInputElement> = e => {
     const { files } = e.currentTarget;
