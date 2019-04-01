@@ -7,13 +7,13 @@ import { SerializedData } from "./Serializable";
 
 /**
  * Iterates over all files at the root of a zip folder and returns them as an array.
+ * Returned array is sorted numerically by file name, i.e. 1 2 9 10 11 instead
+ * of 1 10 11 2 9.
  */
 const getFilesInFolder = (folder: Zip): JSZipObject[] => {
-  const files: JSZipObject[] = [];
-  folder.forEach((_, file) => {
-    files.push(file);
-  });
-  return files;
+  return Object.keys(folder.files)
+    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+    .map(key => folder.files[key]);
 };
 
 interface LoadedData {
