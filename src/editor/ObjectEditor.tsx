@@ -14,6 +14,12 @@ interface Props {
   onUpdateAudio(data: ArrayBuffer): void;
 }
 
+// Converts radiant angles to degrees
+const radToDeg = (rad: number): number => (rad * 180) / Math.PI;
+
+// Converts degree angles to radiants
+const degToRad = (deg: number): number => (deg / 180) * Math.PI;
+
 // UI component for editing properties specific to objects inside a room
 export default class ObjectEditor extends React.Component<Props> {
   onAudioFileSelected: React.ChangeEventHandler<HTMLInputElement> = e => {
@@ -103,14 +109,14 @@ export default class ObjectEditor extends React.Component<Props> {
           />
         </Group>
         <Group>
-          <label>Euler-Rotation (x, y, z)</label>
+          <label>Euler-Rotation in Degrees (x, y, z)</label>
           <Input
             type="number"
-            step="any"
-            value={o.rotation.x}
+            step={1}
+            value={radToDeg(o.rotation.x).toFixed(0)}
             onChange={e =>
               onUpdateRotation(
-                e.currentTarget.valueAsNumber,
+                degToRad(e.currentTarget.valueAsNumber),
                 o.rotation.y,
                 o.rotation.z
               )
@@ -118,25 +124,25 @@ export default class ObjectEditor extends React.Component<Props> {
           />
           <Input
             type="number"
-            step="any"
-            value={o.rotation.y}
+            step={1}
+            value={radToDeg(o.rotation.y).toFixed(0)}
             onChange={e =>
               onUpdateRotation(
                 o.rotation.x,
-                e.currentTarget.valueAsNumber,
+                degToRad(e.currentTarget.valueAsNumber),
                 o.rotation.z
               )
             }
           />
           <Input
             type="number"
-            step="any"
-            value={o.rotation.z}
+            step={1}
+            value={radToDeg(o.rotation.z).toFixed(0)}
             onChange={e =>
               onUpdateRotation(
                 o.rotation.x,
                 o.rotation.y,
-                e.currentTarget.valueAsNumber
+                degToRad(e.currentTarget.valueAsNumber)
               )
             }
           />
