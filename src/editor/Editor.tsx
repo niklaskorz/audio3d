@@ -10,7 +10,7 @@ import Room from "../project/Room";
 import ObjectEditor from "./ObjectEditor";
 import ProjectCanvas from "./ProjectCanvas";
 import RoomEditor from "./RoomEditor";
-import { Container, Main, Sidebar } from "./styled";
+import { Container, ListItem, Main, Sidebar } from "./styled";
 import { EditorObject, EditorRoom } from "./types";
 
 interface State {
@@ -209,13 +209,13 @@ export default class Editor extends React.Component<{}, State> {
           </div>
           <ol>
             {this.state.rooms.map((r, i) => (
-              <li
+              <ListItem
                 key={r.id}
                 onClick={() => this.selectRoom(i)}
-                style={{ cursor: "pointer" }}
+                active={i === this.state.selectedRoomId}
               >
                 {r.name}
-              </li>
+              </ListItem>
             ))}
           </ol>
           {!o && (

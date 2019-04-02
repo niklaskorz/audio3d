@@ -14,7 +14,7 @@ export const Container = styled.div`
 `;
 
 export const Sidebar = styled.aside`
-  width: 250px;
+  flex: 0 0 250px;
   height: 100%;
   background: #34495e;
   color: #fff;
@@ -48,4 +48,15 @@ export const Input = styled.input`
     outline: none;
     border-color: #3498db;
   }
+`;
+
+interface ListItemProps {
+  active?: boolean;
+}
+
+export const ListItem = styled.li<ListItemProps>`
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 2px;
+  ${props => props.active && "background: rgba(0, 0, 0, 0.5)"};
 `;
