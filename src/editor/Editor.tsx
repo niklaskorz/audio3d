@@ -4,6 +4,7 @@
 import React from "react";
 import { RoomDimensions } from "resonance-audio";
 import { Euler, Vector3 } from "three";
+import { saveAsZip } from "../data/export";
 import Project from "../project/Project";
 import Room from "../project/Room";
 import ObjectEditor from "./ObjectEditor";
@@ -191,6 +192,10 @@ export default class Editor extends React.Component<{}, State> {
     this.project.activeRoom.addCube();
   };
 
+  onExportClick = () => {
+    saveAsZip(this.project);
+  };
+
   render(): React.ReactNode {
     const o = this.state.selectedObject;
     return (
@@ -200,6 +205,7 @@ export default class Editor extends React.Component<{}, State> {
           <div>
             <button onClick={this.onAddRoomClick}>Add room</button>
             <button onClick={this.onAddCubeClick}>Add cube</button>
+            <button onClick={this.onExportClick}>Export project</button>
           </div>
           <ol>
             {this.state.rooms.map((r, i) => (

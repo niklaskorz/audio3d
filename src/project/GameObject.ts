@@ -21,7 +21,8 @@ export default class GameObject extends Mesh implements Serializable {
       name: this.name,
       position: this.position.toArray(),
       scale: this.scale.toArray(),
-      rotation: this.rotation.toArray()
+      rotation: this.rotation.toArray(),
+      audioId: this.audioId
     };
   }
 
