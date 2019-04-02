@@ -2,21 +2,14 @@
  * @author Niklas Korz
  */
 import {
-  AmbientLight,
   AudioListener,
-  AudioLoader,
   BackSide,
-  BoxGeometry,
   Color,
-  GridHelper,
   Mesh,
   MeshBasicMaterial,
-  MeshLambertMaterial,
   PerspectiveCamera,
-  PointLight,
   PositionalAudio,
   Raycaster,
-  Scene,
   Vector2,
   Vector3,
   WebGLRenderer
@@ -24,7 +17,9 @@ import {
 import ResAudio from "../audio/ResAudio"
 import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
-import ControlsScene, { ControlsOptions } from "./ControlsScene";
+import GameObject from "../project/GameObject";
+import Project from "../project/Project";
+import VisualControls from "./VisualControls";
 
 enum MouseButton {
   Primary = 0,
@@ -32,28 +27,13 @@ enum MouseButton {
   Secondary = 2
 }
 
-const directions = {
-  up: new Vector3(0, 1, 0),
-  down: new Vector3(0, -1, 0),
-  left: new Vector3(-1, 0, 0),
-  right: new Vector3(1, 0, 0),
-  forwards: new Vector3(0, 0, -1),
-  backwards: new Vector3(0, 0, 1)
+const axes = {
+  x: new Vector3(1, 0, 0),
+  y: new Vector3(0, 1, 0),
+  z: new Vector3(0, 0, 1)
 };
 
-// Circular position based on timestamp
-const f = (time: number, orbitalPeriod: number, radius: number) =>
-  new Vector3(
-    radius * Math.sin((time / orbitalPeriod) * 2 * Math.PI),
-    0.5,
-    radius * Math.cos((time / orbitalPeriod) * 2 * Math.PI)
-  );
-
-interface Options extends ControlsOptions {
-  onSelect(object: Mesh | null): void;
-}
-
-export default class SceneCanvas {
+export default class ProjectCanvas {
   target: HTMLElement | null = null;
 
   rafHandle = 0;
@@ -62,17 +42,10 @@ export default class SceneCanvas {
   audioContext = new AudioContext();
   listener = new AudioListener();
 
-  scene = new Scene();
-  controls = new ControlsScene({
-    onTranslate: this.options.onTranslate,
-    onScale: this.options.onScale
-  });
+  controls: VisualControls;
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
-  grid = new GridHelper(10, 10, 0xffffff, 0xffffff);
-  cubeGeometry = new BoxGeometry(1, 1, 1);
-  cubeMaterial = new MeshLambertMaterial();
   outlineMesh = new Mesh();
 
   raycaster = new Raycaster();
@@ -81,7 +54,7 @@ export default class SceneCanvas {
   gamepads = new GamepadListener();
   isDraggingCamera = false;
 
-  constructor(private options: Options) {
+  constructor(private project: Project) {
     this.renderer.autoClear = false;
     this.renderer.setClearColor(new Color(0x192a56));
     this.canvas = this.renderer.domElement;
@@ -103,16 +76,7 @@ export default class SceneCanvas {
 
     // Setup scene
 
-    const ambientLight = new AmbientLight(0xffffff, 0.5);
-    this.scene.add(ambientLight);
-    const light = new PointLight(0xffffff, 0.5);
-    light.position.set(5, 5, 0);
-    light.lookAt(0, 0, 0);
-    this.scene.add(light);
-    // const hemiLight = new HemisphereLight(0xffffff, 0x000000, 0.6);
-    // this.scene.add(hemiLight);
-
-    this.scene.add(this.grid);
+    this.controls = new VisualControls(project);
 
     // const ph = new PlaneHelper(this.controls.plane, 10, 0x999999);
     // this.scene.add(ph);
@@ -128,11 +92,7 @@ export default class SceneCanvas {
     this.outlineMesh.material = outlineMaterial;
     this.outlineMesh.scale.multiplyScalar(1.05);
 
-    console.log(this.scene.toJSON());
-
     this.camera.add(this.listener);
-
-    this.addCube();
   }
 
   attach(target: HTMLElement): void {
@@ -161,25 +121,22 @@ export default class SceneCanvas {
     this.gamepads.stop();
   }
 
-  addCube(): void {
-    const cube = new Mesh(this.cubeGeometry, this.cubeMaterial);
-    cube.position.y += 0.5;
-    cube.name = "New cube";
+  selectObject(o: GameObject | null): void {
+    if (this.project.activeObject) {
+      this.project.activeObject.remove(this.outlineMesh);
+    }
 
-    this.scene.add(cube);
-    this.selectMesh(cube);
-  }
+    if (o) {
+      this.outlineMesh.geometry = o.geometry;
+      o.add(this.outlineMesh);
+    }
 
-  selectMesh(o: Mesh): void {
-    this.controls.activeMesh = o;
-    this.outlineMesh.geometry = this.controls.activeMesh.geometry;
-    this.controls.activeMesh.add(this.outlineMesh);
-
-    this.options.onSelect(o);
+    this.project.activeObject = o;
+    this.project.events.onSelect(o);
   }
 
   async addAudioToActiveMesh(data: ArrayBuffer): Promise<void> {
-    if (!this.controls.activeMesh) {
+    if (!this.project.activeObject) {
       return;
     }
 
@@ -203,7 +160,7 @@ export default class SceneCanvas {
     audio.play("/audio/breakbeat.wav")
 
 
-    this.controls.activeMesh.add(audio);
+    this.project.activeObject.add(audio);
 
 
 
@@ -233,34 +190,29 @@ export default class SceneCanvas {
     this.update(dt);
 
     this.renderer.clear();
-    this.renderer.render(this.scene, this.camera);
+    this.renderer.render(this.project.activeRoom, this.camera);
 
-    if (this.controls.activeMesh) {
+    if (this.project.activeObject) {
       // Draw controls in front of all other objects
       // https://stackoverflow.com/questions/12666570/how-to-change-the-zorder-of-object-with-threejs/12666937#12666937
-      // this.controls.position.copy(this.controls.activeMesh.position);
-      this.controls.position.copy(this.controls.activeMesh.position);
+      this.controls.position.copy(this.project.activeObject.position);
       this.renderer.clearDepth();
       this.renderer.render(this.controls, this.camera);
     }
   };
 
   update(dt: number): void {
-    // this.smallCube.rotation.x += 0.01;
-    // this.smallCube.rotation.y += 0.01;
-    // this.smallCube.position.copy(f(t, 10000, 2));
-
     if (this.keys.isPressed("w")) {
-      this.camera.translateOnAxis(directions.forwards, 2 * dt);
+      this.camera.translateOnAxis(axes.z, -2 * dt);
     }
     if (this.keys.isPressed("s")) {
-      this.camera.translateOnAxis(directions.backwards, 2 * dt);
+      this.camera.translateOnAxis(axes.z, 2 * dt);
     }
     if (this.keys.isPressed("a")) {
-      this.camera.translateOnAxis(directions.left, 2 * dt);
+      this.camera.translateOnAxis(axes.x, -2 * dt);
     }
     if (this.keys.isPressed("d")) {
-      this.camera.translateOnAxis(directions.right, 2 * dt);
+      this.camera.translateOnAxis(axes.x, 2 * dt);
     }
     if (this.keys.isPressed(" ")) {
       this.camera.position.y += 2 * dt;
@@ -270,19 +222,19 @@ export default class SceneCanvas {
     }
 
     if (this.keys.isPressed("ArrowLeft")) {
-      this.camera.rotateOnWorldAxis(new Vector3(0, 1, 0), dt);
+      this.camera.rotateOnWorldAxis(axes.y, dt);
     }
     if (this.keys.isPressed("ArrowRight")) {
-      this.camera.rotateOnWorldAxis(new Vector3(0, -1, 0), dt);
+      this.camera.rotateOnWorldAxis(axes.y, -dt);
     }
     if (this.keys.isPressed("ArrowUp")) {
-      this.camera.rotateOnAxis(new Vector3(1, 0, 0), dt);
+      this.camera.rotateOnAxis(axes.x, dt);
     }
     if (this.keys.isPressed("ArrowDown")) {
-      this.camera.rotateOnAxis(new Vector3(-1, 0, 0), dt);
+      this.camera.rotateOnAxis(axes.x, -dt);
     }
 
-    const axes = {
+    const gamepadAxes = {
       x: this.gamepads.getAxis(0),
       y: this.gamepads.getAxis(1),
       rX: this.gamepads.getAxis(2),
@@ -290,39 +242,36 @@ export default class SceneCanvas {
       b: this.gamepads.getAxis(4)
     };
     // console.log(axes);
-    if (axes.x) {
-      this.camera.translateOnAxis(new Vector3(1, 0, 0), 2 * dt * axes.x);
+    if (gamepadAxes.x) {
+      this.camera.translateOnAxis(axes.x, 2 * dt * gamepadAxes.x);
     }
-    if (axes.y) {
-      this.camera.translateOnAxis(new Vector3(0, 0, 1), 2 * dt * axes.y);
+    if (gamepadAxes.y) {
+      this.camera.translateOnAxis(axes.z, 2 * dt * gamepadAxes.y);
     }
-    if (axes.b) {
-      this.camera.translateOnAxis(new Vector3(0, 1, 0), 2 * dt * axes.b);
+    if (gamepadAxes.b) {
+      this.camera.translateOnAxis(axes.y, 2 * dt * gamepadAxes.b);
     }
-    if (axes.rX) {
-      this.camera.rotateOnWorldAxis(new Vector3(0, -1, 0), dt * axes.rX);
+    if (gamepadAxes.rX) {
+      this.camera.rotateOnWorldAxis(axes.y, -dt * gamepadAxes.rX);
     }
-    if (axes.rY) {
-      this.camera.rotateOnAxis(new Vector3(-1, 0, 0), dt * axes.rY);
+    if (gamepadAxes.rY) {
+      this.camera.rotateOnAxis(axes.x, -dt * gamepadAxes.rY);
     }
   }
 
   checkSceneClick(raycaster: Raycaster): boolean {
-    if (this.controls.activeMesh) {
-      this.controls.activeMesh.remove(this.outlineMesh);
-      this.controls.activeMesh = null;
-    }
-
-    const intersections = raycaster.intersectObjects(this.scene.children);
+    const intersections = raycaster.intersectObjects(
+      this.project.activeRoom.children
+    );
     for (const intersection of intersections) {
-      const o = intersection.object as Mesh;
-      if (o.isMesh) {
-        this.selectMesh(o);
+      const o = intersection.object;
+      if (o instanceof GameObject) {
+        this.selectObject(o);
         return true;
       }
     }
 
-    this.options.onSelect(null);
+    this.selectObject(null);
     return false;
   }
 
@@ -378,10 +327,10 @@ export default class SceneCanvas {
   onMouseMove = (e: MouseEvent): void => {
     if (this.isDraggingCamera) {
       if (e.movementX) {
-        this.camera.rotateOnWorldAxis(new Vector3(0, -1, 0), e.movementX / 100);
+        this.camera.rotateOnWorldAxis(axes.y, -e.movementX / 100);
       }
       if (e.movementY) {
-        this.camera.rotateOnAxis(new Vector3(-1, 0, 0), e.movementY / 100);
+        this.camera.rotateOnAxis(axes.x, -e.movementY / 100);
       }
     } else {
       this.updateRaycaster(e);
