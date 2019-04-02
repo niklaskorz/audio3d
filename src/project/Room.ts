@@ -4,6 +4,7 @@
 import { RoomDimensions } from "resonance-audio";
 import { AmbientLight, GridHelper, Object3D, PointLight, Scene } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
+import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 
 // A "room" is analog to levels of a game.
@@ -29,6 +30,7 @@ export default class Room extends Scene implements Serializable {
   }
 
   constructor(
+    private audioLibrary: AudioLibrary,
     name: string = "",
     private roomDimensions: RoomDimensions = { width: 1, height: 1, depth: 1 }
   ) {
@@ -52,7 +54,7 @@ export default class Room extends Scene implements Serializable {
   }
 
   addCube(): void {
-    const cube = new GameObject();
+    const cube = new GameObject(this.audioLibrary);
     cube.position.y += 0.5;
     cube.name = "New cube";
 
@@ -75,7 +77,7 @@ export default class Room extends Scene implements Serializable {
     this.dimensions = data.dimensions;
 
     const gameObjects = data.objects.map((o: SerializedData) =>
-      new GameObject().fromData(o)
+      new GameObject(this.audioLibrary).fromData(o)
     );
     this.add(...gameObjects);
 

@@ -10,15 +10,15 @@ import {
   PerspectiveCamera,
   PositionalAudio,
   Raycaster,
-  Scene,
   Vector2,
   Vector3,
   WebGLRenderer
 } from "three";
 import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
-import Room from "./Room";
-import VisualControls, { VisualControlsEvents } from "./VisualControls";
+import GameObject from "../project/GameObject";
+import Project from "../project/Project";
+import VisualControls from "./VisualControls";
 
 enum MouseButton {
   Primary = 0,
@@ -32,11 +32,7 @@ const axes = {
   z: new Vector3(0, 0, 1)
 };
 
-interface Events extends VisualControlsEvents {
-  onSelect(object: Mesh | null): void;
-}
-
-export default class SceneCanvas {
+export default class ProjectCanvas {
   target: HTMLElement | null = null;
 
   rafHandle = 0;
@@ -45,10 +41,7 @@ export default class SceneCanvas {
   audioContext = new AudioContext();
   listener = new AudioListener();
 
-  controls = new VisualControls({
-    onTranslate: this.events.onTranslate,
-    onScale: this.events.onScale
-  });
+  controls: VisualControls;
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
@@ -60,7 +53,7 @@ export default class SceneCanvas {
   gamepads = new GamepadListener();
   isDraggingCamera = false;
 
-  constructor(public room: Room, public events: Events) {
+  constructor(private project: Project) {
     this.renderer.autoClear = false;
     this.renderer.setClearColor(new Color(0x192a56));
     this.canvas = this.renderer.domElement;
@@ -81,6 +74,8 @@ export default class SceneCanvas {
     );
 
     // Setup scene
+
+    this.controls = new VisualControls(project);
 
     // const ph = new PlaneHelper(this.controls.plane, 10, 0x999999);
     // this.scene.add(ph);
@@ -125,9 +120,9 @@ export default class SceneCanvas {
     this.gamepads.stop();
   }
 
-  selectMesh(o: Mesh | null): void {
-    if (this.controls.activeMesh) {
-      this.controls.activeMesh.remove(this.outlineMesh);
+  selectObject(o: GameObject | null): void {
+    if (this.project.activeObject) {
+      this.project.activeObject.remove(this.outlineMesh);
     }
 
     if (o) {
@@ -135,20 +130,20 @@ export default class SceneCanvas {
       o.add(this.outlineMesh);
     }
 
-    this.controls.activeMesh = o;
-    this.events.onSelect(o);
+    this.project.activeObject = o;
+    this.project.events.onSelect(o);
   }
 
   async addAudioToActiveMesh(data: ArrayBuffer): Promise<void> {
-    if (!this.controls.activeMesh) {
+    if (!this.project.activeObject) {
       return;
     }
 
-    const previousAudio = this.controls.activeMesh.getObjectByName(
+    const previousAudio = this.project.activeObject.getObjectByName(
       "audio"
     ) as PositionalAudio;
     if (previousAudio) {
-      this.controls.activeMesh.remove(previousAudio);
+      this.project.activeObject.remove(previousAudio);
       previousAudio.stop();
     }
 
@@ -160,7 +155,7 @@ export default class SceneCanvas {
     audio.setLoop(true);
     audio.play();
 
-    this.controls.activeMesh.add(audio);
+    this.project.activeObject.add(audio);
 
     console.log("Successfully added new audio to selected mesh");
   }
@@ -187,12 +182,12 @@ export default class SceneCanvas {
     this.update(dt);
 
     this.renderer.clear();
-    this.renderer.render(this.room, this.camera);
+    this.renderer.render(this.project.activeRoom, this.camera);
 
-    if (this.controls.activeMesh) {
+    if (this.project.activeObject) {
       // Draw controls in front of all other objects
       // https://stackoverflow.com/questions/12666570/how-to-change-the-zorder-of-object-with-threejs/12666937#12666937
-      this.controls.position.copy(this.controls.activeMesh.position);
+      this.controls.position.copy(this.project.activeObject.position);
       this.renderer.clearDepth();
       this.renderer.render(this.controls, this.camera);
     }
@@ -257,16 +252,18 @@ export default class SceneCanvas {
   }
 
   checkSceneClick(raycaster: Raycaster): boolean {
-    const intersections = raycaster.intersectObjects(this.room.children);
+    const intersections = raycaster.intersectObjects(
+      this.project.activeRoom.children
+    );
     for (const intersection of intersections) {
-      const o = intersection.object as Mesh;
-      if (o.isMesh) {
-        this.selectMesh(o);
+      const o = intersection.object;
+      if (o instanceof GameObject) {
+        this.selectObject(o);
         return true;
       }
     }
 
-    this.selectMesh(null);
+    this.selectObject(null);
     return false;
   }
 

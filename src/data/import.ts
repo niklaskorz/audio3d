@@ -3,38 +3,47 @@
  * This module defines functions for loading and importing projects from the local filesystem.
  */
 import Zip, { JSZipObject } from "jszip";
-import { SerializedData } from "./Serializable";
+import Project from "../project/Project";
+
+interface FolderItem {
+  name: string;
+  file: JSZipObject;
+}
 
 /**
  * Iterates over all files at the root of a zip folder and returns them as an array.
- * Returned array is sorted numerically by file name, i.e. 1 2 9 10 11 instead
- * of 1 10 11 2 9.
  */
-const getFilesInFolder = (folder: Zip): JSZipObject[] => {
-  return Object.keys(folder.files)
-    .map(key => parseInt(key, 10))
-    .sort((a, b) => a - b)
-    .map(key => folder.files[key]);
+const getFilesInFolder = (folder: Zip): FolderItem[] => {
+  const files: FolderItem[] = [];
+  folder.forEach((name, file) => files.push({ name, file }));
+  return files;
 };
-
-interface LoadedData {
-  metadata: SerializedData;
-  audios: ArrayBuffer[];
-}
 
 /**
  * Decompresses the given zip file, loads the included JSON metadata and reads all
  * included audio files as binary array buffers.
  * @param data The blob to read from, usually a file returned by a FileReader instance.
+ * @returns The project recreated from the data found in the zip
  */
-export const loadZip = async (data: Blob): Promise<LoadedData> => {
+export const loadZip = async (data: Blob): Promise<Project> => {
   const zip = await Zip.loadAsync(data);
   const metadata = JSON.parse(await zip.file("metadata.json").async("text"));
 
   const audioFolder = zip.folder("audio");
-  const audios = await Promise.all(
-    getFilesInFolder(audioFolder).map(f => f.async("arraybuffer"))
-  );
+  const project = new Project();
+  for (const { name, file } of getFilesInFolder(audioFolder)) {
+    const id = parseInt(name, 10);
+    // Only load files in the audio folder which have a valid id as name
+    if (!isNaN(id)) {
+      project.audioLibrary.set(id, await file.async("arraybuffer"));
 
-  return { metadata, audios };
+      if (id >= project.audioLibrary.nextId) {
+        project.audioLibrary.nextId = id + 1;
+      }
+    }
+  }
+
+  project.fromData(metadata);
+
+  return project;
 };

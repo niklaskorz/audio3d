@@ -14,6 +14,7 @@ import {
   SphereGeometry,
   Vector3
 } from "three";
+import Project from "../project/Project";
 
 // The object drag direction is required for calculating the plane to ray cast
 // against later on. Also, of course, to determine whether the object should be
@@ -25,11 +26,6 @@ export enum ObjectDragDirection {
   PlaneYZ,
   PlaneXZ,
   PlaneXY
-}
-
-export interface VisualControlsEvents {
-  onTranslate(position: Vector3): void;
-  onScale(scale: Vector3): void;
 }
 
 // Inspired by https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/TransformControls.js
@@ -47,7 +43,6 @@ export interface VisualControlsEvents {
 // in this case.
 // Beware though that intersection points are always given in absolute world coordinates.
 export default class VisualControls extends Scene {
-  activeMesh: Mesh | null = null;
   objectDragDirection: ObjectDragDirection | null = null;
   isScaling: boolean = false;
   // The drag offset is used to determine the distance of the point where the
@@ -74,7 +69,7 @@ export default class VisualControls extends Scene {
   planeXZ: Mesh;
   planeXY: Mesh;
 
-  constructor(private events: VisualControlsEvents) {
+  constructor(private project: Project) {
     super();
 
     // Setup visual controls for transformation
@@ -192,11 +187,11 @@ export default class VisualControls extends Scene {
   }
 
   getControlFromRaycaster(raycaster: Raycaster): Object3D | null {
-    if (!this.activeMesh) {
+    if (!this.project.activeObject) {
       return null;
     }
 
-    this.position.copy(this.activeMesh.position);
+    this.position.copy(this.project.activeObject.position);
 
     const intersections = raycaster.intersectObjects(this.children);
     for (const intersection of intersections) {
@@ -204,7 +199,9 @@ export default class VisualControls extends Scene {
       if (o.userData.hasOwnProperty("direction")) {
         // Save the drag offset by subtracting the absolute position of the cursor
         // (absolute meaning world coordinates) from the object's absolute position.
-        this.dragOffset.copy(intersection.point).sub(this.activeMesh.position);
+        this.dragOffset
+          .copy(intersection.point)
+          .sub(this.project.activeObject.position);
         this.lastPoint.copy(intersection.point);
         return o;
       }
@@ -239,11 +236,11 @@ export default class VisualControls extends Scene {
   // casted from the camera origin onto a plane that represents the axes to move
   // on and sets the position of the object to the intersection point.
   onMove({ ray }: Raycaster): void {
-    if (this.objectDragDirection === null || !this.activeMesh) {
+    if (this.objectDragDirection === null || !this.project.activeObject) {
       return;
     }
 
-    const c = this.activeMesh.position;
+    const c = this.project.activeObject.position;
     const p = this.plane;
     let altPlane: Plane | null = null;
 
@@ -298,27 +295,27 @@ export default class VisualControls extends Scene {
       // to the object's scale.
       switch (this.objectDragDirection) {
         case ObjectDragDirection.AxisX:
-          this.activeMesh.scale.x = Math.min(
+          this.project.activeObject.scale.x = Math.min(
             Math.max(
-              this.activeMesh.scale.x + (point.x - this.lastPoint.x),
+              this.project.activeObject.scale.x + (point.x - this.lastPoint.x),
               0.1
             ),
             10
           );
           break;
         case ObjectDragDirection.AxisY:
-          this.activeMesh.scale.y = Math.min(
+          this.project.activeObject.scale.y = Math.min(
             Math.max(
-              this.activeMesh.scale.y + (point.y - this.lastPoint.y),
+              this.project.activeObject.scale.y + (point.y - this.lastPoint.y),
               0.1
             ),
             10
           );
           break;
         case ObjectDragDirection.AxisZ:
-          this.activeMesh.scale.z = Math.min(
+          this.project.activeObject.scale.z = Math.min(
             Math.max(
-              this.activeMesh.scale.z + (point.z - this.lastPoint.z),
+              this.project.activeObject.scale.z + (point.z - this.lastPoint.z),
               0.1
             ),
             10
@@ -326,7 +323,7 @@ export default class VisualControls extends Scene {
           break;
       }
 
-      this.events.onScale(this.activeMesh.scale);
+      this.project.events.onScale(this.project.activeObject.scale);
     } else {
       point.sub(this.dragOffset);
 
@@ -334,21 +331,21 @@ export default class VisualControls extends Scene {
       // coordinate is changed.
       switch (this.objectDragDirection) {
         case ObjectDragDirection.AxisX:
-          this.activeMesh.position.x = point.x;
+          this.project.activeObject.position.x = point.x;
           break;
         case ObjectDragDirection.AxisY:
-          this.activeMesh.position.y = point.y;
+          this.project.activeObject.position.y = point.y;
           break;
         case ObjectDragDirection.AxisZ:
-          this.activeMesh.position.z = point.z;
+          this.project.activeObject.position.z = point.z;
           break;
         default:
           // The selected direction is a plane, so we can just copy the
           // intersection point.
-          this.activeMesh.position.copy(point);
+          this.project.activeObject.position.copy(point);
       }
 
-      this.events.onTranslate(this.activeMesh.position);
+      this.project.events.onTranslate(this.project.activeObject.position);
     }
 
     this.lastPoint.copy(point);

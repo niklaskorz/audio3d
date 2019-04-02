@@ -4,9 +4,10 @@
 import React from "react";
 import { RoomDimensions } from "resonance-audio";
 import { Euler, Vector3 } from "three";
-import Room from "../3d/Room";
-import SceneCanvas from "../3d/SceneCanvas";
+import Project from "../project/Project";
+import Room from "../project/Room";
 import ObjectEditor from "./ObjectEditor";
+import ProjectCanvas from "./ProjectCanvas";
 import RoomEditor from "./RoomEditor";
 import { Container, Main, Sidebar } from "./styled";
 import { EditorObject, EditorRoom } from "./types";
@@ -18,8 +19,7 @@ interface State {
 }
 
 export default class Editor extends React.Component<{}, State> {
-  rooms: Room[] = [new Room("First room", { width: 15, depth: 10, height: 3 })];
-  sceneCanvas = new SceneCanvas(this.rooms[0], {
+  project = new Project({
     onSelect: o => {
       if (o) {
         this.setState({
@@ -56,9 +56,10 @@ export default class Editor extends React.Component<{}, State> {
       }));
     }
   });
+  projectCanvas = new ProjectCanvas(this.project);
 
   state: State = {
-    rooms: this.rooms.map(r => ({
+    rooms: this.project.rooms.map(r => ({
       id: r.id,
       name: r.name,
       dimensions: r.dimensions
@@ -70,22 +71,22 @@ export default class Editor extends React.Component<{}, State> {
 
   componentDidMount(): void {
     if (this.mainRef.current) {
-      this.sceneCanvas.attach(this.mainRef.current);
+      this.projectCanvas.attach(this.mainRef.current);
     }
   }
 
   componentWillUnmount(): void {
-    this.sceneCanvas.detach();
+    this.projectCanvas.detach();
   }
 
   selectRoom(id: number): void {
-    this.sceneCanvas.selectMesh(null);
-    this.sceneCanvas.room = this.rooms[id];
+    this.projectCanvas.selectObject(null);
+    this.project.activeRoom = this.project.rooms[id];
     this.setState({ selectedRoomId: id, selectedObject: null });
   }
 
   updateRoomName = (name: string) => {
-    this.sceneCanvas.room.name = name;
+    this.project.activeRoom.name = name;
     this.setState(({ rooms, selectedRoomId }) => ({
       rooms: [
         ...rooms.slice(0, selectedRoomId),
@@ -99,7 +100,7 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   updateRoomDimensions = (dimensions: RoomDimensions) => {
-    this.sceneCanvas.room.dimensions = dimensions;
+    this.project.activeRoom.dimensions = dimensions;
     this.setState(({ rooms, selectedRoomId }) => ({
       rooms: [
         ...rooms.slice(0, selectedRoomId),
@@ -113,8 +114,8 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   updateName = (name: string) => {
-    if (this.sceneCanvas.controls.activeMesh) {
-      this.sceneCanvas.controls.activeMesh.name = name;
+    if (this.project.activeObject) {
+      this.project.activeObject.name = name;
     }
     this.setState(({ selectedObject }) => ({
       selectedObject: selectedObject && {
@@ -125,8 +126,8 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   updateScale = (x: number, y: number, z: number) => {
-    if (this.sceneCanvas.controls.activeMesh) {
-      this.sceneCanvas.controls.activeMesh.scale.set(x, y, z);
+    if (this.project.activeObject) {
+      this.project.activeObject.scale.set(x, y, z);
     }
     this.setState(({ selectedObject }) => ({
       selectedObject: selectedObject && {
@@ -137,8 +138,8 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   updatePosition = (x: number, y: number, z: number) => {
-    if (this.sceneCanvas.controls.activeMesh) {
-      this.sceneCanvas.controls.activeMesh.position.set(x, y, z);
+    if (this.project.activeObject) {
+      this.project.activeObject.position.set(x, y, z);
     }
     this.setState(({ selectedObject }) => ({
       selectedObject: selectedObject && {
@@ -149,8 +150,8 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   updateRotation = (x: number, y: number, z: number) => {
-    if (this.sceneCanvas.controls.activeMesh) {
-      this.sceneCanvas.controls.activeMesh.rotation.set(x, y, z);
+    if (this.project.activeObject) {
+      this.project.activeObject.rotation.set(x, y, z);
     }
     this.setState(({ selectedObject }) => ({
       selectedObject: selectedObject && {
@@ -161,14 +162,18 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   updateAudio = (data: ArrayBuffer) => {
-    this.sceneCanvas.addAudioToActiveMesh(data);
+    this.projectCanvas.addAudioToActiveMesh(data);
   };
 
   onAddRoomClick = () => {
-    const room = new Room("New room", { width: 10, depth: 10, height: 3 });
-    this.rooms.push(room);
-    this.sceneCanvas.selectMesh(null);
-    this.sceneCanvas.room = room;
+    const room = new Room(this.project.audioLibrary, "New room", {
+      width: 10,
+      depth: 10,
+      height: 3
+    });
+    this.project.rooms.push(room);
+    this.projectCanvas.selectObject(null);
+    this.project.activeRoom = room;
     this.setState(s => ({
       rooms: [
         ...s.rooms,
@@ -183,7 +188,7 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   onAddCubeClick = () => {
-    this.sceneCanvas.room.addCube();
+    this.project.activeRoom.addCube();
   };
 
   render(): React.ReactNode {
