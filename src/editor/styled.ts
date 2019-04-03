@@ -27,12 +27,15 @@ export const Menu = styled.div`
 
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
+
+  cursor: default;
 `;
 
 export const MenuItem = styled.div`
   white-space: nowrap;
   padding: 8px 20px;
   margin: 2px 0;
+  cursor: pointer;
 
   :hover {
     background: hsl(210, 25%, 30%);
@@ -70,7 +73,7 @@ export const MenubarItem = styled.div`
 `;
 
 MenubarItem.defaultProps = {
-  tabIndex: -1
+  tabIndex: -1 // Required to make it focusable, i.e. for using :focus in this case
 };
 
 export const InnerContainer = styled.div`
