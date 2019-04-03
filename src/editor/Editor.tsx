@@ -10,7 +10,20 @@ import Room from "../project/Room";
 import ObjectEditor from "./ObjectEditor";
 import ProjectCanvas from "./ProjectCanvas";
 import RoomEditor from "./RoomEditor";
-import { Container, ListItem, Main, Sidebar } from "./styled";
+import {
+  Container,
+  Group,
+  InnerContainer,
+  Main,
+  Menu,
+  Menubar,
+  MenubarItem,
+  MenuDivider,
+  MenuItem,
+  RoomList,
+  RoomListItem,
+  Sidebar
+} from "./styled";
 import { EditorObject, EditorRoom } from "./types";
 
 interface State {
@@ -200,43 +213,77 @@ export default class Editor extends React.Component<{}, State> {
     const o = this.state.selectedObject;
     return (
       <Container>
-        <Sidebar>
-          <p>Sidebar</p>
-          <div>
-            <button onClick={this.onAddRoomClick}>Add room</button>
-            <button onClick={this.onAddCubeClick}>Add cube</button>
-            <button onClick={this.onExportClick}>Export project</button>
-          </div>
-          <ol>
-            {this.state.rooms.map((r, i) => (
-              <ListItem
-                key={r.id}
-                onClick={() => this.selectRoom(i)}
-                active={i === this.state.selectedRoomId}
-              >
-                {r.name}
-              </ListItem>
-            ))}
-          </ol>
-          {!o && (
-            <RoomEditor
-              room={this.state.rooms[this.state.selectedRoomId]}
-              onUpdateName={this.updateRoomName}
-              onUpdateDimensions={this.updateRoomDimensions}
-            />
-          )}
-          {o && (
-            <ObjectEditor
-              object={o}
-              onUpdateName={this.updateName}
-              onUpdatePosition={this.updatePosition}
-              onUpdateRotation={this.updateRotation}
-              onUpdateScale={this.updateScale}
-              onUpdateAudio={this.updateAudio}
-            />
-          )}
-        </Sidebar>
-        <Main ref={this.mainRef} />
+        <Menubar>
+          <MenubarItem>
+            File
+            <Menu>
+              <MenuItem>New project</MenuItem>
+              <MenuItem>Load project</MenuItem>
+              <MenuItem>Save project</MenuItem>
+              <MenuDivider />
+              <MenuItem>Import project</MenuItem>
+              <MenuItem onClick={this.onExportClick}>Export project</MenuItem>
+              <MenuDivider />
+              <MenuItem>Settings</MenuItem>
+            </Menu>
+          </MenubarItem>
+          <MenubarItem>
+            Edit
+            <Menu>
+              <MenuItem onClick={this.onAddCubeClick}>New object</MenuItem>
+              <MenuItem>Delete object</MenuItem>
+              <MenuDivider />
+              <MenuItem onClick={this.onAddRoomClick}>New room</MenuItem>
+              <MenuItem>Delete room</MenuItem>
+              <MenuDivider />
+              <MenuItem>Release the kraken</MenuItem>
+            </Menu>
+          </MenubarItem>
+          <MenubarItem>
+            Help
+            <Menu>
+              <MenuItem>Issues</MenuItem>
+              <MenuItem>Repository</MenuItem>
+              <MenuItem>About</MenuItem>
+            </Menu>
+          </MenubarItem>
+        </Menubar>
+        <InnerContainer>
+          <Sidebar>
+            <Group>
+              <label>Rooms</label>
+              <RoomList>
+                {this.state.rooms.map((r, i) => (
+                  <RoomListItem
+                    key={r.id}
+                    onClick={() => this.selectRoom(i)}
+                    active={i === this.state.selectedRoomId}
+                  >
+                    {r.name}
+                  </RoomListItem>
+                ))}
+              </RoomList>
+            </Group>
+            {!o && (
+              <RoomEditor
+                room={this.state.rooms[this.state.selectedRoomId]}
+                onUpdateName={this.updateRoomName}
+                onUpdateDimensions={this.updateRoomDimensions}
+              />
+            )}
+            {o && (
+              <ObjectEditor
+                object={o}
+                onUpdateName={this.updateName}
+                onUpdatePosition={this.updatePosition}
+                onUpdateRotation={this.updateRotation}
+                onUpdateScale={this.updateScale}
+                onUpdateAudio={this.updateAudio}
+              />
+            )}
+          </Sidebar>
+          <Main ref={this.mainRef} />
+        </InnerContainer>
       </Container>
     );
   }
