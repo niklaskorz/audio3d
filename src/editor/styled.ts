@@ -14,69 +14,6 @@ export const Container = styled.div`
   flex-direction: column;
 `;
 
-export const Menu = styled.div`
-  display: none;
-  position: absolute;
-  left: 0;
-  top: 100%;
-  background: hsl(210, 25%, 20%);
-  padding: 5px 0;
-  min-width: 200px;
-  font-size: 0.95em;
-  box-shadow: 5px 5px 8px rgba(0, 0, 0, 0.5);
-
-  border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 3px;
-
-  cursor: default;
-`;
-
-export const MenuItem = styled.div`
-  white-space: nowrap;
-  padding: 8px 20px;
-  margin: 2px 0;
-  cursor: pointer;
-
-  :hover {
-    background: hsl(210, 25%, 30%);
-  }
-`;
-
-export const MenuDivider = styled.div`
-  height: 0;
-  margin: 5px;
-  border-bottom: 1px solid hsl(210, 15%, 35%);
-`;
-
-export const Menubar = styled.div`
-  flex: 0 0 auto;
-  background: hsl(210, 29%, 15%);
-  color: #fff;
-  font-size: 0.9em;
-  padding: 0 10px;
-  user-select: none;
-`;
-
-export const MenubarItem = styled.div`
-  position: relative;
-  display: inline-block;
-  padding: 10px 15px;
-  cursor: pointer;
-
-  :hover,
-  :focus {
-    background: hsl(210, 29%, 20%);
-  }
-
-  :focus > ${Menu} {
-    display: block;
-  }
-`;
-
-MenubarItem.defaultProps = {
-  tabIndex: -1 // Required to make it focusable, i.e. for using :focus in this case
-};
-
 export const InnerContainer = styled.div`
   flex: 1;
   display: flex;
