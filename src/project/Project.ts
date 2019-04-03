@@ -34,6 +34,7 @@ export default class Project implements Serializable {
       height: 3
     })
   ];
+  audioType: number = 1;
 
   activeRoom: Room = this.rooms[0];
   activeObject: GameObject | null = null;

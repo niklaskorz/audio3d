@@ -39,7 +39,7 @@ export default class ProjectCanvas {
 
   rafHandle = 0;
   previousTimestamp = 0;
-
+  audioType = 1;
   audioContext = new AudioContext();
   listener = new AudioListener();
 
@@ -56,6 +56,7 @@ export default class ProjectCanvas {
   isDraggingCamera = false;
 
   constructor(private project: Project) {
+    this.audioType = project.audioType;
     this.renderer.autoClear = false;
     this.renderer.setClearColor(new Color(0x192a56));
     this.canvas = this.renderer.domElement;
@@ -140,25 +141,36 @@ export default class ProjectCanvas {
     if (!this.project.activeObject) {
       return;
     }
+    let audio;
+    if (this.audioType === 0) {
+      const previousAudio = this.project.activeObject.getObjectByName(
+        "audio"
+      ) as PositionalAudio;
+      if (previousAudio) {
+        this.project.activeObject.remove(previousAudio);
+        previousAudio.stop();
+      }
 
-    // const previousAudio = this.controls.activeMesh.getObjectByName(
-    //   "audio"
-    // ) as PositionalAudio;
-    // if (previousAudio) {
-    //   this.controls.activeMesh.remove(previousAudio);
-    //   previousAudio.stop();
-    // }
+      if (this.project.activeObject.audioId) {
+        this.project.audioLibrary.delete(this.project.activeObject.audioId);
+      }
 
-    // const buffer = await this.audioContext.decodeAudioData(data);
+      this.project.activeObject.audioData = data.slice(0);
+      this.project.activeObject.audioId = this.project.audioLibrary.add(
+        this.project.activeObject.audioData
+      );
 
-    // const audio = new PositionalAudio(this.listener);
-    // audio.name = "audio";
-    // audio.setBuffer(buffer);
-    // audio.setLoop(true);
-    // audio.play();
+      const buffer = await this.audioContext.decodeAudioData(data);
 
-    const audio = new ResAudio();
-    audio.play("/audio/breakbeat.wav");
+      audio = new PositionalAudio(this.listener);
+      audio.name = "audio";
+      audio.setBuffer(buffer);
+      audio.setLoop(true);
+      audio.play();
+    } else {
+      audio = new ResAudio();
+      audio.play("/audio/breakbeat.wav");
+    }
 
     this.project.activeObject.add(audio);
 

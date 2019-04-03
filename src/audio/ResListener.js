@@ -7,6 +7,7 @@ import { Object3D, Vector3, Quaternion } from "three";
 
 export default class Listener extends Object3D {
   constructor(room) {
+    super();
     this.room = room;
   }
 
