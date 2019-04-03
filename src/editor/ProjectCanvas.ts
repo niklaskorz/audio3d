@@ -14,7 +14,8 @@ import {
   Vector3,
   WebGLRenderer
 } from "three";
-import ResAudio from "../audio/ResAudio"
+import ResAudio from "../audio/ResAudio";
+import ResListener from "../audio/ResListener";
 import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
 import GameObject from "../project/GameObject";
@@ -155,15 +156,11 @@ export default class ProjectCanvas {
     // audio.setBuffer(buffer);
     // audio.setLoop(true);
     // audio.play();
-    
-    const audio = new ResAudio();
-    audio.play("/audio/breakbeat.wav")
 
+    const audio = new ResAudio();
+    audio.play("/audio/breakbeat.wav");
 
     this.project.activeObject.add(audio);
-
-
-
 
     console.log("Successfully added new audio to selected mesh");
   }
