@@ -2,7 +2,6 @@ import "normalize.css";
 import React from "react";
 import ReactDOM from "react-dom";
 import Editor from "./editor/Editor";
-import App from "./App"
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
 

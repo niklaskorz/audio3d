@@ -3,15 +3,14 @@
  */
 
 import { ResonanceAudio } from "resonance-audio";
-import { Object3D, Vector3, Quaternion } from "three";
+import { Object3D, Quaternion, Vector3 } from "three";
 
 export default class Listener extends Object3D {
-  constructor(room) {
+  constructor(private audioScene: ResonanceAudio) {
     super();
-    this.room = room;
   }
 
-  updateMatrixWorld(force) {
+  updateMatrixWorld(force: boolean): void {
     super.updateMatrixWorld(force);
 
     const position = new Vector3();
@@ -21,13 +20,16 @@ export default class Listener extends Object3D {
 
     this.matrixWorld.decompose(position, quaternion, scale);
 
-    orientation.set(0, 0, 1).applyQuaternion(quaternion);
+    orientation.set(0, 0, -1).applyQuaternion(quaternion);
 
-    this.room.setListenerPosition(position.x, position.y, position.z);
-    this.room.setListenerOrientation(
+    this.audioScene.setListenerPosition(position.x, position.y, position.z);
+    this.audioScene.setListenerOrientation(
       orientation.x,
       orientation.y,
-      orientation.z
+      orientation.z,
+      this.up.x,
+      this.up.y,
+      this.up.z
     );
   }
 }

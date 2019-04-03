@@ -1,12 +1,14 @@
 /**
  * @author Niklas Korz
  */
+import { ResonanceAudio } from "resonance-audio";
 import {
   AudioListener,
   BackSide,
   Color,
   Mesh,
   MeshBasicMaterial,
+  Object3D,
   PerspectiveCamera,
   PositionalAudio,
   Raycaster,
@@ -43,8 +45,12 @@ export default class ProjectCanvas {
   audioContext = new AudioContext();
   listener = new AudioListener();
 
+  audioScene = new ResonanceAudio(this.audioContext);
+  resListener = new ResListener(this.audioScene);
+
   controls: VisualControls;
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
+
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
   outlineMesh = new Mesh();
@@ -56,6 +62,8 @@ export default class ProjectCanvas {
   isDraggingCamera = false;
 
   constructor(private project: Project) {
+    this.audioScene.output.connect(this.audioContext.destination);
+
     this.audioType = project.audioType;
     this.renderer.autoClear = false;
     this.renderer.setClearColor(new Color(0x192a56));
@@ -95,6 +103,7 @@ export default class ProjectCanvas {
     this.outlineMesh.scale.multiplyScalar(1.05);
 
     this.camera.add(this.listener);
+    this.camera.add(this.resListener);
   }
 
   attach(target: HTMLElement): void {
@@ -168,7 +177,7 @@ export default class ProjectCanvas {
       audio.setLoop(true);
       audio.play();
     } else {
-      audio = new ResAudio();
+      audio = new ResAudio(this.audioScene, this.audioContext);
       audio.play("/audio/breakbeat.wav");
     }
 
