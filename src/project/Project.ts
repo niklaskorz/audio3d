@@ -37,7 +37,6 @@ export default class Project implements Serializable {
   ];
   audioType: number = 1;
 
-
   activeRoom: Room;
   activeObject: GameObject | null = null;
 
