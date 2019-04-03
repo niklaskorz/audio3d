@@ -49,17 +49,15 @@ export default class Room extends Scene implements Serializable {
     this.grid = new GridHelper(gridSize, gridSize, 0xffffff, 0xffffff);
 
     this.add(this.grid);
-
-    this.addCube();
   }
 
-  addCube(): void {
+  addCube(): GameObject {
     const cube = new GameObject(this.audioLibrary);
     cube.position.y += 0.5;
     cube.name = "New cube";
 
     this.add(cube);
-    // this.selectMesh(cube);
+    return cube;
   }
 
   toData(): SerializedData {

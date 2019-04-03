@@ -116,7 +116,6 @@ export default class ProjectCanvas {
     this.resize();
     window.requestAnimationFrame(this.animate);
     window.addEventListener("resize", this.resize);
-    this.canvas.focus();
   }
 
   detach(): void {
@@ -130,6 +129,16 @@ export default class ProjectCanvas {
 
     this.keys.stop();
     this.gamepads.stop();
+  }
+
+  focus(): void {
+    this.canvas.focus();
+  }
+
+  changeProject(project: Project): void {
+    this.project = project;
+    this.controls.project = project;
+    this.selectObject(null);
   }
 
   selectObject(o: GameObject | null): void {

@@ -5,12 +5,27 @@ import React from "react";
 import { RoomDimensions } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import { saveAsZip } from "../data/export";
+import { loadZip } from "../data/import";
+import GameObject from "../project/GameObject";
 import Project from "../project/Project";
 import Room from "../project/Room";
 import ObjectEditor from "./ObjectEditor";
 import ProjectCanvas from "./ProjectCanvas";
 import RoomEditor from "./RoomEditor";
-import { Container, Main, Sidebar } from "./styled";
+import {
+  Container,
+  Group,
+  InnerContainer,
+  Main,
+  Menu,
+  Menubar,
+  MenubarItem,
+  MenuDivider,
+  MenuItem,
+  RoomList,
+  RoomListItem,
+  Sidebar
+} from "./styled";
 import { EditorObject, EditorRoom } from "./types";
 
 interface State {
@@ -20,43 +35,7 @@ interface State {
 }
 
 export default class Editor extends React.Component<{}, State> {
-  project = new Project({
-    onSelect: o => {
-      if (o) {
-        this.setState({
-          selectedObject: {
-            id: o.id,
-            name: o.name,
-            position: o.position,
-            scale: o.scale,
-            rotation: o.rotation
-          }
-        });
-      } else {
-        this.setState({ selectedObject: null });
-      }
-    },
-    onTranslate: p => {
-      this.setState(({ selectedObject }) => ({
-        selectedObject: selectedObject && {
-          ...selectedObject,
-          position: p
-        }
-      }));
-    },
-    onScale: s => {
-      this.setState(({ selectedObject }) => ({
-        selectedObject: selectedObject && {
-          ...selectedObject,
-          size: {
-            width: s.x,
-            height: s.y,
-            depth: s.z
-          }
-        }
-      }));
-    }
-  });
+  project: Project = new Project();
   projectCanvas = new ProjectCanvas(this.project);
 
   state: State = {
@@ -70,15 +49,64 @@ export default class Editor extends React.Component<{}, State> {
   };
   mainRef = React.createRef<HTMLElement>();
 
+  constructor(props: {}) {
+    super(props);
+
+    this.project.events = {
+      onSelect: this.onSelectObject,
+      onTranslate: this.onTranslateObject,
+      onScale: this.onScaleObject
+    };
+  }
+
   componentDidMount(): void {
     if (this.mainRef.current) {
       this.projectCanvas.attach(this.mainRef.current);
+      this.projectCanvas.focus();
     }
   }
 
   componentWillUnmount(): void {
     this.projectCanvas.detach();
   }
+
+  onSelectObject = (o: GameObject | null) => {
+    if (o) {
+      this.setState({
+        selectedObject: {
+          id: o.id,
+          name: o.name,
+          position: o.position,
+          scale: o.scale,
+          rotation: o.rotation
+        }
+      });
+    } else {
+      this.setState({ selectedObject: null });
+    }
+  };
+
+  onTranslateObject = (p: Vector3) => {
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        position: p
+      }
+    }));
+  };
+
+  onScaleObject = (s: Vector3) => {
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        size: {
+          width: s.x,
+          height: s.y,
+          depth: s.z
+        }
+      }
+    }));
+  };
 
   selectRoom(id: number): void {
     this.projectCanvas.selectObject(null);
@@ -173,8 +201,8 @@ export default class Editor extends React.Component<{}, State> {
       height: 3
     });
     this.project.rooms.push(room);
-    this.projectCanvas.selectObject(null);
     this.project.activeRoom = room;
+    this.projectCanvas.selectObject(room.addCube());
     this.setState(s => ({
       rooms: [
         ...s.rooms,
@@ -186,10 +214,39 @@ export default class Editor extends React.Component<{}, State> {
       ],
       selectedRoomId: s.rooms.length
     }));
+    this.projectCanvas.focus();
   };
 
   onAddCubeClick = () => {
     this.project.activeRoom.addCube();
+    this.projectCanvas.focus();
+  };
+
+  onImportClick = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.onchange = async e => {
+      console.log("selected file");
+      const file = input.files![0];
+      this.project = await loadZip(file);
+      this.project.events = {
+        onSelect: this.onSelectObject,
+        onTranslate: this.onTranslateObject,
+        onScale: this.onScaleObject
+      };
+      this.projectCanvas.changeProject(this.project);
+      this.setState({
+        rooms: this.project.rooms.map(r => ({
+          id: r.id,
+          name: r.name,
+          dimensions: r.dimensions
+        })),
+        selectedRoomId: 0,
+        selectedObject: null
+      });
+      this.projectCanvas.focus();
+    };
+    input.click();
   };
 
   onExportClick = () => {
@@ -200,43 +257,77 @@ export default class Editor extends React.Component<{}, State> {
     const o = this.state.selectedObject;
     return (
       <Container>
-        <Sidebar>
-          <p>Sidebar</p>
-          <div>
-            <button onClick={this.onAddRoomClick}>Add room</button>
-            <button onClick={this.onAddCubeClick}>Add cube</button>
-            <button onClick={this.onExportClick}>Export project</button>
-          </div>
-          <ol>
-            {this.state.rooms.map((r, i) => (
-              <li
-                key={r.id}
-                onClick={() => this.selectRoom(i)}
-                style={{ cursor: "pointer" }}
-              >
-                {r.name}
-              </li>
-            ))}
-          </ol>
-          {!o && (
-            <RoomEditor
-              room={this.state.rooms[this.state.selectedRoomId]}
-              onUpdateName={this.updateRoomName}
-              onUpdateDimensions={this.updateRoomDimensions}
-            />
-          )}
-          {o && (
-            <ObjectEditor
-              object={o}
-              onUpdateName={this.updateName}
-              onUpdatePosition={this.updatePosition}
-              onUpdateRotation={this.updateRotation}
-              onUpdateScale={this.updateScale}
-              onUpdateAudio={this.updateAudio}
-            />
-          )}
-        </Sidebar>
-        <Main ref={this.mainRef} />
+        <Menubar>
+          <MenubarItem>
+            File
+            <Menu>
+              <MenuItem>New project</MenuItem>
+              <MenuItem>Load project</MenuItem>
+              <MenuItem>Save project</MenuItem>
+              <MenuDivider />
+              <MenuItem onClick={this.onImportClick}>Import project</MenuItem>
+              <MenuItem onClick={this.onExportClick}>Export project</MenuItem>
+              <MenuDivider />
+              <MenuItem>Settings</MenuItem>
+            </Menu>
+          </MenubarItem>
+          <MenubarItem>
+            Edit
+            <Menu>
+              <MenuItem onClick={this.onAddCubeClick}>New object</MenuItem>
+              <MenuItem>Delete object</MenuItem>
+              <MenuDivider />
+              <MenuItem onClick={this.onAddRoomClick}>New room</MenuItem>
+              <MenuItem>Delete room</MenuItem>
+              <MenuDivider />
+              <MenuItem>Release the kraken</MenuItem>
+            </Menu>
+          </MenubarItem>
+          <MenubarItem>
+            Help
+            <Menu>
+              <MenuItem>Issues</MenuItem>
+              <MenuItem>Repository</MenuItem>
+              <MenuItem>About</MenuItem>
+            </Menu>
+          </MenubarItem>
+        </Menubar>
+        <InnerContainer>
+          <Sidebar>
+            <Group>
+              <label>Rooms</label>
+              <RoomList>
+                {this.state.rooms.map((r, i) => (
+                  <RoomListItem
+                    key={r.id}
+                    onClick={() => this.selectRoom(i)}
+                    active={i === this.state.selectedRoomId}
+                  >
+                    {r.name}
+                  </RoomListItem>
+                ))}
+              </RoomList>
+            </Group>
+            {!o && (
+              <RoomEditor
+                room={this.state.rooms[this.state.selectedRoomId]}
+                onUpdateName={this.updateRoomName}
+                onUpdateDimensions={this.updateRoomDimensions}
+              />
+            )}
+            {o && (
+              <ObjectEditor
+                object={o}
+                onUpdateName={this.updateName}
+                onUpdatePosition={this.updatePosition}
+                onUpdateRotation={this.updateRotation}
+                onUpdateScale={this.updateScale}
+                onUpdateAudio={this.updateAudio}
+              />
+            )}
+          </Sidebar>
+          <Main ref={this.mainRef} />
+        </InnerContainer>
       </Container>
     );
   }
