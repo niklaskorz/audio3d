@@ -28,13 +28,7 @@ export default class Project implements Serializable {
   id: number | null = null;
   name = "New project";
 
-  rooms: Room[] = [
-    new Room(this.audioLibrary, "First room", {
-      width: 15,
-      depth: 10,
-      height: 3
-    })
-  ];
+  rooms: Room[] = [];
   audioType: number = 1;
 
   activeRoom: Room;
