@@ -54,6 +54,7 @@ export const Menubar = styled.div`
   color: #fff;
   font-size: 0.9em;
   padding: 0 10px;
+  user-select: none;
 `;
 
 export const MenubarItem = styled.div`

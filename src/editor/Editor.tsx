@@ -86,6 +86,7 @@ export default class Editor extends React.Component<{}, State> {
   componentDidMount(): void {
     if (this.mainRef.current) {
       this.projectCanvas.attach(this.mainRef.current);
+      this.projectCanvas.focus();
     }
   }
 
@@ -199,10 +200,12 @@ export default class Editor extends React.Component<{}, State> {
       ],
       selectedRoomId: s.rooms.length
     }));
+    this.projectCanvas.focus();
   };
 
   onAddCubeClick = () => {
     this.project.activeRoom.addCube();
+    this.projectCanvas.focus();
   };
 
   onExportClick = () => {
