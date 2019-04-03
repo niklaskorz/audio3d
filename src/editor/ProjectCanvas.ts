@@ -123,6 +123,12 @@ export default class ProjectCanvas {
     this.canvas.focus();
   }
 
+  changeProject(project: Project): void {
+    this.project = project;
+    this.controls.project = project;
+    this.selectObject(null);
+  }
+
   selectObject(o: GameObject | null): void {
     if (this.project.activeObject) {
       this.project.activeObject.remove(this.outlineMesh);

@@ -5,6 +5,8 @@ import React from "react";
 import { RoomDimensions } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import { saveAsZip } from "../data/export";
+import { loadZip } from "../data/import";
+import GameObject from "../project/GameObject";
 import Project from "../project/Project";
 import Room from "../project/Room";
 import ObjectEditor from "./ObjectEditor";
@@ -33,43 +35,7 @@ interface State {
 }
 
 export default class Editor extends React.Component<{}, State> {
-  project = new Project({
-    onSelect: o => {
-      if (o) {
-        this.setState({
-          selectedObject: {
-            id: o.id,
-            name: o.name,
-            position: o.position,
-            scale: o.scale,
-            rotation: o.rotation
-          }
-        });
-      } else {
-        this.setState({ selectedObject: null });
-      }
-    },
-    onTranslate: p => {
-      this.setState(({ selectedObject }) => ({
-        selectedObject: selectedObject && {
-          ...selectedObject,
-          position: p
-        }
-      }));
-    },
-    onScale: s => {
-      this.setState(({ selectedObject }) => ({
-        selectedObject: selectedObject && {
-          ...selectedObject,
-          size: {
-            width: s.x,
-            height: s.y,
-            depth: s.z
-          }
-        }
-      }));
-    }
-  });
+  project: Project = new Project();
   projectCanvas = new ProjectCanvas(this.project);
 
   state: State = {
@@ -83,6 +49,16 @@ export default class Editor extends React.Component<{}, State> {
   };
   mainRef = React.createRef<HTMLElement>();
 
+  constructor(props: {}) {
+    super(props);
+
+    this.project.events = {
+      onSelect: this.onSelectObject,
+      onTranslate: this.onTranslateObject,
+      onScale: this.onScaleObject
+    };
+  }
+
   componentDidMount(): void {
     if (this.mainRef.current) {
       this.projectCanvas.attach(this.mainRef.current);
@@ -93,6 +69,44 @@ export default class Editor extends React.Component<{}, State> {
   componentWillUnmount(): void {
     this.projectCanvas.detach();
   }
+
+  onSelectObject = (o: GameObject | null) => {
+    if (o) {
+      this.setState({
+        selectedObject: {
+          id: o.id,
+          name: o.name,
+          position: o.position,
+          scale: o.scale,
+          rotation: o.rotation
+        }
+      });
+    } else {
+      this.setState({ selectedObject: null });
+    }
+  };
+
+  onTranslateObject = (p: Vector3) => {
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        position: p
+      }
+    }));
+  };
+
+  onScaleObject = (s: Vector3) => {
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        size: {
+          width: s.x,
+          height: s.y,
+          depth: s.z
+        }
+      }
+    }));
+  };
 
   selectRoom(id: number): void {
     this.projectCanvas.selectObject(null);
@@ -187,8 +201,8 @@ export default class Editor extends React.Component<{}, State> {
       height: 3
     });
     this.project.rooms.push(room);
-    this.projectCanvas.selectObject(null);
     this.project.activeRoom = room;
+    this.projectCanvas.selectObject(room.addCube());
     this.setState(s => ({
       rooms: [
         ...s.rooms,
@@ -208,6 +222,33 @@ export default class Editor extends React.Component<{}, State> {
     this.projectCanvas.focus();
   };
 
+  onImportClick = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.onchange = async e => {
+      console.log("selected file");
+      const file = input.files![0];
+      this.project = await loadZip(file);
+      this.project.events = {
+        onSelect: this.onSelectObject,
+        onTranslate: this.onTranslateObject,
+        onScale: this.onScaleObject
+      };
+      this.projectCanvas.changeProject(this.project);
+      this.setState({
+        rooms: this.project.rooms.map(r => ({
+          id: r.id,
+          name: r.name,
+          dimensions: r.dimensions
+        })),
+        selectedRoomId: 0,
+        selectedObject: null
+      });
+      this.projectCanvas.focus();
+    };
+    input.click();
+  };
+
   onExportClick = () => {
     saveAsZip(this.project);
   };
@@ -224,7 +265,7 @@ export default class Editor extends React.Component<{}, State> {
               <MenuItem>Load project</MenuItem>
               <MenuItem>Save project</MenuItem>
               <MenuDivider />
-              <MenuItem>Import project</MenuItem>
+              <MenuItem onClick={this.onImportClick}>Import project</MenuItem>
               <MenuItem onClick={this.onExportClick}>Export project</MenuItem>
               <MenuDivider />
               <MenuItem>Settings</MenuItem>

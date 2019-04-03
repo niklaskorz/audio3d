@@ -27,18 +27,21 @@ export default class Project implements Serializable {
 
   id: number | null = null;
   name = "New project";
-  rooms: Room[] = [
-    new Room(this.audioLibrary, "First room", {
+  rooms: Room[] = [];
+
+  activeRoom: Room;
+  activeObject: GameObject | null = null;
+
+  constructor(public events: ProjectEvents = defaultEvents) {
+    const firstRoom = new Room(this.audioLibrary, "First room", {
       width: 15,
       depth: 10,
       height: 3
-    })
-  ];
-
-  activeRoom: Room = this.rooms[0];
-  activeObject: GameObject | null = null;
-
-  constructor(public events: ProjectEvents = defaultEvents) {}
+    });
+    firstRoom.addCube();
+    this.rooms.push(firstRoom);
+    this.activeRoom = firstRoom;
+  }
 
   // Serialize instance to a plain JavaScript object
   toData(): SerializedData {
@@ -54,6 +57,7 @@ export default class Project implements Serializable {
     this.rooms = data.rooms.map((r: SerializedData) =>
       new Room(this.audioLibrary).fromData(r)
     );
+    this.activeRoom = this.rooms[0];
 
     return this;
   }

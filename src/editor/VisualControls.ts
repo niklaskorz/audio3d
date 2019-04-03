@@ -69,7 +69,7 @@ export default class VisualControls extends Scene {
   planeXZ: Mesh;
   planeXY: Mesh;
 
-  constructor(private project: Project) {
+  constructor(public project: Project) {
     super();
 
     // Setup visual controls for transformation
