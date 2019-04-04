@@ -3,7 +3,8 @@
  */
 import React from "react";
 import { RoomDimensions } from "resonance-audio";
-import { Group, Input } from "./styled";
+import { roundToPrecision } from "../utils/math";
+import { Group, Input, InputGroup } from "./styled";
 import { EditorRoom } from "./types";
 
 interface Props {
@@ -29,45 +30,47 @@ export default class RoomEditor extends React.Component<Props> {
         </Group>
         <Group>
           <label>Dimensions (width, depth, height)</label>
-          <Input
-            type="number"
-            step={1}
-            min={5}
-            max={50}
-            value={r.dimensions.width}
-            onChange={e =>
-              onUpdateDimensions({
-                ...r.dimensions,
-                width: e.currentTarget.valueAsNumber
-              })
-            }
-          />
-          <Input
-            type="number"
-            step={1}
-            min={5}
-            max={50}
-            value={r.dimensions.depth}
-            onChange={e =>
-              onUpdateDimensions({
-                ...r.dimensions,
-                depth: e.currentTarget.valueAsNumber
-              })
-            }
-          />
-          <Input
-            type="number"
-            step={1}
-            min={3}
-            max={50}
-            value={r.dimensions.height}
-            onChange={e =>
-              onUpdateDimensions({
-                ...r.dimensions,
-                height: e.currentTarget.valueAsNumber
-              })
-            }
-          />
+          <InputGroup>
+            <Input
+              type="number"
+              step={1}
+              min={5}
+              max={50}
+              value={r.dimensions.width}
+              onChange={e =>
+                onUpdateDimensions({
+                  ...r.dimensions,
+                  width: Math.round(e.currentTarget.valueAsNumber)
+                })
+              }
+            />
+            <Input
+              type="number"
+              step={1}
+              min={5}
+              max={50}
+              value={r.dimensions.depth}
+              onChange={e =>
+                onUpdateDimensions({
+                  ...r.dimensions,
+                  depth: Math.round(e.currentTarget.valueAsNumber)
+                })
+              }
+            />
+            <Input
+              type="number"
+              step={1}
+              min={3}
+              max={50}
+              value={r.dimensions.height}
+              onChange={e =>
+                onUpdateDimensions({
+                  ...r.dimensions,
+                  height: Math.round(e.currentTarget.valueAsNumber)
+                })
+              }
+            />
+          </InputGroup>
         </Group>
       </div>
     );

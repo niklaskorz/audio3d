@@ -5,7 +5,7 @@ import React from "react";
 import { RoomDimensions } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import { saveAsZip } from "../data/export";
-import { loadZip } from "../data/import";
+import { openZip } from "../data/import";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
 import Room from "../project/Room";
@@ -216,31 +216,23 @@ export default class Editor extends React.Component<{}, State> {
     this.project.activeRoom.addCube();
   };
 
-  onImportClick = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "application/zip";
-    input.onchange = async e => {
-      console.log("selected file");
-      const file = input.files![0];
-      this.project = await loadZip(file);
-      this.project.events = {
-        onSelect: this.onSelectObject,
-        onTranslate: this.onTranslateObject,
-        onScale: this.onScaleObject
-      };
-      this.projectCanvas.changeProject(this.project);
-      this.setState({
-        rooms: this.project.rooms.map(r => ({
-          id: r.id,
-          name: r.name,
-          dimensions: r.dimensions
-        })),
-        selectedRoomId: 0,
-        selectedObject: null
-      });
+  onImportClick = async () => {
+    this.project = await openZip();
+    this.project.events = {
+      onSelect: this.onSelectObject,
+      onTranslate: this.onTranslateObject,
+      onScale: this.onScaleObject
     };
-    input.click();
+    this.projectCanvas.changeProject(this.project);
+    this.setState({
+      rooms: this.project.rooms.map(r => ({
+        id: r.id,
+        name: r.name,
+        dimensions: r.dimensions
+      })),
+      selectedRoomId: 0,
+      selectedObject: null
+    });
   };
 
   onExportClick = () => {

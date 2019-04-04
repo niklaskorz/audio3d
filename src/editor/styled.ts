@@ -57,6 +57,23 @@ export const Input = styled.input`
   }
 `;
 
+export const InputGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+
+  > ${Input} {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+
+    margin-right: 5px;
+
+    :last-child {
+      margin-right: 0;
+    }
+  }
+`;
+
 export const RoomList = styled.ol`
   list-style: none;
   padding: 5px;

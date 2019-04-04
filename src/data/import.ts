@@ -4,6 +4,7 @@
  */
 import Zip, { JSZipObject } from "jszip";
 import Project from "../project/Project";
+import { openFileDialog } from "../utils/openFileDialog";
 
 interface FolderItem {
   name: string;
@@ -46,4 +47,14 @@ export const loadZip = async (data: Blob): Promise<Project> => {
   project.fromData(metadata);
 
   return project;
+};
+
+/**
+ * Opens a file dialog and lets the user select a zip file that will be parsed
+ * and loaded as a project.
+ * @returns The project found in the zip
+ */
+export const openZip = async (): Promise<Project> => {
+  const file = await openFileDialog({ accept: "application/zip" });
+  return await loadZip(file);
 };
