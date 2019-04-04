@@ -27,7 +27,9 @@ export default class Project implements Serializable {
 
   id: number | null = null;
   name = "New project";
+
   rooms: Room[] = [];
+  audioType: number = 1;
 
   activeRoom: Room;
   activeObject: GameObject | null = null;

@@ -1,12 +1,14 @@
 /**
  * @author Niklas Korz
  */
+import { ResonanceAudio } from "resonance-audio";
 import {
   AudioListener,
   BackSide,
   Color,
   Mesh,
   MeshBasicMaterial,
+  Object3D,
   PerspectiveCamera,
   PositionalAudio,
   Raycaster,
@@ -14,6 +16,8 @@ import {
   Vector3,
   WebGLRenderer
 } from "three";
+import ResAudio from "../audio/ResAudio";
+import ResListener from "../audio/ResListener";
 import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
 import GameObject from "../project/GameObject";
@@ -37,12 +41,16 @@ export default class ProjectCanvas {
 
   rafHandle = 0;
   previousTimestamp = 0;
-
+  audioType = 1;
   audioContext = new AudioContext();
   listener = new AudioListener();
 
+  audioScene = new ResonanceAudio(this.audioContext);
+  resListener = new ResListener(this.audioScene);
+
   controls: VisualControls;
   camera = new PerspectiveCamera(75, 1, 0.1, 1000);
+
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
   outlineMesh = new Mesh();
@@ -54,6 +62,9 @@ export default class ProjectCanvas {
   isDraggingCamera = false;
 
   constructor(private project: Project) {
+    this.audioScene.output.connect(this.audioContext.destination);
+
+    this.audioType = project.audioType;
     this.renderer.autoClear = false;
     this.renderer.setClearColor(new Color(0x192a56));
     this.canvas = this.renderer.domElement;
@@ -92,6 +103,7 @@ export default class ProjectCanvas {
     this.outlineMesh.scale.multiplyScalar(1.05);
 
     this.camera.add(this.listener);
+    this.camera.add(this.resListener);
   }
 
   attach(target: HTMLElement): void {
@@ -147,31 +159,36 @@ export default class ProjectCanvas {
     if (!this.project.activeObject) {
       return;
     }
+    let audio;
+    if (this.audioType === 0) {
+      const previousAudio = this.project.activeObject.getObjectByName(
+        "audio"
+      ) as PositionalAudio;
+      if (previousAudio) {
+        this.project.activeObject.remove(previousAudio);
+        previousAudio.stop();
+      }
 
-    const previousAudio = this.project.activeObject.getObjectByName(
-      "audio"
-    ) as PositionalAudio;
-    if (previousAudio) {
-      this.project.activeObject.remove(previousAudio);
-      previousAudio.stop();
+      if (this.project.activeObject.audioId) {
+        this.project.audioLibrary.delete(this.project.activeObject.audioId);
+      }
+
+      this.project.activeObject.audioData = data.slice(0);
+      this.project.activeObject.audioId = this.project.audioLibrary.add(
+        this.project.activeObject.audioData
+      );
+
+      const buffer = await this.audioContext.decodeAudioData(data);
+
+      audio = new PositionalAudio(this.listener);
+      audio.name = "audio";
+      audio.setBuffer(buffer);
+      audio.setLoop(true);
+      audio.play();
+    } else {
+      audio = new ResAudio(this.audioScene, this.audioContext);
+      audio.play("/audio/breakbeat.wav");
     }
-
-    if (this.project.activeObject.audioId) {
-      this.project.audioLibrary.delete(this.project.activeObject.audioId);
-    }
-
-    this.project.activeObject.audioData = data.slice(0);
-    this.project.activeObject.audioId = this.project.audioLibrary.add(
-      this.project.activeObject.audioData
-    );
-
-    const buffer = await this.audioContext.decodeAudioData(data);
-
-    const audio = new PositionalAudio(this.listener);
-    audio.name = "audio";
-    audio.setBuffer(buffer);
-    audio.setLoop(true);
-    audio.play();
 
     this.project.activeObject.add(audio);
 

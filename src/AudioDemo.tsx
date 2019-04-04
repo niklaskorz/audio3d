@@ -1,9 +1,4 @@
-import {
-  ResonanceAudio,
-  RoomDimensions,
-  RoomMaterials,
-  Source
-} from "resonance-audio";
+import { ResonanceAudio, RoomDimensions, RoomMaterials } from "resonance-audio";
 import { Vector3 } from "three";
 
 const dimensions: RoomDimensions = {
@@ -33,7 +28,7 @@ export default class AudioDemo {
   audioContext: AudioContext;
   scene: ResonanceAudio;
   audioSource: AudioBufferSourceNode;
-  source: Source;
+  source: ResonanceAudio.Source;
 
   lastT = 0;
   raf = 0;
