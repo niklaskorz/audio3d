@@ -79,6 +79,7 @@ interface Props {
 enum MenuType {
   FileMenu,
   EditMenu,
+  ViewMenu,
   HelpMenu
 }
 
@@ -113,12 +114,13 @@ export default class MenuBar extends React.Component<Props, State> {
           File
           <Menu hidden={activeMenu !== MenuType.FileMenu}>
             <MenuItem>New project</MenuItem>
-            <MenuItem>Load project</MenuItem>
-            <MenuItem>Save project</MenuItem>
             <MenuDivider />
+            <MenuItem>Load project</MenuItem>
             <MenuItem onClick={this.props.onImportProject}>
               Import project
             </MenuItem>
+            <MenuDivider />
+            <MenuItem>Save project</MenuItem>
             <MenuItem onClick={this.props.onExportProject}>
               Export project
             </MenuItem>
@@ -132,13 +134,25 @@ export default class MenuBar extends React.Component<Props, State> {
         >
           Edit
           <Menu hidden={activeMenu !== MenuType.EditMenu}>
-            <MenuItem onClick={this.props.onAddObject}>New object</MenuItem>
+            <MenuItem onClick={this.props.onAddObject}>Add object</MenuItem>
             <MenuItem>Delete object</MenuItem>
             <MenuDivider />
-            <MenuItem onClick={this.props.onAddRoom}>New room</MenuItem>
+            <MenuItem onClick={this.props.onAddRoom}>Add room</MenuItem>
             <MenuItem>Delete room</MenuItem>
             <MenuDivider />
             <MenuItem>Release the kraken</MenuItem>
+          </Menu>
+        </MenubarItem>
+        <MenubarItem
+          isActive={activeMenu === MenuType.ViewMenu}
+          onClick={() => this.toggleMenu(MenuType.ViewMenu)}
+        >
+          View
+          <Menu hidden={activeMenu !== MenuType.ViewMenu}>
+            <MenuItem>Audio Library</MenuItem>
+            <MenuItem>Project Manager</MenuItem>
+            <MenuDivider />
+            <MenuItem>Toggle Fullscreen</MenuItem>
           </Menu>
         </MenubarItem>
         <MenubarItem
@@ -148,7 +162,8 @@ export default class MenuBar extends React.Component<Props, State> {
           Help
           <Menu hidden={activeMenu !== MenuType.HelpMenu}>
             <MenuItem>Issues</MenuItem>
-            <MenuItem>Repository</MenuItem>
+            <MenuItem>Source Code</MenuItem>
+            <MenuDivider />
             <MenuItem>About</MenuItem>
           </Menu>
         </MenubarItem>
