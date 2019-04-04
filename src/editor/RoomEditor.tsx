@@ -21,7 +21,7 @@ export default class RoomEditor extends React.Component<Props> {
     return (
       <div>
         <Group>
-          <label>Name</label>
+          <label>Room Name</label>
           <Input
             type="text"
             value={r.name}

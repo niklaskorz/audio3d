@@ -25,13 +25,13 @@ export const MenubarItem = styled.div<MenubarItemProps>`
   cursor: pointer;
 
   :hover {
-    background: hsl(210, 29%, 20%);
+    background: hsl(210, 25%, 20%);
   }
 
   ${props =>
     props.isActive &&
     css`
-      background: hsl(210, 29%, 20%);
+      background: hsl(210, 25%, 20%);
     `}
 `;
 
@@ -58,7 +58,7 @@ export const MenuItem = styled.div`
   cursor: pointer;
 
   :hover {
-    background: hsl(210, 25%, 30%);
+    background: hsl(210, 29%, 15%);
   }
 `;
 

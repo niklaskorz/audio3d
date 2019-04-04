@@ -57,7 +57,7 @@ export default class ObjectEditor extends React.Component<Props> {
     return (
       <div>
         <Group>
-          <label>Name</label>
+          <label>Object Name</label>
           <Input
             type="text"
             value={o.name}
