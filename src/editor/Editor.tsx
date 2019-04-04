@@ -191,7 +191,60 @@ export default class Editor extends React.Component<{}, State> {
     this.projectCanvas.addAudioToActiveMesh(data);
   };
 
-  onAddRoomClick = () => {
+  newProject = () => {
+    this.project = new Project({
+      onSelect: this.onSelectObject,
+      onTranslate: this.onTranslateObject,
+      onScale: this.onScaleObject
+    });
+    this.projectCanvas.changeProject(this.project);
+    this.setState({
+      rooms: this.project.rooms.map(r => ({
+        id: r.id,
+        name: r.name,
+        dimensions: r.dimensions
+      })),
+      selectedRoomId: 0,
+      selectedObject: null
+    });
+  };
+
+  importProject = async () => {
+    this.project = await openZip();
+    this.project.events = {
+      onSelect: this.onSelectObject,
+      onTranslate: this.onTranslateObject,
+      onScale: this.onScaleObject
+    };
+    this.projectCanvas.changeProject(this.project);
+    this.setState({
+      rooms: this.project.rooms.map(r => ({
+        id: r.id,
+        name: r.name,
+        dimensions: r.dimensions
+      })),
+      selectedRoomId: 0,
+      selectedObject: null
+    });
+  };
+
+  exportProject = () => {
+    saveAsZip(this.project);
+  };
+
+  addObject = () => {
+    this.project.activeRoom.addCube();
+  };
+
+  deleteObject = () => {
+    if (this.project.activeObject) {
+      this.project.activeRoom.remove(this.project.activeObject);
+      this.project.activeObject = null;
+      this.setState({ selectedObject: null });
+    }
+  };
+
+  addRoom = () => {
     const room = new Room(this.project.audioLibrary, "New room", {
       width: 10,
       depth: 10,
@@ -213,31 +266,18 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
-  onAddCubeClick = () => {
-    this.project.activeRoom.addCube();
-  };
-
-  onImportClick = async () => {
-    this.project = await openZip();
-    this.project.events = {
-      onSelect: this.onSelectObject,
-      onTranslate: this.onTranslateObject,
-      onScale: this.onScaleObject
-    };
-    this.projectCanvas.changeProject(this.project);
-    this.setState({
-      rooms: this.project.rooms.map(r => ({
-        id: r.id,
-        name: r.name,
-        dimensions: r.dimensions
-      })),
-      selectedRoomId: 0,
-      selectedObject: null
-    });
-  };
-
-  onExportClick = () => {
-    saveAsZip(this.project);
+  deleteRoom = () => {
+    // Ensure the first room cannot be deleted
+    if (this.state.selectedRoomId > 0) {
+      this.project.rooms.splice(this.state.selectedRoomId, 1);
+      this.setState(s => ({
+        rooms: [
+          ...s.rooms.slice(0, s.selectedRoomId),
+          ...s.rooms.slice(s.selectedRoomId + 1)
+        ],
+        selectedRoomId: 0
+      }));
+    }
   };
 
   render(): React.ReactNode {
@@ -245,10 +285,13 @@ export default class Editor extends React.Component<{}, State> {
     return (
       <Container>
         <MenuBar
-          onImportProject={this.onImportClick}
-          onExportProject={this.onExportClick}
-          onAddObject={this.onAddCubeClick}
-          onAddRoom={this.onAddRoomClick}
+          onNewProject={this.newProject}
+          onImportProject={this.importProject}
+          onExportProject={this.exportProject}
+          onAddObject={this.addObject}
+          onDeleteObject={this.deleteObject}
+          onAddRoom={this.addRoom}
+          onDeleteRoom={this.deleteRoom}
         />
         <InnerContainer>
           <Sidebar>

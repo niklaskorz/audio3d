@@ -70,11 +70,14 @@ export const MenuDivider = styled.div`
 `;
 
 interface Props {
+  onNewProject(): void;
   onImportProject(): void;
   onExportProject(): void;
 
   onAddObject(): void;
+  onDeleteObject(): void;
   onAddRoom(): void;
+  onDeleteRoom(): void;
 }
 
 enum MenuType {
@@ -114,7 +117,7 @@ export default class MenuBar extends React.Component<Props, State> {
         >
           File
           <Menu hidden={activeMenu !== MenuType.FileMenu}>
-            <MenuItem>New project</MenuItem>
+            <MenuItem onClick={this.props.onNewProject}>New project</MenuItem>
             <MenuDivider />
             <MenuItem>Load project</MenuItem>
             <MenuItem onClick={this.props.onImportProject}>
@@ -136,12 +139,14 @@ export default class MenuBar extends React.Component<Props, State> {
           Edit
           <Menu hidden={activeMenu !== MenuType.EditMenu}>
             <MenuItem onClick={this.props.onAddObject}>Add object</MenuItem>
-            <MenuItem>Delete object</MenuItem>
+            <MenuItem onClick={this.props.onDeleteObject}>
+              Delete object
+            </MenuItem>
             <MenuDivider />
             <MenuItem onClick={this.props.onAddRoom}>Add room</MenuItem>
-            <MenuItem>Delete room</MenuItem>
+            <MenuItem onClick={this.props.onDeleteRoom}>Delete room</MenuItem>
             <MenuDivider />
-            <MenuItem onClick={() => alert("The kraken shall be released")}>
+            <MenuItem onClick={() => alert("The kraken will be released")}>
               Release the kraken
             </MenuItem>
           </Menu>
