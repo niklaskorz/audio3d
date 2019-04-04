@@ -305,8 +305,8 @@ export default class ProjectCanvas {
   updateRaycaster(e: MouseEvent): void {
     const size = this.renderer.getSize(new Vector2());
     // Normalize screen coordinates
-    const x = ((e.pageX - this.canvas.offsetLeft) / size.x) * 2 - 1;
-    const y = -((e.pageY - this.canvas.offsetTop) / size.y) * 2 + 1;
+    const x = ((e.pageX - this.target!.offsetLeft) / size.x) * 2 - 1;
+    const y = -((e.pageY - this.target!.offsetTop) / size.y) * 2 + 1;
     // Update raycaster
     this.raycaster.setFromCamera({ x, y }, this.camera);
   }

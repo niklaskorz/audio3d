@@ -15,6 +15,7 @@ import ProjectCanvas from "./ProjectCanvas";
 import RoomEditor from "./RoomEditor";
 import {
   Container,
+  FocusedLabel,
   Group,
   InnerContainer,
   Main,
@@ -283,7 +284,9 @@ export default class Editor extends React.Component<{}, State> {
               />
             )}
           </Sidebar>
-          <Main ref={this.mainRef} />
+          <Main ref={this.mainRef}>
+            <FocusedLabel>Focused</FocusedLabel>
+          </Main>
         </InnerContainer>
       </Container>
     );

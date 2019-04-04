@@ -30,9 +30,28 @@ export const Sidebar = styled.aside`
   overflow-y: auto;
 `;
 
+export const FocusedLabel = styled.div`
+  display: none;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  border-radius: 3px;
+  background: hsl(210, 25%, 20%);
+  border: 1px solid hsl(210, 15%, 40%);
+  opacity: 0.8;
+  color: #fff;
+  pointer-events: none;
+`;
+
 export const Main = styled.main`
+  position: relative;
   flex: 1;
   height: 100%;
+
+  :focus-within > ${FocusedLabel} {
+    display: block;
+  }
 `;
 
 export const Group = styled.div`
