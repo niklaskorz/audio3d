@@ -60,8 +60,8 @@ export default class RoomEditor extends React.Component<Props> {
             <Input
               type="number"
               step={1}
-              min={3}
-              max={50}
+              min={2}
+              max={10}
               value={r.dimensions.height}
               onChange={e =>
                 onUpdateDimensions({

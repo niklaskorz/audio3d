@@ -2,10 +2,24 @@
  * @author Niklas Korz
  */
 import { RoomDimensions } from "resonance-audio";
-import { AmbientLight, GridHelper, Object3D, PointLight, Scene } from "three";
+import {
+  AmbientLight,
+  BackSide,
+  BoxGeometry,
+  GridHelper,
+  Group,
+  Mesh,
+  MeshLambertMaterial,
+  Object3D,
+  PointLight,
+  Scene
+} from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
+
+const wallGeometry = new BoxGeometry(1, 1, 1);
+const wallMaterial = new MeshLambertMaterial();
 
 // A "room" is analog to levels of a game.
 // The user will only hear sounds that are part of the current room.
@@ -13,6 +27,10 @@ import GameObject from "./GameObject";
 // spatial audio implementations.
 export default class Room extends Scene implements Serializable {
   grid: GridHelper;
+  wallNorth = new Mesh(wallGeometry, wallMaterial);
+  wallEast = new Mesh(wallGeometry, wallMaterial);
+  wallSouth = new Mesh(wallGeometry, wallMaterial);
+  wallWest = new Mesh(wallGeometry, wallMaterial);
 
   get dimensions(): RoomDimensions {
     return this.roomDimensions;
@@ -27,6 +45,8 @@ export default class Room extends Scene implements Serializable {
     this.grid = new GridHelper(gridSize, gridSize, 0xffffff, 0xffffff);
 
     this.add(this.grid);
+
+    this.updateWalls();
   }
 
   constructor(
@@ -47,8 +67,13 @@ export default class Room extends Scene implements Serializable {
 
     const gridSize = Math.max(roomDimensions.width, roomDimensions.depth);
     this.grid = new GridHelper(gridSize, gridSize, 0xffffff, 0xffffff);
-
     this.add(this.grid);
+
+    this.updateWalls();
+    this.add(this.wallNorth);
+    this.add(this.wallEast);
+    this.add(this.wallSouth);
+    this.add(this.wallWest);
   }
 
   addCube(): GameObject {
@@ -58,6 +83,20 @@ export default class Room extends Scene implements Serializable {
 
     this.add(cube);
     return cube;
+  }
+
+  updateWalls(): void {
+    const { width, depth, height } = this.roomDimensions;
+
+    this.wallNorth.scale.set(width, height, 0.25);
+    this.wallEast.scale.set(0.25, height, depth);
+    this.wallSouth.scale.set(width, height, 0.25);
+    this.wallWest.scale.set(0.25, height, depth);
+
+    this.wallNorth.position.set(0, height / 2, depth / 2);
+    this.wallEast.position.set(width / 2, height / 2, 0);
+    this.wallSouth.position.set(0, height / 2, -depth / 2);
+    this.wallWest.position.set(-width / 2, height / 2, 0);
   }
 
   toData(): SerializedData {

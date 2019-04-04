@@ -140,7 +140,9 @@ export default class MenuBar extends React.Component<Props, State> {
             <MenuItem onClick={this.props.onAddRoom}>Add room</MenuItem>
             <MenuItem>Delete room</MenuItem>
             <MenuDivider />
-            <MenuItem>Release the kraken</MenuItem>
+            <MenuItem onClick={() => alert("The kraken shall be released")}>
+              Release the kraken
+            </MenuItem>
           </Menu>
         </MenubarItem>
         <MenubarItem
