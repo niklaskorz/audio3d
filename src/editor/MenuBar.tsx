@@ -36,6 +36,7 @@ export const MenubarItem = styled.div<MenubarItemProps>`
 `;
 
 export const Menu = styled.div`
+  z-index: 1;
   position: absolute;
   left: 0;
   top: 100%;
