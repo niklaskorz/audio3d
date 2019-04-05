@@ -2,11 +2,17 @@
  * @author Niklas Korz
  */
 
-export default class AudioLibrary extends Map<number, ArrayBuffer> {
+export interface AudioFile {
+  name: string;
+  type: string;
+  data: ArrayBuffer;
+}
+
+export default class AudioLibrary extends Map<number, AudioFile> {
   nextId = 0;
 
-  add(data: ArrayBuffer): number {
-    this.set(this.nextId, data);
+  add(entry: AudioFile): number {
+    this.set(this.nextId, entry);
     return this.nextId++;
   }
 }

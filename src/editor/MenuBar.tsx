@@ -1,7 +1,7 @@
 import React from "react";
 import styled, { css } from "styled-components";
 
-export const Container = styled.div`
+const Container = styled.div`
   flex: 0 0 auto;
   background: hsl(210, 29%, 15%);
   color: #fff;
@@ -18,7 +18,7 @@ interface MenubarItemProps {
   isActive?: boolean;
 }
 
-export const MenubarItem = styled.div<MenubarItemProps>`
+const MenubarItem = styled.div<MenubarItemProps>`
   position: relative;
   display: inline-block;
   padding: 10px 15px;
@@ -35,7 +35,7 @@ export const MenubarItem = styled.div<MenubarItemProps>`
     `}
 `;
 
-export const Menu = styled.div`
+const Menu = styled.div`
   z-index: 1;
   position: absolute;
   left: 0;
@@ -52,7 +52,7 @@ export const Menu = styled.div`
   cursor: default;
 `;
 
-export const MenuItem = styled.div`
+const MenuItem = styled.div`
   white-space: nowrap;
   padding: 8px 20px;
   margin: 2px 0;
@@ -63,7 +63,7 @@ export const MenuItem = styled.div`
   }
 `;
 
-export const MenuDivider = styled.div`
+const MenuDivider = styled.div`
   height: 0;
   margin: 5px;
   border-bottom: 1px solid hsl(210, 15%, 35%);
@@ -146,9 +146,7 @@ export default class MenuBar extends React.Component<Props, State> {
             <MenuItem onClick={this.props.onAddRoom}>Add room</MenuItem>
             <MenuItem onClick={this.props.onDeleteRoom}>Delete room</MenuItem>
             <MenuDivider />
-            <MenuItem onClick={() => alert("The kraken will be released")}>
-              Release the kraken
-            </MenuItem>
+            <MenuItem>Release the kraken</MenuItem>
           </Menu>
         </MenubarItem>
         <MenubarItem

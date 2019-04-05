@@ -34,7 +34,10 @@ export default class GameObject extends Mesh implements Serializable {
     this.audioId = data.audioId;
 
     if (this.audioId != null) {
-      this.audioData = this.audioLibrary.get(this.audioId) || null;
+      const audioFile = this.audioLibrary.get(this.audioId);
+      if (audioFile) {
+        this.audioData = audioFile.data;
+      }
     }
 
     return this;

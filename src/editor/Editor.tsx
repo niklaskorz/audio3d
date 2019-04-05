@@ -9,6 +9,7 @@ import { openZip } from "../data/import";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
 import Room from "../project/Room";
+import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
 import ProjectCanvas from "./ProjectCanvas";
@@ -54,19 +55,6 @@ export default class Editor extends React.Component<{}, State> {
       onTranslate: this.onTranslateObject,
       onScale: this.onScaleObject
     };
-  }
-
-  // React component lifecycle methods
-
-  componentDidMount(): void {
-    if (this.mainRef.current) {
-      this.projectCanvas.attach(this.mainRef.current);
-      this.projectCanvas.focus();
-    }
-  }
-
-  componentWillUnmount(): void {
-    this.projectCanvas.detach();
   }
 
   // Menubar functionality
@@ -285,10 +273,24 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
+  // React component lifecycle methods
+
+  componentDidMount(): void {
+    if (this.mainRef.current) {
+      this.projectCanvas.attach(this.mainRef.current);
+      this.projectCanvas.focus();
+    }
+  }
+
+  componentWillUnmount(): void {
+    this.projectCanvas.detach();
+  }
+
   render(): React.ReactNode {
     const o = this.state.selectedObject;
     return (
       <Container>
+        <AudioLibraryModal audioLibrary={this.project.audioLibrary} />
         <MenuBar
           onNewProject={this.newProject}
           onImportProject={this.importProject}

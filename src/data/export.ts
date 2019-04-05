@@ -16,10 +16,13 @@ export const createZip = (project: Project): Promise<Blob> => {
   const zip = new Zip();
   zip.file("metadata.json", JSON.stringify(metadata));
 
+  const audioLibrary: Array<{ id: number; name: string; type: string }> = [];
   const audioFolder = zip.folder("audio");
   for (const [key, value] of project.audioLibrary.entries()) {
-    audioFolder.file(key.toString(), value);
+    audioLibrary.push({ id: key, name: value.name, type: value.type });
+    audioFolder.file(key.toString(), value.data);
   }
+  zip.file("audioLibrary.json", JSON.stringify(audioLibrary));
 
   return zip.generateAsync({ type: "blob" });
 };

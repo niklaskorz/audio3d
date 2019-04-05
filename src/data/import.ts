@@ -4,48 +4,33 @@
  */
 import Zip, { JSZipObject } from "jszip";
 import Project from "../project/Project";
-import { openFileDialog } from "../utils/openFileDialog";
-
-interface FolderItem {
-  name: string;
-  file: JSZipObject;
-}
-
-/**
- * Iterates over all files at the root of a zip folder and returns them as an array.
- */
-const getFilesInFolder = (folder: Zip): FolderItem[] => {
-  const files: FolderItem[] = [];
-  folder.forEach((name, file) => files.push({ name, file }));
-  return files;
-};
+import { openFileDialog } from "../utils/files";
 
 /**
  * Decompresses the given zip file, loads the included JSON metadata and reads all
  * included audio files as binary array buffers.
- * @param data The blob to read from, usually a file returned by a FileReader instance.
+ * @param blob The blob to read from, usually a file returned by a FileReader instance.
  * @returns The project recreated from the data found in the zip
  */
-export const loadZip = async (data: Blob): Promise<Project> => {
-  const zip = await Zip.loadAsync(data);
+export const loadZip = async (blob: Blob): Promise<Project> => {
+  const zip = await Zip.loadAsync(blob);
   const metadata = JSON.parse(await zip.file("metadata.json").async("text"));
 
+  const audioLibrary = JSON.parse(
+    await zip.file("audioLibrary.json").async("text")
+  );
   const audioFolder = zip.folder("audio");
   const project = new Project();
-  for (const { name, file } of getFilesInFolder(audioFolder)) {
-    const id = parseInt(name, 10);
-    // Only load files in the audio folder which have a valid id as name
-    if (!isNaN(id)) {
-      project.audioLibrary.set(id, await file.async("arraybuffer"));
+  for (const { id, name, type } of audioLibrary) {
+    const data = await audioFolder.file(id.toString()).async("arraybuffer");
+    project.audioLibrary.set(id, { name, type, data });
 
-      if (id >= project.audioLibrary.nextId) {
-        project.audioLibrary.nextId = id + 1;
-      }
+    if (id >= project.audioLibrary.nextId) {
+      project.audioLibrary.nextId = id + 1;
     }
   }
 
   project.fromData(metadata);
-
   return project;
 };
 

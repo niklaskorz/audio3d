@@ -27,3 +27,17 @@ export const openFileDialog = (
     };
     input.click();
   });
+
+export const readFileAsArrayBuffer = (file: File): Promise<ArrayBuffer> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      if (reader.result) {
+        resolve(reader.result);
+      } else {
+        console.error("Failed reading file:", e);
+        reject(e);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });

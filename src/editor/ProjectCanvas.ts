@@ -147,9 +147,11 @@ export default class ProjectCanvas {
       }
 
       this.project.activeObject.audioData = data.slice(0);
-      this.project.activeObject.audioId = this.project.audioLibrary.add(
-        this.project.activeObject.audioData
-      );
+      this.project.activeObject.audioId = this.project.audioLibrary.add({
+        name: "",
+        type: "",
+        data: this.project.activeObject.audioData
+      });
 
       const buffer = await this.audioContext.decodeAudioData(data);
 
