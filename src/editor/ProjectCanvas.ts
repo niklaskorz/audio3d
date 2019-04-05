@@ -49,7 +49,7 @@ export default class ProjectCanvas {
   resListener = new ResListener(this.audioScene);
 
   controls: VisualControls;
-  camera = new PerspectiveCamera(75, 1, 0.1, 1000);
+  camera = new PerspectiveCamera(60, 1, 0.1, 1000);
 
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
