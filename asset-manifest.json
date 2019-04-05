@@ -1,7 +1,7 @@
 {
   "main.css": "/audio3d/static/css/main.50c09ce4.chunk.css",
-  "main.js": "/audio3d/static/js/main.be46ae13.chunk.js",
-  "main.js.map": "/audio3d/static/js/main.be46ae13.chunk.js.map",
+  "main.js": "/audio3d/static/js/main.4dcdd75a.chunk.js",
+  "main.js.map": "/audio3d/static/js/main.4dcdd75a.chunk.js.map",
   "static/css/1.96a299c5.chunk.css": "/audio3d/static/css/1.96a299c5.chunk.css",
   "static/js/1.3e128dff.chunk.js": "/audio3d/static/js/1.3e128dff.chunk.js",
   "static/js/1.3e128dff.chunk.js.map": "/audio3d/static/js/1.3e128dff.chunk.js.map",
@@ -10,6 +10,6 @@
   "static/css/main.50c09ce4.chunk.css.map": "/audio3d/static/css/main.50c09ce4.chunk.css.map",
   "static/css/1.96a299c5.chunk.css.map": "/audio3d/static/css/1.96a299c5.chunk.css.map",
   "index.html": "/audio3d/index.html",
-  "precache-manifest.4b335c3ca19afeb31fcfe17dce4135bb.js": "/audio3d/precache-manifest.4b335c3ca19afeb31fcfe17dce4135bb.js",
+  "precache-manifest.8dc1db30639edfd0a44e40934ad1a4bc.js": "/audio3d/precache-manifest.8dc1db30639edfd0a44e40934ad1a4bc.js",
   "service-worker.js": "/audio3d/service-worker.js"
 }
