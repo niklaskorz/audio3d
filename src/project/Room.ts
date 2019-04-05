@@ -11,8 +11,10 @@ import {
   Mesh,
   MeshLambertMaterial,
   Object3D,
+  PerspectiveCamera,
   PointLight,
-  Scene
+  Scene,
+  Vector3
 } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
 import AudioLibrary from "./AudioLibrary";
@@ -31,6 +33,7 @@ export default class Room extends Scene implements Serializable {
   wallEast = new Mesh(wallGeometry, wallMaterial);
   wallSouth = new Mesh(wallGeometry, wallMaterial);
   wallWest = new Mesh(wallGeometry, wallMaterial);
+  camera = new PerspectiveCamera(60, 1, 0.1, 1000);
 
   get dimensions(): RoomDimensions {
     return this.roomDimensions;
@@ -52,7 +55,7 @@ export default class Room extends Scene implements Serializable {
   constructor(
     private audioLibrary: AudioLibrary,
     name: string = "",
-    private roomDimensions: RoomDimensions = { width: 1, height: 1, depth: 1 }
+    private roomDimensions: RoomDimensions = { width: 15, depth: 15, height: 3 }
   ) {
     super();
 
@@ -74,6 +77,10 @@ export default class Room extends Scene implements Serializable {
     this.add(this.wallEast);
     this.add(this.wallSouth);
     this.add(this.wallWest);
+
+    this.camera.position.z = 3;
+    this.camera.position.y = 3;
+    this.camera.lookAt(new Vector3(0, 0.5, 0));
   }
 
   addCube(): GameObject {

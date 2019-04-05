@@ -106,8 +106,7 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   selectRoom(id: number): void {
-    this.projectCanvas.selectObject(null);
-    this.project.activeRoom = this.project.rooms[id];
+    this.project.selectRoom(this.project.rooms[id]);
     this.setState({ selectedRoomId: id, selectedObject: null });
   }
 
@@ -245,14 +244,10 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   addRoom = () => {
-    const room = new Room(this.project.audioLibrary, "New room", {
-      width: 10,
-      depth: 10,
-      height: 3
-    });
+    const room = new Room(this.project.audioLibrary, "New room");
+    room.addCube();
     this.project.rooms.push(room);
-    this.project.activeRoom = room;
-    this.projectCanvas.selectObject(room.addCube());
+    this.project.selectRoom(room);
     this.setState(s => ({
       rooms: [
         ...s.rooms,
@@ -304,7 +299,7 @@ export default class Editor extends React.Component<{}, State> {
                     onClick={() => this.selectRoom(i)}
                     active={i === this.state.selectedRoomId}
                   >
-                    {r.name}
+                    {r.name || "Anonymous Room"}
                   </RoomListItem>
                 ))}
               </RoomList>

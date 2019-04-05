@@ -49,7 +49,6 @@ export default class ProjectCanvas {
   resListener = new ResListener(this.audioScene);
 
   controls: VisualControls;
-  camera = new PerspectiveCamera(60, 1, 0.1, 1000);
 
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
@@ -91,19 +90,8 @@ export default class ProjectCanvas {
     // const ph = new PlaneHelper(this.controls.plane, 10, 0x999999);
     // this.scene.add(ph);
 
-    this.camera.position.z = 3;
-    this.camera.position.y = 3;
-    this.camera.lookAt(new Vector3(0, 0.5, 0));
-
-    const outlineMaterial = new MeshBasicMaterial({
-      color: 0xffffff,
-      side: BackSide
-    });
-    this.outlineMesh.material = outlineMaterial;
-    this.outlineMesh.scale.multiplyScalar(1.05);
-
-    this.camera.add(this.listener);
-    this.camera.add(this.resListener);
+    this.project.camera.add(this.listener);
+    this.project.camera.add(this.resListener);
   }
 
   attach(target: HTMLElement): void {
@@ -138,21 +126,6 @@ export default class ProjectCanvas {
   changeProject(project: Project): void {
     this.project = project;
     this.controls.project = project;
-    this.selectObject(null);
-  }
-
-  selectObject(o: GameObject | null): void {
-    if (this.project.activeObject) {
-      this.project.activeObject.remove(this.outlineMesh);
-    }
-
-    if (o) {
-      this.outlineMesh.geometry = o.geometry;
-      o.add(this.outlineMesh);
-    }
-
-    this.project.activeObject = o;
-    this.project.events.onSelect(o);
   }
 
   async addAudioToActiveMesh(data: ArrayBuffer): Promise<void> {
@@ -202,8 +175,8 @@ export default class ProjectCanvas {
 
     const { offsetWidth, offsetHeight } = this.target;
 
-    this.camera.aspect = offsetWidth / offsetHeight;
-    this.camera.updateProjectionMatrix();
+    this.project.camera.aspect = offsetWidth / offsetHeight;
+    this.project.camera.updateProjectionMatrix();
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(offsetWidth, offsetHeight);
@@ -217,48 +190,50 @@ export default class ProjectCanvas {
     this.update(dt);
 
     this.renderer.clear();
-    this.renderer.render(this.project.activeRoom, this.camera);
+    this.renderer.render(this.project.activeRoom, this.project.camera);
 
     if (this.project.activeObject) {
       // Draw controls in front of all other objects
       // https://stackoverflow.com/questions/12666570/how-to-change-the-zorder-of-object-with-threejs/12666937#12666937
       this.controls.position.copy(this.project.activeObject.position);
       this.renderer.clearDepth();
-      this.renderer.render(this.controls, this.camera);
+      this.renderer.render(this.controls, this.project.camera);
     }
   };
 
   update(dt: number): void {
+    const { camera } = this.project;
+
     if (this.keys.isPressed("w")) {
-      this.camera.translateOnAxis(axes.z, -2 * dt);
+      camera.translateOnAxis(axes.z, -2 * dt);
     }
     if (this.keys.isPressed("s")) {
-      this.camera.translateOnAxis(axes.z, 2 * dt);
+      camera.translateOnAxis(axes.z, 2 * dt);
     }
     if (this.keys.isPressed("a")) {
-      this.camera.translateOnAxis(axes.x, -2 * dt);
+      camera.translateOnAxis(axes.x, -2 * dt);
     }
     if (this.keys.isPressed("d")) {
-      this.camera.translateOnAxis(axes.x, 2 * dt);
+      camera.translateOnAxis(axes.x, 2 * dt);
     }
     if (this.keys.isPressed(" ")) {
-      this.camera.position.y += 2 * dt;
+      camera.position.y += 2 * dt;
     }
     if (this.keys.isPressed("Shift")) {
-      this.camera.position.y -= 2 * dt;
+      camera.position.y -= 2 * dt;
     }
 
     if (this.keys.isPressed("ArrowLeft")) {
-      this.camera.rotateOnWorldAxis(axes.y, dt);
+      camera.rotateOnWorldAxis(axes.y, dt);
     }
     if (this.keys.isPressed("ArrowRight")) {
-      this.camera.rotateOnWorldAxis(axes.y, -dt);
+      camera.rotateOnWorldAxis(axes.y, -dt);
     }
     if (this.keys.isPressed("ArrowUp")) {
-      this.camera.rotateOnAxis(axes.x, dt);
+      camera.rotateOnAxis(axes.x, dt);
     }
     if (this.keys.isPressed("ArrowDown")) {
-      this.camera.rotateOnAxis(axes.x, -dt);
+      camera.rotateOnAxis(axes.x, -dt);
     }
 
     const gamepadAxes = {
@@ -270,19 +245,19 @@ export default class ProjectCanvas {
     };
     // console.log(axes);
     if (gamepadAxes.x) {
-      this.camera.translateOnAxis(axes.x, 2 * dt * gamepadAxes.x);
+      camera.translateOnAxis(axes.x, 2 * dt * gamepadAxes.x);
     }
     if (gamepadAxes.y) {
-      this.camera.translateOnAxis(axes.z, 2 * dt * gamepadAxes.y);
+      camera.translateOnAxis(axes.z, 2 * dt * gamepadAxes.y);
     }
     if (gamepadAxes.b) {
-      this.camera.translateOnAxis(axes.y, 2 * dt * gamepadAxes.b);
+      camera.translateOnAxis(axes.y, 2 * dt * gamepadAxes.b);
     }
     if (gamepadAxes.rX) {
-      this.camera.rotateOnWorldAxis(axes.y, -dt * gamepadAxes.rX);
+      camera.rotateOnWorldAxis(axes.y, -dt * gamepadAxes.rX);
     }
     if (gamepadAxes.rY) {
-      this.camera.rotateOnAxis(axes.x, -dt * gamepadAxes.rY);
+      camera.rotateOnAxis(axes.x, -dt * gamepadAxes.rY);
     }
   }
 
@@ -293,12 +268,12 @@ export default class ProjectCanvas {
     for (const intersection of intersections) {
       const o = intersection.object;
       if (o instanceof GameObject) {
-        this.selectObject(o);
+        this.project.selectObject(o);
         return true;
       }
     }
 
-    this.selectObject(null);
+    this.project.selectObject(null);
     return false;
   }
 
@@ -308,7 +283,7 @@ export default class ProjectCanvas {
     const x = ((e.pageX - this.target!.offsetLeft) / size.x) * 2 - 1;
     const y = -((e.pageY - this.target!.offsetTop) / size.y) * 2 + 1;
     // Update raycaster
-    this.raycaster.setFromCamera({ x, y }, this.camera);
+    this.raycaster.setFromCamera({ x, y }, this.project.camera);
   }
 
   onClick = (e: MouseEvent) => {
@@ -354,10 +329,10 @@ export default class ProjectCanvas {
   onMouseMove = (e: MouseEvent): void => {
     if (this.isDraggingCamera) {
       if (e.movementX) {
-        this.camera.rotateOnWorldAxis(axes.y, -e.movementX / 100);
+        this.project.camera.rotateOnWorldAxis(axes.y, -e.movementX / 100);
       }
       if (e.movementY) {
-        this.camera.rotateOnAxis(axes.x, -e.movementY / 100);
+        this.project.camera.rotateOnAxis(axes.x, -e.movementY / 100);
       }
     } else {
       this.updateRaycaster(e);
@@ -379,6 +354,6 @@ export default class ProjectCanvas {
       // More granular zoom for pixel mode
       delta /= 15;
     }
-    this.camera.translateZ(delta / 10);
+    this.project.camera.translateZ(delta / 10);
   };
 }

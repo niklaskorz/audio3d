@@ -1,7 +1,13 @@
 /**
  * @author Niklas Korz
  */
-import { Vector3 } from "three";
+import {
+  BackSide,
+  Mesh,
+  MeshBasicMaterial,
+  PerspectiveCamera,
+  Vector3
+} from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
@@ -34,15 +40,44 @@ export default class Project implements Serializable {
   activeRoom: Room;
   activeObject: GameObject | null = null;
 
+  outlineMesh = new Mesh();
+
+  get camera(): PerspectiveCamera {
+    return this.activeRoom.camera;
+  }
+
   constructor(public events: ProjectEvents = defaultEvents) {
-    const firstRoom = new Room(this.audioLibrary, "First room", {
-      width: 15,
-      depth: 10,
-      height: 3
-    });
+    const firstRoom = new Room(this.audioLibrary, "First room");
     firstRoom.addCube();
     this.rooms.push(firstRoom);
     this.activeRoom = firstRoom;
+
+    this.outlineMesh.material = new MeshBasicMaterial({
+      color: 0xffffff,
+      side: BackSide
+    });
+    this.outlineMesh.scale.multiplyScalar(1.05);
+  }
+
+  selectRoom(room: Room): void {
+    room.camera.aspect = this.activeRoom.camera.aspect;
+    room.camera.updateProjectionMatrix();
+    this.activeRoom = room;
+    this.selectObject(null);
+  }
+
+  selectObject(o: GameObject | null): void {
+    if (this.activeObject) {
+      this.activeObject.remove(this.outlineMesh);
+    }
+
+    if (o) {
+      this.outlineMesh.geometry = o.geometry;
+      o.add(this.outlineMesh);
+    }
+
+    this.activeObject = o;
+    this.events.onSelect(o);
   }
 
   // Serialize instance to a plain JavaScript object
