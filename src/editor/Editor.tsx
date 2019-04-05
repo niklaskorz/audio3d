@@ -56,6 +56,8 @@ export default class Editor extends React.Component<{}, State> {
     };
   }
 
+  // React component lifecycle methods
+
   componentDidMount(): void {
     if (this.mainRef.current) {
       this.projectCanvas.attach(this.mainRef.current);
@@ -67,128 +69,7 @@ export default class Editor extends React.Component<{}, State> {
     this.projectCanvas.detach();
   }
 
-  onSelectObject = (o: GameObject | null) => {
-    if (o) {
-      this.setState({
-        selectedObject: {
-          id: o.id,
-          name: o.name,
-          position: o.position,
-          scale: o.scale,
-          rotation: o.rotation
-        }
-      });
-    } else {
-      this.setState({ selectedObject: null });
-    }
-  };
-
-  onTranslateObject = (p: Vector3) => {
-    this.setState(({ selectedObject }) => ({
-      selectedObject: selectedObject && {
-        ...selectedObject,
-        position: p
-      }
-    }));
-  };
-
-  onScaleObject = (s: Vector3) => {
-    this.setState(({ selectedObject }) => ({
-      selectedObject: selectedObject && {
-        ...selectedObject,
-        size: {
-          width: s.x,
-          height: s.y,
-          depth: s.z
-        }
-      }
-    }));
-  };
-
-  selectRoom(id: number): void {
-    this.project.selectRoom(this.project.rooms[id]);
-    this.setState({ selectedRoomId: id, selectedObject: null });
-  }
-
-  updateRoomName = (name: string) => {
-    this.project.activeRoom.name = name;
-    this.setState(({ rooms, selectedRoomId }) => ({
-      rooms: [
-        ...rooms.slice(0, selectedRoomId),
-        {
-          ...rooms[selectedRoomId],
-          name
-        },
-        ...rooms.slice(selectedRoomId + 1)
-      ]
-    }));
-  };
-
-  updateRoomDimensions = (dimensions: RoomDimensions) => {
-    this.project.activeRoom.dimensions = dimensions;
-    this.setState(({ rooms, selectedRoomId }) => ({
-      rooms: [
-        ...rooms.slice(0, selectedRoomId),
-        {
-          ...rooms[selectedRoomId],
-          dimensions
-        },
-        ...rooms.slice(selectedRoomId + 1)
-      ]
-    }));
-  };
-
-  updateName = (name: string) => {
-    if (this.project.activeObject) {
-      this.project.activeObject.name = name;
-    }
-    this.setState(({ selectedObject }) => ({
-      selectedObject: selectedObject && {
-        ...selectedObject,
-        name
-      }
-    }));
-  };
-
-  updateScale = (x: number, y: number, z: number) => {
-    if (this.project.activeObject) {
-      this.project.activeObject.scale.set(x, y, z);
-    }
-    this.setState(({ selectedObject }) => ({
-      selectedObject: selectedObject && {
-        ...selectedObject,
-        scale: new Vector3(x, y, z)
-      }
-    }));
-  };
-
-  updatePosition = (x: number, y: number, z: number) => {
-    if (this.project.activeObject) {
-      this.project.activeObject.position.set(x, y, z);
-    }
-    this.setState(({ selectedObject }) => ({
-      selectedObject: selectedObject && {
-        ...selectedObject,
-        position: new Vector3(x, y, z)
-      }
-    }));
-  };
-
-  updateRotation = (x: number, y: number, z: number) => {
-    if (this.project.activeObject) {
-      this.project.activeObject.rotation.set(x, y, z);
-    }
-    this.setState(({ selectedObject }) => ({
-      selectedObject: selectedObject && {
-        ...selectedObject,
-        rotation: new Euler(x, y, z)
-      }
-    }));
-  };
-
-  updateAudio = (data: ArrayBuffer) => {
-    this.projectCanvas.addAudioToActiveMesh(data);
-  };
+  // Menubar functionality
 
   newProject = () => {
     this.project = new Project({
@@ -273,6 +154,135 @@ export default class Editor extends React.Component<{}, State> {
         selectedRoomId: 0
       }));
     }
+  };
+
+  // Room specific editor functionality
+
+  selectRoom(id: number): void {
+    this.project.selectRoom(this.project.rooms[id]);
+    this.setState({ selectedRoomId: id, selectedObject: null });
+  }
+
+  updateRoomName = (name: string) => {
+    this.project.activeRoom.name = name;
+    this.setState(({ rooms, selectedRoomId }) => ({
+      rooms: [
+        ...rooms.slice(0, selectedRoomId),
+        {
+          ...rooms[selectedRoomId],
+          name
+        },
+        ...rooms.slice(selectedRoomId + 1)
+      ]
+    }));
+  };
+
+  updateRoomDimensions = (dimensions: RoomDimensions) => {
+    this.project.activeRoom.dimensions = dimensions;
+    this.setState(({ rooms, selectedRoomId }) => ({
+      rooms: [
+        ...rooms.slice(0, selectedRoomId),
+        {
+          ...rooms[selectedRoomId],
+          dimensions
+        },
+        ...rooms.slice(selectedRoomId + 1)
+      ]
+    }));
+  };
+
+  // Object editor functionality
+
+  updateName = (name: string) => {
+    if (this.project.activeObject) {
+      this.project.activeObject.name = name;
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        name
+      }
+    }));
+  };
+
+  updateScale = (x: number, y: number, z: number) => {
+    if (this.project.activeObject) {
+      this.project.activeObject.scale.set(x, y, z);
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        scale: new Vector3(x, y, z)
+      }
+    }));
+  };
+
+  updatePosition = (x: number, y: number, z: number) => {
+    if (this.project.activeObject) {
+      this.project.activeObject.position.set(x, y, z);
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        position: new Vector3(x, y, z)
+      }
+    }));
+  };
+
+  updateRotation = (x: number, y: number, z: number) => {
+    if (this.project.activeObject) {
+      this.project.activeObject.rotation.set(x, y, z);
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        rotation: new Euler(x, y, z)
+      }
+    }));
+  };
+
+  updateAudio = (data: ArrayBuffer) => {
+    this.projectCanvas.addAudioToActiveMesh(data);
+  };
+
+  // Project canvas events
+
+  onSelectObject = (o: GameObject | null) => {
+    if (o) {
+      this.setState({
+        selectedObject: {
+          id: o.id,
+          name: o.name,
+          position: o.position,
+          scale: o.scale,
+          rotation: o.rotation
+        }
+      });
+    } else {
+      this.setState({ selectedObject: null });
+    }
+  };
+
+  onTranslateObject = (p: Vector3) => {
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        position: p
+      }
+    }));
+  };
+
+  onScaleObject = (s: Vector3) => {
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        size: {
+          width: s.x,
+          height: s.y,
+          depth: s.z
+        }
+      }
+    }));
   };
 
   render(): React.ReactNode {
