@@ -31,13 +31,13 @@ export const openFileDialog = (
 export const readFileAsArrayBuffer = (file: File): Promise<ArrayBuffer> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = () => {
       if (reader.result) {
-        resolve(reader.result);
-      } else {
-        console.error("Failed reading file:", e);
-        reject(e);
+        resolve(reader.result as ArrayBuffer);
       }
+    };
+    reader.onerror = () => {
+      console.error("Error:", reader.error);
     };
     reader.readAsArrayBuffer(file);
   });

@@ -9,7 +9,7 @@ import { openZip } from "../data/import";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
 import Room from "../project/Room";
-import AudioLibraryModal from "./AudioLibraryModal";
+import AudioLibraryModal, { AudioEntry } from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
 import ProjectCanvas from "./ProjectCanvas";
@@ -26,10 +26,17 @@ import {
 } from "./styled";
 import { EditorObject, EditorRoom } from "./types";
 
+enum ModalType {
+  AudioLibrary,
+  AudioSelection,
+  ProjectManager
+}
+
 interface State {
   rooms: EditorRoom[];
   selectedRoomId: number;
   selectedObject: EditorObject | null;
+  modal: ModalType | null;
 }
 
 export default class Editor extends React.Component<{}, State> {
@@ -43,7 +50,8 @@ export default class Editor extends React.Component<{}, State> {
       dimensions: r.dimensions
     })),
     selectedRoomId: 0,
-    selectedObject: null
+    selectedObject: null,
+    modal: null
   };
   mainRef = React.createRef<HTMLElement>();
 
@@ -144,6 +152,10 @@ export default class Editor extends React.Component<{}, State> {
     }
   };
 
+  showAudioLibrary = () => {
+    this.setState({ modal: ModalType.AudioLibrary });
+  };
+
   // Room specific editor functionality
 
   selectRoom(id: number): void {
@@ -229,8 +241,20 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
-  updateAudio = (data: ArrayBuffer) => {
-    this.projectCanvas.addAudioToActiveMesh(data);
+  showAudioSelection = () => {
+    this.setState({
+      modal: ModalType.AudioLibrary
+    });
+  };
+
+  // Modal events
+
+  dismissModal = () => {
+    this.setState({ modal: null });
+  };
+
+  selectAudio = (entry: AudioEntry) => {
+    console.log("Selected:", entry);
   };
 
   // Project canvas events
@@ -287,10 +311,21 @@ export default class Editor extends React.Component<{}, State> {
   }
 
   render(): React.ReactNode {
+    const { modal } = this.state;
     const o = this.state.selectedObject;
+
     return (
       <Container>
-        <AudioLibraryModal audioLibrary={this.project.audioLibrary} />
+        {(modal === ModalType.AudioLibrary ||
+          modal === ModalType.AudioSelection) && (
+          <AudioLibraryModal
+            audioLibrary={this.project.audioLibrary}
+            onDismiss={this.dismissModal}
+            onSelect={
+              modal === ModalType.AudioSelection ? this.selectAudio : undefined
+            }
+          />
+        )}
         <MenuBar
           onNewProject={this.newProject}
           onImportProject={this.importProject}
@@ -299,6 +334,7 @@ export default class Editor extends React.Component<{}, State> {
           onDeleteObject={this.deleteObject}
           onAddRoom={this.addRoom}
           onDeleteRoom={this.deleteRoom}
+          onShowAudioLibrary={this.showAudioLibrary}
         />
         <InnerContainer>
           <Sidebar>
@@ -330,7 +366,7 @@ export default class Editor extends React.Component<{}, State> {
                 onUpdatePosition={this.updatePosition}
                 onUpdateRotation={this.updateRotation}
                 onUpdateScale={this.updateScale}
-                onUpdateAudio={this.updateAudio}
+                onShowAudioSelection={this.showAudioSelection}
               />
             )}
           </Sidebar>

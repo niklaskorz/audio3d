@@ -78,6 +78,8 @@ interface Props {
   onDeleteObject(): void;
   onAddRoom(): void;
   onDeleteRoom(): void;
+
+  onShowAudioLibrary(): void;
 }
 
 enum MenuType {
@@ -155,7 +157,9 @@ export default class MenuBar extends React.Component<Props, State> {
         >
           View
           <Menu hidden={activeMenu !== MenuType.ViewMenu}>
-            <MenuItem>Audio Library</MenuItem>
+            <MenuItem onClick={this.props.onShowAudioLibrary}>
+              Audio Library
+            </MenuItem>
             <MenuItem>Project Manager</MenuItem>
             <MenuDivider />
             <MenuItem>Toggle Fullscreen</MenuItem>

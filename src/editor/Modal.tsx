@@ -28,7 +28,6 @@ const Container = styled.div`
 `;
 
 const TitleBar = styled.div`
-  font-size: 1.1em;
   padding: 10px 15px;
   background: hsl(210, 29%, 15%);
 `;
@@ -51,10 +50,11 @@ export const Action = styled.button`
   color: #fff;
   cursor: pointer;
   border-radius: 3px;
-  padding: 10px 15px;
+  padding: 8px 12px;
   margin-left: 10px;
+  font-size: 0.9em;
 
-  transition: 0.2s background, 0.2s box-shadow;
+  transition: 0.2s background-color, 0.2s box-shadow;
 
   :hover,
   :active {

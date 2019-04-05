@@ -12,39 +12,11 @@ interface Props {
   onUpdatePosition(x: number, y: number, z: number): void;
   onUpdateRotation(x: number, y: number, z: number): void;
   onUpdateScale(x: number, y: number, z: number): void;
-  onUpdateAudio(data: ArrayBuffer): void;
+  onShowAudioSelection(): void;
 }
 
 // UI component for editing properties specific to objects inside a room
 export default class ObjectEditor extends React.Component<Props> {
-  onAudioFileSelected: React.ChangeEventHandler<HTMLInputElement> = e => {
-    const { files } = e.currentTarget;
-    if (!files) {
-      return;
-    }
-    const file = files.item(0);
-    if (!file) {
-      return;
-    }
-    console.log("Selected file:", file);
-
-    if (file.size > 5 * 1024 * 1024) {
-      console.log("File too big, aborting");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (!reader.result) {
-        console.error("Failed reading file:", e);
-        return;
-      }
-
-      this.props.onUpdateAudio(reader.result as ArrayBuffer);
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
   render(): React.ReactNode {
     const {
       object: o,
@@ -194,11 +166,12 @@ export default class ObjectEditor extends React.Component<Props> {
           </InputGroup>
         </Group>
         <Group>
-          <label>Audio source (file)</label>
+          <label>Audio</label>
           <Input
-            type="file"
-            accept="audio/*"
-            onChange={this.onAudioFileSelected}
+            type="text"
+            readOnly={true}
+            value="None"
+            onClick={this.props.onShowAudioSelection}
           />
         </Group>
       </div>
