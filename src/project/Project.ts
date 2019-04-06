@@ -109,6 +109,11 @@ export default class Project implements Serializable {
     );
     this.activeRoom = this.rooms[0];
 
+    // Disable audio in all inactive rooms
+    for (let i = 1; i < this.rooms.length; i++) {
+      this.rooms[i].listener.setMasterVolume(0);
+    }
+
     return this;
   }
 }
