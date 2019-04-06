@@ -36,12 +36,18 @@
     "prettier/prettier": "error",
     "no-console": 0,
     "@typescript-eslint/explicit-member-accessibility": 0,
-    "@typescript-eslint/explicit-function-return-type": ["error", {
-      "allowExpressions": true
-    }],
+    "@typescript-eslint/explicit-function-return-type": [
+      "error",
+      {
+        "allowExpressions": true
+      }
+    ],
     "@typescript-eslint/no-explicit-any": 0,
     "@typescript-eslint/no-non-null-assertion": "warn",
-    "@typescript-eslint/array-type": ["error", "array-simple"],
+    "@typescript-eslint/array-type": [
+      "error",
+      "array-simple"
+    ],
     "react/no-unescaped-entities": 0
   }
 }
