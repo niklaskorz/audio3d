@@ -1,7 +1,13 @@
 /**
  * @author Niklas Korz
  */
-import { BoxGeometry, Mesh, MeshLambertMaterial } from "three";
+import {
+  BoxGeometry,
+  Mesh,
+  MeshLambertMaterial,
+  AudioListener,
+  PositionalAudio
+} from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
 import AudioLibrary, { AudioFile } from "./AudioLibrary";
 
@@ -13,9 +19,37 @@ export default class GameObject extends Mesh implements Serializable {
   audioId: number | null = null;
   audioFile: AudioFile | null = null;
 
-  constructor(audioLibrary: AudioLibrary) {
+  audioContext: AudioContext;
+  listener: AudioListener;
+  audio: PositionalAudio;
+
+  constructor(
+    audioLibrary: AudioLibrary,
+    audioContext: AudioContext,
+    listener: AudioListener
+  ) {
     super(cubeGeometry, cubeMaterial);
     this.audioLibrary = audioLibrary;
+    this.audioContext = audioContext;
+    this.listener = listener;
+    this.audio = new PositionalAudio(listener);
+    this.add(this.audio);
+  }
+
+  async loadAudio(id: number): Promise<void> {
+    this.audioId = id;
+    this.audioFile = this.audioLibrary.get(id) || null;
+    if (this.audioFile) {
+      const buffer = await this.audioContext.decodeAudioData(
+        this.audioFile.data.slice(0)
+      );
+      if (this.audio.buffer) {
+        this.audio.stop();
+      }
+      this.audio.setBuffer(buffer);
+      this.audio.setLoop(true);
+      this.audio.play();
+    }
   }
 
   toData(): SerializedData {
@@ -33,10 +67,9 @@ export default class GameObject extends Mesh implements Serializable {
     this.position.set(data.position[0], data.position[1], data.position[2]);
     this.scale.set(data.scale[0], data.scale[1], data.scale[2]);
     this.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2]);
-    this.audioId = data.audioId;
 
-    if (this.audioId != null) {
-      this.audioFile = this.audioLibrary.get(this.audioId) || null;
+    if (data.audioId != null) {
+      this.loadAudio(data.audioId);
     }
 
     return this;

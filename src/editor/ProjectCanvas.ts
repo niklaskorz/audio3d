@@ -1,19 +1,7 @@
 /**
  * @author Niklas Korz
  */
-import { ResonanceAudio } from "resonance-audio";
-import {
-  AudioListener,
-  Color,
-  Mesh,
-  PositionalAudio,
-  Raycaster,
-  Vector2,
-  Vector3,
-  WebGLRenderer
-} from "three";
-import ResAudio from "../audio/ResAudio";
-import ResListener from "../audio/ResListener";
+import { Color, Mesh, Raycaster, Vector2, Vector3, WebGLRenderer } from "three";
 import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
 import GameObject from "../project/GameObject";
@@ -38,12 +26,6 @@ export default class ProjectCanvas {
 
   rafHandle = 0;
   previousTimestamp = 0;
-  audioType = 1;
-  audioContext = new AudioContext();
-  listener = new AudioListener();
-
-  audioScene = new ResonanceAudio(this.audioContext);
-  resListener = new ResListener(this.audioScene);
 
   controls: VisualControls;
 
@@ -60,9 +42,6 @@ export default class ProjectCanvas {
   constructor(project: Project) {
     this.project = project;
 
-    this.audioScene.output.connect(this.audioContext.destination);
-
-    this.audioType = project.audioType;
     this.renderer.autoClear = false;
     this.renderer.setClearColor(new Color(0x192a56));
     this.canvas = this.renderer.domElement;
@@ -88,9 +67,6 @@ export default class ProjectCanvas {
 
     // const ph = new PlaneHelper(this.controls.plane, 10, 0x999999);
     // this.scene.add(ph);
-
-    this.project.camera.add(this.listener);
-    this.project.camera.add(this.resListener);
   }
 
   attach(target: HTMLElement): void {
@@ -125,48 +101,6 @@ export default class ProjectCanvas {
   changeProject(project: Project): void {
     this.project = project;
     this.controls.project = project;
-  }
-
-  async addAudioToActiveMesh(data: ArrayBuffer): Promise<void> {
-    if (!this.project.activeObject) {
-      return;
-    }
-    let audio;
-    if (this.audioType === 0) {
-      const previousAudio = this.project.activeObject.getObjectByName(
-        "audio"
-      ) as PositionalAudio;
-      if (previousAudio) {
-        this.project.activeObject.remove(previousAudio);
-        previousAudio.stop();
-      }
-
-      if (this.project.activeObject.audioId) {
-        this.project.audioLibrary.delete(this.project.activeObject.audioId);
-      }
-
-      /* this.project.activeObject.audioData = data.slice(0);
-      this.project.activeObject.audioId = this.project.audioLibrary.add({
-        name: "",
-        type: "",
-        data: this.project.activeObject.audioData
-      }); */
-
-      const buffer = await this.audioContext.decodeAudioData(data);
-
-      audio = new PositionalAudio(this.listener);
-      audio.name = "audio";
-      audio.setBuffer(buffer);
-      audio.setLoop(true);
-      audio.play();
-    } else {
-      audio = new ResAudio(this.audioScene, this.audioContext);
-      audio.play("/audio/breakbeat.wav");
-    }
-
-    this.project.activeObject.add(audio);
-
-    console.log("Successfully added new audio to selected mesh");
   }
 
   resize = (): void => {

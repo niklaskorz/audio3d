@@ -12,7 +12,8 @@ import {
   PerspectiveCamera,
   PointLight,
   Scene,
-  Vector3
+  Vector3,
+  AudioListener
 } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
 import AudioLibrary from "./AudioLibrary";
@@ -35,6 +36,9 @@ export default class Room extends Scene implements Serializable {
   wallSouth = new Mesh(wallGeometry, wallMaterial);
   wallWest = new Mesh(wallGeometry, wallMaterial);
   camera = new PerspectiveCamera(60, 1, 0.1, 1000);
+
+  audioContext = new AudioContext();
+  listener = new AudioListener();
 
   get dimensions(): RoomDimensions {
     return this.roomDimensions;
@@ -84,15 +88,21 @@ export default class Room extends Scene implements Serializable {
     this.camera.position.z = 3;
     this.camera.position.y = 3;
     this.camera.lookAt(new Vector3(0, 0.5, 0));
+
+    this.camera.add(this.listener);
   }
 
-  addCube(): GameObject {
-    const cube = new GameObject(this.audioLibrary);
-    cube.position.y += 0.5;
-    cube.name = "New cube";
+  addObject(): GameObject {
+    const object = new GameObject(
+      this.audioLibrary,
+      this.audioContext,
+      this.listener
+    );
+    object.position.y += 0.5;
+    object.name = "New object";
 
-    this.add(cube);
-    return cube;
+    this.add(object);
+    return object;
   }
 
   updateWalls(): void {
@@ -124,7 +134,11 @@ export default class Room extends Scene implements Serializable {
     this.dimensions = data.dimensions;
 
     const gameObjects = data.objects.map((o: SerializedData) =>
-      new GameObject(this.audioLibrary).fromData(o)
+      new GameObject(
+        this.audioLibrary,
+        this.audioContext,
+        this.listener
+      ).fromData(o)
     );
     this.add(...gameObjects);
 

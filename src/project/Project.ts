@@ -51,7 +51,7 @@ export default class Project implements Serializable {
     this.events = events;
 
     const firstRoom = new Room(this.audioLibrary, "First room");
-    firstRoom.addCube();
+    firstRoom.addObject();
     this.rooms.push(firstRoom);
     this.activeRoom = firstRoom;
 
@@ -62,7 +62,17 @@ export default class Project implements Serializable {
     this.outlineMesh.scale.multiplyScalar(1.05);
   }
 
+  addRoom(): Room {
+    const room = new Room(this.audioLibrary, "New room");
+    room.addObject();
+    this.rooms.push(room);
+    this.selectRoom(room);
+    return room;
+  }
+
   selectRoom(room: Room): void {
+    this.activeRoom.listener.setMasterVolume(0);
+    room.listener.setMasterVolume(1);
     room.camera.aspect = this.activeRoom.camera.aspect;
     room.camera.updateProjectionMatrix();
     this.activeRoom = room;

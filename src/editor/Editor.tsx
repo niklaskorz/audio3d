@@ -8,7 +8,6 @@ import { saveAsZip } from "../data/export";
 import { openZip } from "../data/import";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
-import Room from "../project/Room";
 import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
@@ -109,7 +108,7 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   addObject = () => {
-    this.project.activeRoom.addCube();
+    this.project.activeRoom.addObject();
   };
 
   deleteObject = () => {
@@ -121,10 +120,7 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   addRoom = () => {
-    const room = new Room(this.project.audioLibrary, "New room");
-    room.addCube();
-    this.project.rooms.push(room);
-    this.project.selectRoom(room);
+    const room = this.project.addRoom();
     this.setState(s => ({
       rooms: [
         ...s.rooms,
@@ -256,6 +252,7 @@ export default class Editor extends React.Component<{}, State> {
   selectAudio = (audio: AudioEntry) => {
     console.log("Selected:", audio);
     if (this.project.activeObject) {
+      this.project.activeObject.loadAudio(audio.id);
       this.setState(({ selectedObject }) => ({
         selectedObject: selectedObject && {
           ...selectedObject,
