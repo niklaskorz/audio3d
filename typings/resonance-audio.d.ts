@@ -7,6 +7,8 @@
 /* tslint:disable:max-classes-per-file */
 
 declare module "resonance-audio" {
+  import { Matrix4 } from "three";
+
   export interface ResonanceAudioOptions {
     ambisonicOrder: number;
     listenerPosition: Float32Array;
@@ -55,7 +57,7 @@ declare module "resonance-audio" {
     );
     createSource(options?: Partial<SourceOptions>): Source;
     setAmbisonicOrder(ambisonicOrder: number): void;
-    setListenerMatrix(matrix: Float32Array): void;
+    setListenerFromMatrix(matrix: Matrix4): void;
     setListenerOrientation(
       forwardX: number,
       forwardY: number,
@@ -77,7 +79,7 @@ declare module "resonance-audio" {
       input: AudioNode;
       constructor(scene: ResonanceAudio, options?: Partial<SourceOptions>);
       setDirectivityPattern(alpha: number, sharpness: number): void;
-      setFromMatrix(matrix4: Float32Array): void;
+      setFromMatrix(matrix4: Matrix4): void;
       setGain(gain: number): void;
       setMaxDistance(maxDistance: number): void;
       setMinDistance(minDistance: number): void;

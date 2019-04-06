@@ -3,7 +3,7 @@
  */
 
 import { ResonanceAudio } from "resonance-audio";
-import { Object3D, Quaternion, Vector3 } from "three";
+import { Object3D } from "three";
 import AudioNode from "./AudioNode";
 
 /**
@@ -31,27 +31,7 @@ export default class ResAudio extends Object3D implements AudioNode {
 
   updateMatrixWorld(force: boolean): void {
     super.updateMatrixWorld(force);
-
-    const position = new Vector3();
-    const quaternion = new Quaternion();
-    const scale = new Vector3();
-    const orientation = new Vector3();
-
-    this.matrixWorld.decompose(position, quaternion, scale);
-
-    console.log(position.x, position.y, position.z);
-
-    orientation.set(0, 0, 1).applyQuaternion(quaternion);
-
-    this.source.setPosition(position.x, position.y, position.z);
-    this.source.setOrientation(
-      orientation.x,
-      orientation.y,
-      orientation.z,
-      this.up.x,
-      this.up.y,
-      this.up.z
-    );
+    this.source.setFromMatrix(this.matrixWorld);
   }
 
   setBuffer(buffer: AudioBuffer): void {
