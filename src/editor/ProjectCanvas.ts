@@ -101,6 +101,8 @@ export default class ProjectCanvas {
   changeProject(project: Project): void {
     this.project = project;
     this.controls.project = project;
+    // Ensure the selected project's camera has the correct aspect ratio
+    this.resize();
   }
 
   resize = (): void => {
