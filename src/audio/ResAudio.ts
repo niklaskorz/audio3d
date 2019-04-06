@@ -14,7 +14,6 @@ import AudioNode from "./AudioNode";
 
 export default class ResAudio extends Object3D implements AudioNode {
   audioContext: AudioContext;
-
   audioSource: AudioBufferSourceNode;
   source: ResonanceAudio.Source;
 
@@ -35,6 +34,15 @@ export default class ResAudio extends Object3D implements AudioNode {
   }
 
   setBuffer(buffer: AudioBuffer): void {
+    if (this.audioSource.buffer) {
+      // Chrome does not allow "resetting" the buffer and throws an error
+      // with this message: Cannot set buffer to non-null after it has been already been set to a non-null buffer
+      // To circumvent this, we have to create a new buffer source
+      this.audioSource.stop();
+      this.audioSource.disconnect();
+      this.audioSource = this.audioContext.createBufferSource();
+      this.audioSource.connect(this.source.input);
+    }
     this.audioSource.buffer = buffer;
   }
 
@@ -49,7 +57,6 @@ export default class ResAudio extends Object3D implements AudioNode {
   stop(): void {
     if (this.audioSource.buffer) {
       this.audioSource.stop();
-      this.audioSource.buffer = null;
     }
   }
 }
