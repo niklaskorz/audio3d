@@ -39,7 +39,7 @@ const Content = styled.div`
 export const ActionGroup = styled.div`
   margin-top: 20px;
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
 `;
 
 export const Action = styled.button`
