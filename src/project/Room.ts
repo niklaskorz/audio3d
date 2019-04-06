@@ -1,7 +1,7 @@
 /**
  * @author Niklas Korz
  */
-import { RoomDimensions } from "resonance-audio";
+import { RoomDimensions, ResonanceAudio } from "resonance-audio";
 import {
   AmbientLight,
   BoxGeometry,
@@ -12,12 +12,12 @@ import {
   PerspectiveCamera,
   PointLight,
   Scene,
-  Vector3,
-  AudioListener
+  Vector3
 } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
+import ResListener from "../audio/ResListener";
 
 const wallGeometry = new BoxGeometry(1, 1, 1);
 const wallMaterial = new MeshLambertMaterial();
@@ -38,7 +38,8 @@ export default class Room extends Scene implements Serializable {
   camera = new PerspectiveCamera(60, 1, 0.1, 1000);
 
   audioContext = new AudioContext();
-  listener = new AudioListener();
+  audioScene = new ResonanceAudio(this.audioContext);
+  listener = new ResListener(this.audioScene);
 
   get dimensions(): RoomDimensions {
     return this.roomDimensions;
@@ -89,6 +90,7 @@ export default class Room extends Scene implements Serializable {
     this.camera.position.y = 3;
     this.camera.lookAt(new Vector3(0, 0.5, 0));
 
+    this.audioScene.output.connect(this.audioContext.destination);
     this.camera.add(this.listener);
   }
 
@@ -96,7 +98,7 @@ export default class Room extends Scene implements Serializable {
     const object = new GameObject(
       this.audioLibrary,
       this.audioContext,
-      this.listener
+      this.audioScene
     );
     object.position.y += 0.5;
     object.name = "New object";
@@ -137,7 +139,7 @@ export default class Room extends Scene implements Serializable {
       new GameObject(
         this.audioLibrary,
         this.audioContext,
-        this.listener
+        this.audioScene
       ).fromData(o)
     );
     this.add(...gameObjects);

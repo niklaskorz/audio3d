@@ -5,7 +5,7 @@
 import { ResonanceAudio } from "resonance-audio";
 import { Object3D, Quaternion, Vector3 } from "three";
 
-export default class Listener extends Object3D {
+export default class ResListener extends Object3D {
   audioScene: ResonanceAudio;
 
   constructor(audioScene: ResonanceAudio) {

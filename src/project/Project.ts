@@ -71,8 +71,8 @@ export default class Project implements Serializable {
   }
 
   selectRoom(room: Room): void {
-    this.activeRoom.listener.setMasterVolume(0);
-    room.listener.setMasterVolume(1);
+    this.activeRoom.audioContext.suspend();
+    room.audioContext.resume();
     room.camera.aspect = this.activeRoom.camera.aspect;
     room.camera.updateProjectionMatrix();
     this.activeRoom = room;
@@ -111,7 +111,7 @@ export default class Project implements Serializable {
 
     // Disable audio in all inactive rooms
     for (let i = 1; i < this.rooms.length; i++) {
-      this.rooms[i].listener.setMasterVolume(0);
+      this.rooms[i].audioContext.suspend();
     }
 
     return this;

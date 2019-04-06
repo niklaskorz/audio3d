@@ -4,6 +4,7 @@
 
 import { ResonanceAudio } from "resonance-audio";
 import { Object3D, Quaternion, Vector3 } from "three";
+import AudioNode from "./AudioNode";
 
 /**
  * Class extends Object3D in order to work with the SceneCanvas.
@@ -11,24 +12,21 @@ import { Object3D, Quaternion, Vector3 } from "three";
  * accordingly.
  */
 
-export default class ResAudio extends Object3D {
+export default class ResAudio extends Object3D implements AudioNode {
   audioContext: AudioContext;
 
   audioSource: AudioBufferSourceNode;
   source: ResonanceAudio.Source;
-  isPlaying: boolean;
 
   constructor(audioScene: ResonanceAudio, audioContext: AudioContext) {
     super();
     this.audioContext = audioContext;
     this.audioSource = audioContext.createBufferSource();
-    this.audioSource.loop = true;
     this.source = audioScene.createSource({
       position: new Float32Array([0, 1, 3]),
       forward: new Float32Array([1, 0, 0])
     });
     this.audioSource.connect(this.source.input);
-    this.isPlaying = false;
   }
 
   updateMatrixWorld(force: boolean): void {
@@ -56,28 +54,22 @@ export default class ResAudio extends Object3D {
     );
   }
 
-  async play(src: string): Promise<void> {
-    if (this.isPlaying === true) {
-      console.warn("ResAudio: Audio is already playing.");
-      return;
-    }
-    const resp = await fetch(src);
-    const data = await resp.arrayBuffer();
-    const buffer = await this.audioContext.decodeAudioData(data);
-
+  setBuffer(buffer: AudioBuffer): void {
     this.audioSource.buffer = buffer;
-    this.audioSource.start();
-    this.isPlaying = true;
   }
 
-  pause(): void {
-    this.audioSource.stop();
-    this.isPlaying = false;
+  setLoop(loop: boolean): void {
+    this.audioSource.loop = loop;
+  }
+
+  play(): void {
+    this.audioSource.start();
   }
 
   stop(): void {
-    this.audioSource.stop();
-    this.isPlaying = false;
-    this.audioSource.buffer = null;
+    if (this.audioSource.buffer) {
+      this.audioSource.stop();
+      this.audioSource.buffer = null;
+    }
   }
 }

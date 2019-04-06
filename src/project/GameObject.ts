@@ -1,15 +1,12 @@
 /**
  * @author Niklas Korz
  */
-import {
-  BoxGeometry,
-  Mesh,
-  MeshLambertMaterial,
-  AudioListener,
-  PositionalAudio
-} from "three";
+import { BoxGeometry, Mesh, MeshLambertMaterial } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
 import AudioLibrary, { AudioFile } from "./AudioLibrary";
+import ResListener from "../audio/ResListener";
+import ResAudio from "../audio/ResAudio";
+import { ResonanceAudio } from "resonance-audio";
 
 const cubeGeometry = new BoxGeometry(1, 1, 1);
 const cubeMaterial = new MeshLambertMaterial();
@@ -20,19 +17,19 @@ export default class GameObject extends Mesh implements Serializable {
   audioFile: AudioFile | null = null;
 
   audioContext: AudioContext;
-  listener: AudioListener;
-  audio: PositionalAudio;
+  audioScene: ResonanceAudio;
+  audio: ResAudio;
 
   constructor(
     audioLibrary: AudioLibrary,
     audioContext: AudioContext,
-    listener: AudioListener
+    audioScene: ResonanceAudio
   ) {
     super(cubeGeometry, cubeMaterial);
     this.audioLibrary = audioLibrary;
     this.audioContext = audioContext;
-    this.listener = listener;
-    this.audio = new PositionalAudio(listener);
+    this.audioScene = audioScene;
+    this.audio = new ResAudio(audioScene, audioContext);
     this.add(this.audio);
   }
 
@@ -43,9 +40,7 @@ export default class GameObject extends Mesh implements Serializable {
       const buffer = await this.audioContext.decodeAudioData(
         this.audioFile.data.slice(0)
       );
-      if (this.audio.buffer) {
-        this.audio.stop();
-      }
+      this.audio.stop();
       this.audio.setBuffer(buffer);
       this.audio.setLoop(true);
       this.audio.play();
