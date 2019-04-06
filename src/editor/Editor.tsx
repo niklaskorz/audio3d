@@ -9,7 +9,7 @@ import { openZip } from "../data/import";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
 import Room from "../project/Room";
-import AudioLibraryModal, { AudioEntry } from "./AudioLibraryModal";
+import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
 import ProjectCanvas from "./ProjectCanvas";
@@ -24,7 +24,7 @@ import {
   RoomListItem,
   Sidebar
 } from "./styled";
-import { EditorObject, EditorRoom } from "./types";
+import { EditorObject, EditorRoom, AudioEntry } from "./types";
 
 enum ModalType {
   AudioLibrary,
@@ -243,7 +243,7 @@ export default class Editor extends React.Component<{}, State> {
 
   showAudioSelection = () => {
     this.setState({
-      modal: ModalType.AudioLibrary
+      modal: ModalType.AudioSelection
     });
   };
 
@@ -253,8 +253,17 @@ export default class Editor extends React.Component<{}, State> {
     this.setState({ modal: null });
   };
 
-  selectAudio = (entry: AudioEntry) => {
-    console.log("Selected:", entry);
+  selectAudio = (audio: AudioEntry) => {
+    console.log("Selected:", audio);
+    if (this.project.activeObject) {
+      this.setState(({ selectedObject }) => ({
+        selectedObject: selectedObject && {
+          ...selectedObject,
+          audio
+        },
+        modal: null
+      }));
+    }
   };
 
   // Project canvas events
@@ -267,7 +276,11 @@ export default class Editor extends React.Component<{}, State> {
           name: o.name,
           position: o.position,
           scale: o.scale,
-          rotation: o.rotation
+          rotation: o.rotation,
+          audio: o.audioFile && {
+            ...o.audioFile,
+            id: o.audioId!
+          }
         }
       });
     } else {

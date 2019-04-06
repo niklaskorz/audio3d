@@ -3,7 +3,7 @@
  */
 import { BoxGeometry, Mesh, MeshLambertMaterial } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
-import AudioLibrary from "./AudioLibrary";
+import AudioLibrary, { AudioFile } from "./AudioLibrary";
 
 const cubeGeometry = new BoxGeometry(1, 1, 1);
 const cubeMaterial = new MeshLambertMaterial();
@@ -11,7 +11,7 @@ const cubeMaterial = new MeshLambertMaterial();
 export default class GameObject extends Mesh implements Serializable {
   audioLibrary: AudioLibrary;
   audioId: number | null = null;
-  audioData: ArrayBuffer | null = null;
+  audioFile: AudioFile | null = null;
 
   constructor(audioLibrary: AudioLibrary) {
     super(cubeGeometry, cubeMaterial);
@@ -36,10 +36,7 @@ export default class GameObject extends Mesh implements Serializable {
     this.audioId = data.audioId;
 
     if (this.audioId != null) {
-      const audioFile = this.audioLibrary.get(this.audioId);
-      if (audioFile) {
-        this.audioData = audioFile.data;
-      }
+      this.audioFile = this.audioLibrary.get(this.audioId) || null;
     }
 
     return this;

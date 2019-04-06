@@ -170,7 +170,13 @@ export default class ObjectEditor extends React.Component<Props> {
           <Input
             type="text"
             readOnly={true}
-            value="None"
+            value={
+              o.audio
+                ? `${o.audio.name} (${Math.ceil(
+                    o.audio.data.byteLength / 1024
+                  )} KiB)`
+                : "None"
+            }
             onClick={this.props.onShowAudioSelection}
           />
         </Group>

@@ -3,9 +3,10 @@
  */
 import React from "react";
 import styled from "styled-components";
-import AudioLibrary, { AudioFile } from "../project/AudioLibrary";
+import AudioLibrary from "../project/AudioLibrary";
 import { openFileDialog, readFileAsArrayBuffer } from "../utils/files";
 import Modal, { Action, ActionGroup } from "./Modal";
+import { AudioEntry } from "./types";
 
 const AudioList = styled.div`
   display: flex;
@@ -33,10 +34,6 @@ const AudioItem = styled.div`
     box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2);
   }
 `;
-
-export interface AudioEntry extends AudioFile {
-  id: number;
-}
 
 interface Props {
   audioLibrary: AudioLibrary;
@@ -89,6 +86,11 @@ export default class AudioLibraryModal extends React.Component<Props, State> {
     this.previewAudio.pause();
     URL.revokeObjectURL(this.previewAudio.src);
   };
+
+  componentWillUnmount(): void {
+    this.previewAudio.pause();
+    URL.revokeObjectURL(this.previewAudio.src);
+  }
 
   render(): React.ReactNode {
     const { onDismiss, onSelect } = this.props;

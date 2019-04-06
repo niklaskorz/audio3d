@@ -171,10 +171,34 @@ export default class MenuBar extends React.Component<Props, State> {
         >
           Help
           <Menu hidden={activeMenu !== MenuType.HelpMenu}>
-            <MenuItem>Issues</MenuItem>
-            <MenuItem>Source Code</MenuItem>
+            <MenuItem
+              onClick={() =>
+                window.open(
+                  "https://github.com/niklaskorz/audio3d/issues",
+                  "_blank"
+                )
+              }
+            >
+              Issues
+            </MenuItem>
+            <MenuItem
+              onClick={() =>
+                window.open("https://github.com/niklaskorz/audio3d", "_blank")
+              }
+            >
+              Source Code
+            </MenuItem>
             <MenuDivider />
-            <MenuItem>About</MenuItem>
+            <MenuItem
+              onClick={() =>
+                window.open(
+                  "https://github.com/niklaskorz/audio3d/blob/master/README.md",
+                  "_blank"
+                )
+              }
+            >
+              About
+            </MenuItem>
           </Menu>
         </MenubarItem>
       </Container>
