@@ -19,7 +19,7 @@ export interface ProjectEvents {
   onScale(scale: Vector3): void;
 }
 
-const noop = () => {
+const noop = (): void => {
   /* noop */
 };
 const defaultEvents: ProjectEvents = {
@@ -29,6 +29,7 @@ const defaultEvents: ProjectEvents = {
 };
 
 export default class Project implements Serializable {
+  events: ProjectEvents;
   audioLibrary = new AudioLibrary();
 
   id: number | null = null;
@@ -46,7 +47,9 @@ export default class Project implements Serializable {
     return this.activeRoom.camera;
   }
 
-  constructor(public events: ProjectEvents = defaultEvents) {
+  constructor(events: ProjectEvents = defaultEvents) {
+    this.events = events;
+
     const firstRoom = new Room(this.audioLibrary, "First room");
     firstRoom.addCube();
     this.rooms.push(firstRoom);

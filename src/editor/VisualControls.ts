@@ -43,6 +43,8 @@ export enum ObjectDragDirection {
 // in this case.
 // Beware though that intersection points are always given in absolute world coordinates.
 export default class VisualControls extends Scene {
+  project: Project;
+
   objectDragDirection: ObjectDragDirection | null = null;
   isScaling: boolean = false;
   // The drag offset is used to determine the distance of the point where the
@@ -69,8 +71,10 @@ export default class VisualControls extends Scene {
   planeXZ: Mesh;
   planeXY: Mesh;
 
-  constructor(public project: Project) {
+  constructor(project: Project) {
     super();
+
+    this.project = project;
 
     // Setup visual controls for transformation
 

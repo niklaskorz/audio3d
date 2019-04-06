@@ -2,7 +2,7 @@
  * @author Niklas Korz
  * This module defines functions for loading and importing projects from the local filesystem.
  */
-import Zip, { JSZipObject } from "jszip";
+import Zip from "jszip";
 import Project from "../project/Project";
 import { openFileDialog } from "../utils/files";
 

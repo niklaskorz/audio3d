@@ -4,10 +4,8 @@
 import { RoomDimensions } from "resonance-audio";
 import {
   AmbientLight,
-  BackSide,
   BoxGeometry,
   GridHelper,
-  Group,
   Mesh,
   MeshLambertMaterial,
   Object3D,
@@ -28,6 +26,9 @@ const wallMaterial = new MeshLambertMaterial();
 // Also, this abstraction is necessary to support Resonance Audio as one of many
 // spatial audio implementations.
 export default class Room extends Scene implements Serializable {
+  audioLibrary: AudioLibrary;
+  roomDimensions: RoomDimensions;
+
   grid: GridHelper;
   wallNorth = new Mesh(wallGeometry, wallMaterial);
   wallEast = new Mesh(wallGeometry, wallMaterial);
@@ -53,13 +54,15 @@ export default class Room extends Scene implements Serializable {
   }
 
   constructor(
-    private audioLibrary: AudioLibrary,
+    audioLibrary: AudioLibrary,
     name: string = "",
-    private roomDimensions: RoomDimensions = { width: 15, depth: 15, height: 3 }
+    roomDimensions: RoomDimensions = { width: 15, depth: 15, height: 3 }
   ) {
     super();
 
+    this.audioLibrary = audioLibrary;
     this.name = name;
+    this.roomDimensions = roomDimensions;
 
     const ambientLight = new AmbientLight(0xffffff, 0.5);
     this.add(ambientLight);

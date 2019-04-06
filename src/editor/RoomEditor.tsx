@@ -3,7 +3,6 @@
  */
 import React from "react";
 import { RoomDimensions } from "resonance-audio";
-import { roundToPrecision } from "../utils/math";
 import { Group, Input, InputGroup } from "./styled";
 import { EditorRoom } from "./types";
 

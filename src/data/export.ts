@@ -31,7 +31,7 @@ export const createZip = (project: Project): Promise<Blob> => {
  * Saves the given project, including its audio data, as a zip file on the
  * user's local filesystem
  */
-export const saveAsZip = async (project: Project) => {
+export const saveAsZip = async (project: Project): Promise<void> => {
   const data = await createZip(project);
   saveAs(data, "audio3d-project.zip");
 };

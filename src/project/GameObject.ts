@@ -9,11 +9,13 @@ const cubeGeometry = new BoxGeometry(1, 1, 1);
 const cubeMaterial = new MeshLambertMaterial();
 
 export default class GameObject extends Mesh implements Serializable {
+  audioLibrary: AudioLibrary;
   audioId: number | null = null;
   audioData: ArrayBuffer | null = null;
 
-  constructor(private audioLibrary: AudioLibrary) {
+  constructor(audioLibrary: AudioLibrary) {
     super(cubeGeometry, cubeMaterial);
+    this.audioLibrary = audioLibrary;
   }
 
   toData(): SerializedData {

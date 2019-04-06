@@ -6,8 +6,11 @@ import { ResonanceAudio } from "resonance-audio";
 import { Object3D, Quaternion, Vector3 } from "three";
 
 export default class Listener extends Object3D {
-  constructor(private audioScene: ResonanceAudio) {
+  audioScene: ResonanceAudio;
+
+  constructor(audioScene: ResonanceAudio) {
     super();
+    this.audioScene = audioScene;
   }
 
   updateMatrixWorld(force: boolean): void {

@@ -4,12 +4,8 @@
 import { ResonanceAudio } from "resonance-audio";
 import {
   AudioListener,
-  BackSide,
   Color,
   Mesh,
-  MeshBasicMaterial,
-  Object3D,
-  PerspectiveCamera,
   PositionalAudio,
   Raycaster,
   Vector2,
@@ -38,6 +34,7 @@ const axes = {
 
 export default class ProjectCanvas {
   target: HTMLElement | null = null;
+  project: Project;
 
   rafHandle = 0;
   previousTimestamp = 0;
@@ -60,7 +57,9 @@ export default class ProjectCanvas {
   gamepads = new GamepadListener();
   isDraggingCamera = false;
 
-  constructor(private project: Project) {
+  constructor(project: Project) {
+    this.project = project;
+
     this.audioScene.output.connect(this.audioContext.destination);
 
     this.audioType = project.audioType;

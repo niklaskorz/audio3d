@@ -12,12 +12,15 @@ import { Object3D, Quaternion, Vector3 } from "three";
  */
 
 export default class ResAudio extends Object3D {
+  audioContext: AudioContext;
+
   audioSource: AudioBufferSourceNode;
   source: ResonanceAudio.Source;
   isPlaying: boolean;
 
-  constructor(audioScene: ResonanceAudio, private audioContext: AudioContext) {
+  constructor(audioScene: ResonanceAudio, audioContext: AudioContext) {
     super();
+    this.audioContext = audioContext;
     this.audioSource = audioContext.createBufferSource();
     this.audioSource.loop = true;
     this.source = audioScene.createSource({
