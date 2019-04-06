@@ -38,8 +38,8 @@ export default class Room extends Scene implements Serializable {
   camera = new PerspectiveCamera(60, 1, 0.1, 1000);
 
   audioContext = new AudioContext();
-  audioScene = new ResonanceAudio(this.audioContext);
-  listener = new ResListener(this.audioScene);
+  audioScene: ResonanceAudio;
+  listener: ResListener;
 
   get dimensions(): RoomDimensions {
     return this.roomDimensions;
@@ -47,6 +47,11 @@ export default class Room extends Scene implements Serializable {
 
   set dimensions(dimensions: RoomDimensions) {
     this.roomDimensions = dimensions;
+
+    this.audioScene.setRoomProperties(
+      dimensions,
+      ResonanceAudio.Utils.DEFAULT_ROOM_MATERIALS
+    );
 
     this.remove(this.grid);
 
@@ -61,13 +66,13 @@ export default class Room extends Scene implements Serializable {
   constructor(
     audioLibrary: AudioLibrary,
     name: string = "",
-    roomDimensions: RoomDimensions = { width: 15, depth: 15, height: 3 }
+    dimensions: RoomDimensions = { width: 15, depth: 15, height: 3 }
   ) {
     super();
 
     this.audioLibrary = audioLibrary;
     this.name = name;
-    this.roomDimensions = roomDimensions;
+    this.roomDimensions = dimensions;
 
     const ambientLight = new AmbientLight(0xffffff, 0.5);
     this.add(ambientLight);
@@ -76,7 +81,7 @@ export default class Room extends Scene implements Serializable {
     light.lookAt(0, 0, 0);
     this.add(light);
 
-    const gridSize = Math.max(roomDimensions.width, roomDimensions.depth);
+    const gridSize = Math.max(dimensions.width, dimensions.depth);
     this.grid = new GridHelper(gridSize, gridSize, 0xffffff, 0xffffff);
     this.add(this.grid);
 
@@ -89,6 +94,11 @@ export default class Room extends Scene implements Serializable {
     this.camera.position.z = 3;
     this.camera.position.y = 3;
     this.camera.lookAt(new Vector3(0, 0.5, 0));
+
+    // Audio setup
+
+    this.audioScene = new ResonanceAudio(this.audioContext, { dimensions });
+    this.listener = new ResListener(this.audioScene);
 
     this.audioScene.output.connect(this.audioContext.destination);
     this.camera.add(this.listener);
