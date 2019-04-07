@@ -1,7 +1,7 @@
 /**
  * @author Niklas Korz
  */
-import { RoomDimensions, ResonanceAudio } from "resonance-audio";
+import { RoomDimensions, ResonanceAudio, RoomMaterials } from "resonance-audio";
 import {
   AmbientLight,
   BoxGeometry,
@@ -29,6 +29,7 @@ const wallMaterial = new MeshLambertMaterial();
 export default class Room extends Scene implements Serializable {
   audioLibrary: AudioLibrary;
   roomDimensions: RoomDimensions;
+  roomMaterials: RoomMaterials;
 
   grid: GridHelper;
   wallNorth = new Mesh(wallGeometry, wallMaterial);
@@ -48,10 +49,7 @@ export default class Room extends Scene implements Serializable {
   set dimensions(dimensions: RoomDimensions) {
     this.roomDimensions = dimensions;
 
-    this.audioScene.setRoomProperties(
-      dimensions,
-      ResonanceAudio.Utils.DEFAULT_ROOM_MATERIALS
-    );
+    this.audioScene.setRoomProperties(dimensions, this.roomMaterials);
 
     this.remove(this.grid);
 
@@ -63,16 +61,27 @@ export default class Room extends Scene implements Serializable {
     this.updateWalls();
   }
 
+  get materials(): RoomMaterials {
+    return this.roomMaterials;
+  }
+
+  set materials(materials: RoomMaterials) {
+    this.roomMaterials = materials;
+    this.audioScene.setRoomProperties(this.roomDimensions, materials);
+  }
+
   constructor(
     audioLibrary: AudioLibrary,
     name: string = "",
-    dimensions: RoomDimensions = { width: 15, depth: 15, height: 3 }
+    dimensions: RoomDimensions = { width: 15, depth: 15, height: 3 },
+    materials: RoomMaterials = ResonanceAudio.Utils.DEFAULT_ROOM_MATERIALS
   ) {
     super();
 
     this.audioLibrary = audioLibrary;
     this.name = name;
     this.roomDimensions = dimensions;
+    this.roomMaterials = materials;
 
     const ambientLight = new AmbientLight(0xffffff, 0.5);
     this.add(ambientLight);
@@ -97,7 +106,10 @@ export default class Room extends Scene implements Serializable {
 
     // Audio setup
 
-    this.audioScene = new ResonanceAudio(this.audioContext, { dimensions });
+    this.audioScene = new ResonanceAudio(this.audioContext, {
+      dimensions,
+      materials
+    });
     this.listener = new ResListener(this.audioScene);
 
     this.audioScene.output.connect(this.audioContext.destination);
@@ -135,6 +147,7 @@ export default class Room extends Scene implements Serializable {
     return {
       name: this.name,
       dimensions: this.dimensions,
+      materials: this.materials,
       objects: this.children
         .filter((c: Object3D): c is GameObject => c instanceof GameObject)
         .map(go => go.toData())
@@ -144,6 +157,9 @@ export default class Room extends Scene implements Serializable {
   fromData(data: SerializedData): this {
     this.name = data.name;
     this.dimensions = data.dimensions;
+    if (data.materials) {
+      this.materials = data.materials;
+    }
 
     const gameObjects = data.objects.map((o: SerializedData) =>
       new GameObject(

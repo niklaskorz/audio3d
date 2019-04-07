@@ -2,7 +2,7 @@
  * @author Niklas Korz
  */
 import React from "react";
-import { RoomDimensions } from "resonance-audio";
+import { RoomDimensions, RoomMaterials } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import { saveAsZip } from "../data/export";
 import { openZip } from "../data/import";
@@ -46,7 +46,8 @@ export default class Editor extends React.Component<{}, State> {
     rooms: this.project.rooms.map(r => ({
       id: r.id,
       name: r.name,
-      dimensions: r.dimensions
+      dimensions: r.dimensions,
+      materials: r.materials
     })),
     selectedRoomId: 0,
     selectedObject: null,
@@ -77,7 +78,8 @@ export default class Editor extends React.Component<{}, State> {
       rooms: this.project.rooms.map(r => ({
         id: r.id,
         name: r.name,
-        dimensions: r.dimensions
+        dimensions: r.dimensions,
+        materials: r.materials
       })),
       selectedRoomId: 0,
       selectedObject: null
@@ -96,7 +98,8 @@ export default class Editor extends React.Component<{}, State> {
       rooms: this.project.rooms.map(r => ({
         id: r.id,
         name: r.name,
-        dimensions: r.dimensions
+        dimensions: r.dimensions,
+        materials: r.materials
       })),
       selectedRoomId: 0,
       selectedObject: null
@@ -127,7 +130,8 @@ export default class Editor extends React.Component<{}, State> {
         {
           id: room.id,
           name: room.name,
-          dimensions: room.dimensions
+          dimensions: room.dimensions,
+          materials: room.materials
         }
       ],
       selectedRoomId: s.rooms.length
@@ -181,6 +185,20 @@ export default class Editor extends React.Component<{}, State> {
         {
           ...rooms[selectedRoomId],
           dimensions
+        },
+        ...rooms.slice(selectedRoomId + 1)
+      ]
+    }));
+  };
+
+  updateRoomMaterials = (materials: RoomMaterials) => {
+    this.project.activeRoom.materials = materials;
+    this.setState(({ rooms, selectedRoomId }) => ({
+      rooms: [
+        ...rooms.slice(0, selectedRoomId),
+        {
+          ...rooms[selectedRoomId],
+          materials
         },
         ...rooms.slice(selectedRoomId + 1)
       ]
@@ -367,6 +385,7 @@ export default class Editor extends React.Component<{}, State> {
                 room={this.state.rooms[this.state.selectedRoomId]}
                 onUpdateName={this.updateRoomName}
                 onUpdateDimensions={this.updateRoomDimensions}
+                onUpdateMaterials={this.updateRoomMaterials}
               />
             )}
             {o && (

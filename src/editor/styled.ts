@@ -16,6 +16,7 @@ export const Container = styled.div`
 
 export const InnerContainer = styled.div`
   flex: 1;
+  overflow: hidden;
   display: flex;
   flex-direction: row;
 `;
@@ -74,6 +75,10 @@ export const Input = styled.input`
     outline: none;
     border-color: #3498db;
   }
+`;
+
+export const Select = styled(Input.withComponent("select"))`
+  cursor: pointer;
 `;
 
 export const InputGroup = styled.div`

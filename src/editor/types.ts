@@ -1,4 +1,4 @@
-import { RoomDimensions } from "resonance-audio";
+import { RoomDimensions, RoomMaterials } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import { AudioFile } from "../project/AudioLibrary";
 
@@ -10,6 +10,7 @@ export interface EditorRoom {
   id: number;
   name: string;
   dimensions: RoomDimensions;
+  materials: RoomMaterials;
 }
 
 export interface EditorObject {
