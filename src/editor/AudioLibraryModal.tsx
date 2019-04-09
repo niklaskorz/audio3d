@@ -2,9 +2,11 @@
  * @author Niklas Korz
  */
 import React from "react";
+import { saveAs } from "file-saver";
 import styled from "styled-components";
 import AudioLibrary from "../project/AudioLibrary";
 import { openFileDialog, readFileAsArrayBuffer } from "../utils/files";
+import AudioFileModal from "./AudioFileModal";
 import Modal, { Action, ActionGroup } from "./Modal";
 import { AudioEntry } from "./types";
 
@@ -37,12 +39,13 @@ const AudioItem = styled.div`
 
 interface Props {
   audioLibrary: AudioLibrary;
-  onDismiss?(): void;
+  onDismiss(): void;
   onSelect?(entry: AudioEntry): void;
 }
 
 interface State {
   entries: AudioEntry[];
+  selectedEntry: AudioEntry | null;
 }
 
 export default class AudioLibraryModal extends React.Component<Props, State> {
@@ -58,7 +61,7 @@ export default class AudioLibraryModal extends React.Component<Props, State> {
   }
 
   previewAudio = new Audio();
-  state: State = { entries: [] };
+  state: State = { entries: [], selectedEntry: null };
 
   openAudioFileDialog = async () => {
     const file = await openFileDialog({ accept: "audio/*" });
@@ -87,24 +90,64 @@ export default class AudioLibraryModal extends React.Component<Props, State> {
     URL.revokeObjectURL(this.previewAudio.src);
   };
 
+  dismiss = () => {
+    this.setState({ selectedEntry: null });
+    this.props.onDismiss();
+  };
+
+  selectEntry(audioEntry: AudioEntry): void {
+    if (this.props.onSelect) {
+      this.props.onSelect(audioEntry);
+    } else {
+      this.setState({ selectedEntry: audioEntry });
+    }
+  }
+
+  unselectEntry = () => {
+    this.setState({ selectedEntry: null });
+  };
+
+  deleteAudio = ({ id }: AudioEntry) => {
+    this.props.audioLibrary.delete(id);
+    this.setState(({ entries }) => ({
+      entries: entries.filter(e => e.id !== id),
+      selectedEntry: null
+    }));
+  };
+
+  exportAudio = ({ name, type, data }: AudioEntry) => {
+    saveAs(new Blob([data], { type }), name);
+  };
+
   componentWillUnmount(): void {
     this.previewAudio.pause();
     URL.revokeObjectURL(this.previewAudio.src);
   }
 
   render(): React.ReactNode {
-    const { onDismiss, onSelect } = this.props;
-    const { entries } = this.state;
+    const { entries, selectedEntry } = this.state;
+
+    if (selectedEntry) {
+      return (
+        <AudioFileModal
+          audioEntry={selectedEntry}
+          onDelete={this.deleteAudio}
+          onExport={this.exportAudio}
+          onCancel={this.unselectEntry}
+          onDismiss={this.dismiss}
+        />
+      );
+    }
 
     return (
-      <Modal title="Audio Library" onDismiss={onDismiss}>
+      <Modal title="Audio Library" onDismiss={this.dismiss}>
         <AudioList>
           {entries.length > 0 &&
             entries.map(e => (
               <AudioItem
                 key={e.id}
                 title={e.name}
-                onClick={() => onSelect && onSelect(e)}
+                onClick={() => this.selectEntry(e)}
                 onMouseEnter={() => this.previewEntry(e)}
                 onMouseLeave={this.stopPreview}
               >
@@ -117,7 +160,7 @@ export default class AudioLibraryModal extends React.Component<Props, State> {
         {!entries.length && <div>You haven't added any audio files yet</div>}
         <ActionGroup>
           <Action onClick={this.openAudioFileDialog}>Add audio file</Action>
-          <Action onClick={onDismiss}>Cancel</Action>
+          <Action onClick={this.dismiss}>Cancel</Action>
         </ActionGroup>
       </Modal>
     );
