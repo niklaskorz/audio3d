@@ -15,9 +15,9 @@ import {
   Vector3
 } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
+import ResListener from "../audio/ResListener";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
-import ResListener from "../audio/ResListener";
 
 const wallGeometry = new BoxGeometry(1, 1, 1);
 const wallMaterial = new MeshLambertMaterial();

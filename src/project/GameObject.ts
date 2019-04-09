@@ -2,11 +2,11 @@
  * @author Niklas Korz
  */
 import { BoxGeometry, Mesh, MeshLambertMaterial } from "three";
+import { ResonanceAudio } from "resonance-audio";
 import Serializable, { SerializedData } from "../data/Serializable";
-import AudioLibrary, { AudioFile } from "./AudioLibrary";
 import ResListener from "../audio/ResListener";
 import ResAudio from "../audio/ResAudio";
-import { ResonanceAudio } from "resonance-audio";
+import AudioLibrary, { AudioFile } from "./AudioLibrary";
 
 const cubeGeometry = new BoxGeometry(1, 1, 1);
 const cubeMaterial = new MeshLambertMaterial();
