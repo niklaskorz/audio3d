@@ -249,7 +249,9 @@ export default class VisualControls extends Scene {
     let altPlane: Plane | null = null;
 
     // Update the normal and constant (^= position) of the plane
-    // TODO: The origin of the plane has to be negative somehow, otherwise everything is mirrored. Why?
+    // The second parameter of the Plane constructor is called the "constant" and
+    // is used for defining the plane in Hessian normal form. It defines
+    // the negative distance from the origin to the plane.
     switch (this.objectDragDirection) {
       case ObjectDragDirection.AxisX:
         p.set(new Vector3(0, 1, 0), -c.y);
