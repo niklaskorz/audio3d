@@ -46,7 +46,6 @@ export default class ProjectCanvas {
     this.renderer.setClearColor(new Color(0x192a56));
     this.canvas = this.renderer.domElement;
     this.canvas.tabIndex = -1; // Make element focusable
-    this.canvas.addEventListener("click", this.onClick);
     this.canvas.addEventListener("mousedown", this.onMouseDown);
     this.canvas.addEventListener("mouseup", this.onMouseUp);
     this.canvas.addEventListener("mousemove", this.onMouseMove);
@@ -222,10 +221,6 @@ export default class ProjectCanvas {
     // Update raycaster
     this.raycaster.setFromCamera({ x, y }, this.project.camera);
   }
-
-  onClick = (e: MouseEvent) => {
-    /* Nothing here yet */
-  };
 
   onMouseDown = (e: MouseEvent): void => {
     if (e.button === MouseButton.Secondary) {

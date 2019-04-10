@@ -19,7 +19,7 @@ import Project from "../project/Project";
 // The object drag direction is required for calculating the plane to ray cast
 // against later on. Also, of course, to determine whether the object should be
 // moved on one or two axes.
-export enum ObjectDragDirection {
+enum ObjectDragDirection {
   AxisX,
   AxisY,
   AxisZ,
