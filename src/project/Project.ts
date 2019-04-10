@@ -9,6 +9,8 @@ import {
   Vector3
 } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
+import { ProjectData } from "../data/schema";
+import { saveProject } from "../data/db";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 import Room from "./Room";
@@ -32,7 +34,7 @@ export default class Project implements Serializable {
   events: ProjectEvents;
   audioLibrary = new AudioLibrary();
 
-  id: number | null = null;
+  id?: number;
   name = "New project";
 
   rooms: Room[] = [];
@@ -60,6 +62,12 @@ export default class Project implements Serializable {
       side: BackSide
     });
     this.outlineMesh.scale.multiplyScalar(1.05);
+  }
+
+  close(): void {
+    for (const room of this.rooms) {
+      room.audioContext.close();
+    }
   }
 
   addRoom(): Room {
@@ -94,15 +102,21 @@ export default class Project implements Serializable {
   }
 
   // Serialize instance to a plain JavaScript object
-  toData(): SerializedData {
+  toData(): ProjectData {
     return {
+      savedAt: new Date(),
       name: this.name,
-      rooms: this.rooms.map(r => r.toData())
+      rooms: this.rooms.map(r => r.toData()),
+      nextAudioId: this.audioLibrary.nextId
     };
   }
 
   // Load data from a plain JavaScript object into this instance
-  fromData(data: SerializedData): this {
+  fromData(data: SerializedData, projectId?: number): this {
+    this.id = projectId;
+    this.audioLibrary.projectId = projectId;
+    this.audioLibrary.nextId = data.nextAudioId || 0;
+
     this.name = data.name;
     this.rooms = data.rooms.map((r: SerializedData) =>
       new Room(this.audioLibrary).fromData(r)
@@ -115,5 +129,13 @@ export default class Project implements Serializable {
     }
 
     return this;
+  }
+
+  async save(): Promise<void> {
+    const id = await saveProject(this);
+    if (this.id == null) {
+      this.id = id;
+      await this.audioLibrary.saveToProject(id);
+    }
   }
 }

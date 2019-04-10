@@ -1,6 +1,6 @@
 import { RoomDimensions, RoomMaterials } from "resonance-audio";
 import { Euler, Vector3 } from "three";
-import { AudioFile } from "../project/AudioLibrary";
+import { AudioFile } from "../data/schema";
 
 export interface AudioEntry extends AudioFile {
   id: number;
@@ -19,5 +19,5 @@ export interface EditorObject {
   position: Vector3;
   scale: Vector3;
   rotation: Euler;
-  audio: AudioEntry | null;
+  audio?: AudioEntry;
 }

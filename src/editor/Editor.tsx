@@ -8,6 +8,7 @@ import { saveAsZip } from "../data/export";
 import { openZip } from "../data/import";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
+import { ProjectData } from "../data/schema";
 import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
@@ -24,11 +25,13 @@ import {
   Sidebar
 } from "./styled";
 import { EditorObject, EditorRoom, AudioEntry } from "./types";
+import ProjectManagerModal from "./ProjectManagerModal";
 
 enum ModalType {
   AudioLibrary,
   AudioSelection,
-  ProjectManager
+  ProjectManager,
+  ProjectSelection
 }
 
 interface State {
@@ -68,6 +71,7 @@ export default class Editor extends React.Component<{}, State> {
   // Menubar functionality
 
   newProject = () => {
+    this.project.close();
     this.project = new Project({
       onSelect: this.onSelectObject,
       onTranslate: this.onTranslateObject,
@@ -82,11 +86,30 @@ export default class Editor extends React.Component<{}, State> {
         materials: r.materials
       })),
       selectedRoomId: 0,
-      selectedObject: null
+      selectedObject: null,
+      modal: null
     });
   };
 
+  showProjectSelection = async () => {
+    this.setState({
+      modal: ModalType.ProjectSelection
+    });
+  };
+
+  saveProject = async () => {
+    if (this.project.id == null) {
+      const name = prompt("Project name:", this.project.name);
+      if (!name) {
+        return;
+      }
+      this.project.name = name;
+    }
+    await this.project.save();
+  };
+
   importProject = async () => {
+    this.project.close();
     this.project = await openZip();
     this.project.events = {
       onSelect: this.onSelectObject,
@@ -268,7 +291,6 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   selectAudio = (audio: AudioEntry) => {
-    console.log("Selected:", audio);
     if (this.project.activeObject) {
       this.project.activeObject.loadAudio(audio.id);
       this.setState(({ selectedObject }) => ({
@@ -279,6 +301,28 @@ export default class Editor extends React.Component<{}, State> {
         modal: null
       }));
     }
+  };
+
+  loadProject = (data: ProjectData) => {
+    this.project.close();
+    this.project = new Project().fromData(data, data.id);
+    this.project.events = {
+      onSelect: this.onSelectObject,
+      onTranslate: this.onTranslateObject,
+      onScale: this.onScaleObject
+    };
+    this.projectCanvas.changeProject(this.project);
+    this.setState({
+      rooms: this.project.rooms.map(r => ({
+        id: r.id,
+        name: r.name,
+        dimensions: r.dimensions,
+        materials: r.materials
+      })),
+      selectedRoomId: 0,
+      selectedObject: null,
+      modal: null
+    });
   };
 
   // Project canvas events
@@ -354,8 +398,17 @@ export default class Editor extends React.Component<{}, State> {
             }
           />
         )}
+        {modal === ModalType.ProjectSelection && (
+          <ProjectManagerModal
+            onSelectProject={this.loadProject}
+            onNewProject={this.newProject}
+            onDismiss={this.dismissModal}
+          />
+        )}
         <MenuBar
           onNewProject={this.newProject}
+          onLoadProject={this.showProjectSelection}
+          onSaveProject={this.saveProject}
           onImportProject={this.importProject}
           onExportProject={this.exportProject}
           onAddObject={this.addObject}

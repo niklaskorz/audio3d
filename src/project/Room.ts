@@ -16,6 +16,7 @@ import {
 } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
 import ResListener from "../audio/ResListener";
+import { RoomData } from "../data/schema";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 
@@ -100,9 +101,9 @@ export default class Room extends Scene implements Serializable {
     this.add(this.wallSouth);
     this.add(this.wallWest);
 
-    this.camera.position.z = 3;
+    this.camera.position.z = 4;
     this.camera.position.y = 3;
-    this.camera.lookAt(new Vector3(0, 0.5, 0));
+    this.camera.lookAt(new Vector3(0, 1, 0));
 
     // Audio setup
 
@@ -143,7 +144,7 @@ export default class Room extends Scene implements Serializable {
     this.wallWest.position.set(-width / 2, height / 2, 0);
   }
 
-  toData(): SerializedData {
+  toData(): RoomData {
     return {
       name: this.name,
       dimensions: this.dimensions,

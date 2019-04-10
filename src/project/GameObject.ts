@@ -4,17 +4,17 @@
 import { BoxGeometry, Mesh, MeshLambertMaterial } from "three";
 import { ResonanceAudio } from "resonance-audio";
 import Serializable, { SerializedData } from "../data/Serializable";
-import ResListener from "../audio/ResListener";
 import ResAudio from "../audio/ResAudio";
-import AudioLibrary, { AudioFile } from "./AudioLibrary";
+import { ObjectData, AudioFile } from "../data/schema";
+import AudioLibrary from "./AudioLibrary";
 
 const cubeGeometry = new BoxGeometry(1, 1, 1);
 const cubeMaterial = new MeshLambertMaterial();
 
 export default class GameObject extends Mesh implements Serializable {
   audioLibrary: AudioLibrary;
-  audioId: number | null = null;
-  audioFile: AudioFile | null = null;
+  audioId?: number;
+  audioFile?: AudioFile;
 
   audioContext: AudioContext;
   audioScene: ResonanceAudio;
@@ -35,7 +35,7 @@ export default class GameObject extends Mesh implements Serializable {
 
   async loadAudio(id: number): Promise<void> {
     this.audioId = id;
-    this.audioFile = this.audioLibrary.get(id) || null;
+    this.audioFile = await this.audioLibrary.get(id);
     if (this.audioFile) {
       const buffer = await this.audioContext.decodeAudioData(
         this.audioFile.data.slice(0)
@@ -47,12 +47,12 @@ export default class GameObject extends Mesh implements Serializable {
     }
   }
 
-  toData(): SerializedData {
+  toData(): ObjectData {
     return {
       name: this.name,
       position: this.position.toArray(),
       scale: this.scale.toArray(),
-      rotation: this.rotation.toArray(),
+      rotation: this.rotation.toArray().slice(0, 3),
       audioId: this.audioId
     };
   }

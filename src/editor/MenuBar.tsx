@@ -71,6 +71,8 @@ const MenuDivider = styled.div`
 
 interface Props {
   onNewProject(): void;
+  onLoadProject(): void;
+  onSaveProject(): void;
   onImportProject(): void;
   onExportProject(): void;
 
@@ -121,12 +123,12 @@ export default class MenuBar extends React.Component<Props, State> {
           <Menu hidden={activeMenu !== MenuType.FileMenu}>
             <MenuItem onClick={this.props.onNewProject}>New project</MenuItem>
             <MenuDivider />
-            <MenuItem>Load project</MenuItem>
+            <MenuItem onClick={this.props.onLoadProject}>Load project</MenuItem>
             <MenuItem onClick={this.props.onImportProject}>
               Import project
             </MenuItem>
             <MenuDivider />
-            <MenuItem>Save project</MenuItem>
+            <MenuItem onClick={this.props.onSaveProject}>Save project</MenuItem>
             <MenuItem onClick={this.props.onExportProject}>
               Export project
             </MenuItem>

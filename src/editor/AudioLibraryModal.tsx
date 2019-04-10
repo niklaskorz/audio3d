@@ -49,17 +49,6 @@ interface State {
 }
 
 export default class AudioLibraryModal extends React.Component<Props, State> {
-  static getDerivedStateFromProps(props: Props): Partial<State> {
-    return {
-      entries: Array.from(props.audioLibrary.entries())
-        .sort((a, b) => a[0] - b[0])
-        .map(([id, audioFile]) => ({
-          id,
-          ...audioFile
-        }))
-    };
-  }
-
   previewAudio = new Audio();
   state: State = { entries: [], selectedEntry: null };
 
@@ -67,7 +56,7 @@ export default class AudioLibraryModal extends React.Component<Props, State> {
     const file = await openFileDialog({ accept: "audio/*" });
     const data = await readFileAsArrayBuffer(file);
     const audioFile = { name: file.name, type: file.type, data };
-    const id = this.props.audioLibrary.add(audioFile);
+    const id = await this.props.audioLibrary.add(audioFile);
     this.setState(({ entries }) => ({
       entries: [
         ...entries,
@@ -93,6 +82,7 @@ export default class AudioLibraryModal extends React.Component<Props, State> {
   dismiss = () => {
     this.setState({ selectedEntry: null });
     this.props.onDismiss();
+    this.stopPreview();
   };
 
   selectEntry(audioEntry: AudioEntry): void {
@@ -105,6 +95,7 @@ export default class AudioLibraryModal extends React.Component<Props, State> {
 
   unselectEntry = () => {
     this.setState({ selectedEntry: null });
+    this.stopPreview();
   };
 
   deleteAudio = ({ id }: AudioEntry) => {
@@ -118,6 +109,27 @@ export default class AudioLibraryModal extends React.Component<Props, State> {
   exportAudio = ({ name, type, data }: AudioEntry) => {
     saveAs(new Blob([data], { type }), name);
   };
+
+  async updateEntries(): Promise<void> {
+    const entries: AudioEntry[] = [];
+    for await (const [id, audioFile] of this.props.audioLibrary.entries()) {
+      entries.push({ ...audioFile, id });
+    }
+    this.setState({
+      entries: entries.sort((a, b) => a.id - b.id)
+    });
+  }
+
+  async componentDidMount(): Promise<void> {
+    await this.updateEntries();
+  }
+
+  async componentDidUpdate(prevProps: Props): Promise<void> {
+    if (prevProps.audioLibrary !== this.props.audioLibrary) {
+      // The project and therefore the audio library to be rendered has changed
+      await this.updateEntries();
+    }
+  }
 
   componentWillUnmount(): void {
     this.previewAudio.pause();

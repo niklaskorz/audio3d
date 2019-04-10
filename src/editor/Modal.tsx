@@ -21,7 +21,7 @@ const Backdrop = styled.div`
 const Container = styled.div`
   border-radius: 5px;
   overflow: hidden;
-  max-width: 500px;
+  max-width: 600px;
   color: #fff;
   background: hsl(210, 29%, 29%);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
