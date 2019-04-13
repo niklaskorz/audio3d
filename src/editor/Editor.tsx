@@ -9,6 +9,7 @@ import { loadZip } from "../data/import";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
 import Room from "../project/Room";
+import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
 import ProjectCanvas from "./ProjectCanvas";
 import RoomEditor from "./RoomEditor";
@@ -17,11 +18,6 @@ import {
   Group,
   InnerContainer,
   Main,
-  Menu,
-  Menubar,
-  MenubarItem,
-  MenuDivider,
-  MenuItem,
   RoomList,
   RoomListItem,
   Sidebar
@@ -214,17 +210,16 @@ export default class Editor extends React.Component<{}, State> {
       ],
       selectedRoomId: s.rooms.length
     }));
-    this.projectCanvas.focus();
   };
 
   onAddCubeClick = () => {
     this.project.activeRoom.addCube();
-    this.projectCanvas.focus();
   };
 
   onImportClick = () => {
     const input = document.createElement("input");
     input.type = "file";
+    input.accept = "application/zip";
     input.onchange = async e => {
       console.log("selected file");
       const file = input.files![0];
@@ -244,7 +239,6 @@ export default class Editor extends React.Component<{}, State> {
         selectedRoomId: 0,
         selectedObject: null
       });
-      this.projectCanvas.focus();
     };
     input.click();
   };
@@ -257,41 +251,12 @@ export default class Editor extends React.Component<{}, State> {
     const o = this.state.selectedObject;
     return (
       <Container>
-        <Menubar>
-          <MenubarItem>
-            File
-            <Menu>
-              <MenuItem>New project</MenuItem>
-              <MenuItem>Load project</MenuItem>
-              <MenuItem>Save project</MenuItem>
-              <MenuDivider />
-              <MenuItem onClick={this.onImportClick}>Import project</MenuItem>
-              <MenuItem onClick={this.onExportClick}>Export project</MenuItem>
-              <MenuDivider />
-              <MenuItem>Settings</MenuItem>
-            </Menu>
-          </MenubarItem>
-          <MenubarItem>
-            Edit
-            <Menu>
-              <MenuItem onClick={this.onAddCubeClick}>New object</MenuItem>
-              <MenuItem>Delete object</MenuItem>
-              <MenuDivider />
-              <MenuItem onClick={this.onAddRoomClick}>New room</MenuItem>
-              <MenuItem>Delete room</MenuItem>
-              <MenuDivider />
-              <MenuItem>Release the kraken</MenuItem>
-            </Menu>
-          </MenubarItem>
-          <MenubarItem>
-            Help
-            <Menu>
-              <MenuItem>Issues</MenuItem>
-              <MenuItem>Repository</MenuItem>
-              <MenuItem>About</MenuItem>
-            </Menu>
-          </MenubarItem>
-        </Menubar>
+        <MenuBar
+          onImportProject={this.onImportClick}
+          onExportProject={this.onExportClick}
+          onAddObject={this.onAddCubeClick}
+          onAddRoom={this.onAddRoomClick}
+        />
         <InnerContainer>
           <Sidebar>
             <Group>
