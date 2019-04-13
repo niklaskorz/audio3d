@@ -29,7 +29,28 @@ export const loadProject = async (id: number): Promise<Project | undefined> => {
 export const saveProject = async (project: Project): Promise<number> => {
   const db = await dbPromise;
   const data = project.toData();
-  return await db.put("projects", data, project.id);
+  return await db.put("projects", data);
+};
+
+export const deleteProject = async (id: number): Promise<void> => {
+  const db = await dbPromise;
+  // Database transaction
+  const tx = db.transaction(["audios", "projects"], "readwrite");
+  // Object stores
+  const projects = tx.objectStore("projects");
+  const audios = tx.objectStore("audios");
+
+  // Delete project
+  await projects.delete(id);
+
+  // Delete all related audio files
+  let cursor = await audios.index("project").openKeyCursor(id);
+  while (cursor) {
+    await audios.delete(cursor.primaryKey);
+    cursor = await cursor.continue();
+  }
+
+  await tx.done;
 };
 
 export const getAllProjects = async (): Promise<ProjectData[]> => {

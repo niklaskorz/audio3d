@@ -152,7 +152,10 @@ export default class AudioLibraryModal extends React.Component<Props, State> {
     }
 
     return (
-      <Modal title="Audio Library" onDismiss={this.dismiss}>
+      <Modal
+        title={this.props.onSelect ? "Select Audio" : "Audio Library"}
+        onDismiss={this.dismiss}
+      >
         <AudioList>
           {entries.length > 0 &&
             entries.map(e => (
