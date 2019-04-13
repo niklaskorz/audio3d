@@ -18,6 +18,7 @@ export default class GameObject extends Mesh implements Serializable {
 
   audioContext: AudioContext;
   audioScene: ResonanceAudio;
+  //audioScene: BinauralScene;
   audio: ResAudio;
 
   constructor(
@@ -29,6 +30,7 @@ export default class GameObject extends Mesh implements Serializable {
     this.audioLibrary = audioLibrary;
     this.audioContext = audioContext;
     this.audioScene = audioScene;
+    //this.audio = new BinauralAudio(this.audioScene);
     this.audio = new ResAudio(audioScene, audioContext);
     this.add(this.audio);
   }

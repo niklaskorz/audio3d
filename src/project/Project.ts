@@ -8,9 +8,12 @@ import {
   PerspectiveCamera,
   Vector3
 } from "three";
+import { HRTF } from "binauralfir";
+import BinauralFIR from "binauralfir";
 import Serializable, { SerializedData } from "../data/Serializable";
 import { ProjectData } from "../data/schema";
 import { saveProject } from "../data/db";
+import { loadHRTFDataset } from "../audio/binaural/hrtf";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 import Room from "./Room";
@@ -36,6 +39,7 @@ export default class Project implements Serializable {
 
   id?: number;
   name = "New project";
+  hrtf: HRTF[] = [];
 
   rooms: Room[] = [];
   audioType: number = 1;
@@ -60,6 +64,9 @@ export default class Project implements Serializable {
     this.outlineMesh.material = new MeshBasicMaterial({
       color: 0xffffff,
       side: BackSide
+    });
+    loadHRTFDataset().then(hrtf => {
+      this.hrtf = hrtf;
     });
     this.outlineMesh.scale.multiplyScalar(1.05);
   }
