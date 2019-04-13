@@ -1,3 +1,6 @@
+/**
+ * @author Niklas Korz
+ */
 import React from "react";
 import styled, { css } from "styled-components";
 
@@ -82,6 +85,7 @@ interface Props {
   onDeleteRoom(): void;
 
   onShowAudioLibrary(): void;
+  onShowProjectManager(): void;
 
   onRunProject(): void;
 }
@@ -164,7 +168,9 @@ export default class MenuBar extends React.Component<Props, State> {
             <MenuItem onClick={this.props.onShowAudioLibrary}>
               Audio Library
             </MenuItem>
-            <MenuItem>Project Manager</MenuItem>
+            <MenuItem onClick={this.props.onShowProjectManager}>
+              Project Manager
+            </MenuItem>
             <MenuDivider />
             <MenuItem>Toggle Fullscreen</MenuItem>
           </Menu>

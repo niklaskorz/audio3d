@@ -1,3 +1,6 @@
+/**
+ * @author Niklas Korz
+ */
 import { RoomDimensions, RoomMaterials } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import { AudioFile } from "../data/schema";

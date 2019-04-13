@@ -182,6 +182,10 @@ export default class Editor extends React.Component<{}, State> {
     this.setState({ modal: ModalType.AudioLibrary });
   };
 
+  showProjectManager = () => {
+    this.setState({ modal: ModalType.ProjectManager });
+  };
+
   // Room specific editor functionality
 
   selectRoom(id: number): void {
@@ -410,11 +414,16 @@ export default class Editor extends React.Component<{}, State> {
             }
           />
         )}
-        {modal === ModalType.ProjectSelection && (
+        {(modal === ModalType.ProjectManager ||
+          modal === ModalType.ProjectSelection) && (
           <ProjectManagerModal
-            onSelectProject={this.loadProject}
             onNewProject={this.newProject}
             onDismiss={this.dismissModal}
+            onSelectProject={
+              modal === ModalType.ProjectSelection
+                ? this.loadProject
+                : undefined
+            }
           />
         )}
         <MenuBar
@@ -428,6 +437,7 @@ export default class Editor extends React.Component<{}, State> {
           onAddRoom={this.addRoom}
           onDeleteRoom={this.deleteRoom}
           onShowAudioLibrary={this.showAudioLibrary}
+          onShowProjectManager={this.showProjectManager}
           onRunProject={this.runProject}
         />
         <InnerContainer>
