@@ -19,6 +19,7 @@ export default class Runtime {
   rafHandle = 0;
   previousTimestamp = 0;
   playerHeight = 1.8; //1,80m player height, eyes are ~10cm lower
+  lastCollisionSound = 0;
 
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
@@ -198,6 +199,10 @@ export default class Runtime {
 
     if (!collided) {
       camera.position.copy(this.dummyCamera.position);
+    } else if (this.lastCollisionSound + 1000 < Date.now()) {
+      //TODO - Play sound
+      console.log("Collision at " + Date.now()); //DEBUG ONLY
+      this.lastCollisionSound = Date.now();
     }
   }
 }
