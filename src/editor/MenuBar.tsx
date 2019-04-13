@@ -82,6 +82,8 @@ interface Props {
   onDeleteRoom(): void;
 
   onShowAudioLibrary(): void;
+
+  onRunProject(): void;
 }
 
 enum MenuType {
@@ -203,6 +205,7 @@ export default class MenuBar extends React.Component<Props, State> {
             </MenuItem>
           </Menu>
         </MenubarItem>
+        <MenubarItem onClick={this.props.onRunProject}>Run</MenubarItem>
       </Container>
     );
   }

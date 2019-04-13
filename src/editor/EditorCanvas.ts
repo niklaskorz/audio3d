@@ -20,7 +20,7 @@ const axes = {
   z: new Vector3(0, 0, 1)
 };
 
-export default class ProjectCanvas {
+export default class EditorCanvas {
   target: HTMLElement | null = null;
   project: Project;
 
