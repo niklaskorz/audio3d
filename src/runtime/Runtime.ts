@@ -98,6 +98,8 @@ export default class Runtime {
 
   update(dt: number): void {
     const { camera } = this.project;
+    let moveX = 0;
+    let moveZ = 0;
 
     if (this.keys.isPressed("w")) {
       camera.translateOnAxis(axes.z, -2 * dt);
@@ -121,15 +123,15 @@ export default class Runtime {
 
     const gamepadAxes = {
       x: this.gamepads.getAxis(0),
-      rX: this.gamepads.getAxis(2),
-      y: this.gamepads.getAxis(4)
+      y: this.gamepads.getAxis(1),
+      rX: this.gamepads.getAxis(2)
     };
     // console.log(axes);
     if (gamepadAxes.x) {
       camera.translateOnAxis(axes.x, 2 * dt * gamepadAxes.x);
     }
     if (gamepadAxes.y) {
-      camera.translateOnAxis(axes.y, 2 * dt * gamepadAxes.y);
+      camera.translateOnAxis(axes.z, 2 * dt * gamepadAxes.y);
     }
     if (gamepadAxes.rX) {
       camera.rotateOnWorldAxis(axes.y, -dt * gamepadAxes.rX);
