@@ -1,5 +1,7 @@
 # 3D Audio Evaluation Environment
 
+[![CircleCI](https://circleci.com/gh/niklaskorz/audio3d.svg?style=svg)](https://circleci.com/gh/niklaskorz/audio3d)
+
 An editor and test environment for experimenting with 3D audio.
 Requires Node and Yarn to run locally.
 You can run the [most recent online version](https://niklaskorz.github.io/audio3d/) directly from your browser. After the first load, it will also work offline (if your [browser supports service workers](https://caniuse.com/#feat=serviceworkers) and you didn't disable caching of files for offline usage in your browser settings.)

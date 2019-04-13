@@ -16,6 +16,7 @@ export const Container = styled.div`
 
 export const InnerContainer = styled.div`
   flex: 1;
+  overflow: hidden;
   display: flex;
   flex-direction: row;
 `;
@@ -30,9 +31,28 @@ export const Sidebar = styled.aside`
   overflow-y: auto;
 `;
 
+export const FocusedLabel = styled.div`
+  display: none;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  border-radius: 3px;
+  background: hsl(210, 25%, 20%);
+  border: 1px solid hsl(210, 15%, 40%);
+  opacity: 0.8;
+  color: #fff;
+  pointer-events: none;
+`;
+
 export const Main = styled.main`
+  position: relative;
   flex: 1;
   height: 100%;
+
+  :focus-within > ${FocusedLabel} {
+    display: block;
+  }
 `;
 
 export const Group = styled.div`
@@ -54,6 +74,27 @@ export const Input = styled.input`
   :focus {
     outline: none;
     border-color: #3498db;
+  }
+`;
+
+export const Select = styled(Input.withComponent("select"))`
+  cursor: pointer;
+`;
+
+export const InputGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+
+  > ${Input} {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+
+    margin-right: 5px;
+
+    :last-child {
+      margin-right: 0;
+    }
   }
 `;
 

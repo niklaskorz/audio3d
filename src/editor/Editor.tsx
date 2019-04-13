@@ -2,19 +2,21 @@
  * @author Niklas Korz
  */
 import React from "react";
-import { RoomDimensions } from "resonance-audio";
+import { RoomDimensions, RoomMaterials } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import { saveAsZip } from "../data/export";
-import { loadZip } from "../data/import";
+import { openZip } from "../data/import";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
-import Room from "../project/Room";
+import { ProjectData } from "../data/schema";
+import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
 import ProjectCanvas from "./ProjectCanvas";
 import RoomEditor from "./RoomEditor";
 import {
   Container,
+  FocusedLabel,
   Group,
   InnerContainer,
   Main,
@@ -22,12 +24,21 @@ import {
   RoomListItem,
   Sidebar
 } from "./styled";
-import { EditorObject, EditorRoom } from "./types";
+import { EditorObject, EditorRoom, AudioEntry } from "./types";
+import ProjectManagerModal from "./ProjectManagerModal";
+
+enum ModalType {
+  AudioLibrary,
+  AudioSelection,
+  ProjectManager,
+  ProjectSelection
+}
 
 interface State {
   rooms: EditorRoom[];
   selectedRoomId: number;
   selectedObject: EditorObject | null;
+  modal: ModalType | null;
 }
 
 export default class Editor extends React.Component<{}, State> {
@@ -38,10 +49,12 @@ export default class Editor extends React.Component<{}, State> {
     rooms: this.project.rooms.map(r => ({
       id: r.id,
       name: r.name,
-      dimensions: r.dimensions
+      dimensions: r.dimensions,
+      materials: r.materials
     })),
     selectedRoomId: 0,
-    selectedObject: null
+    selectedObject: null,
+    modal: null
   };
   mainRef = React.createRef<HTMLElement>();
 
@@ -55,58 +68,121 @@ export default class Editor extends React.Component<{}, State> {
     };
   }
 
-  componentDidMount(): void {
-    if (this.mainRef.current) {
-      this.projectCanvas.attach(this.mainRef.current);
-      this.projectCanvas.focus();
+  // Menubar functionality
+
+  newProject = () => {
+    this.project.close();
+    this.project = new Project({
+      onSelect: this.onSelectObject,
+      onTranslate: this.onTranslateObject,
+      onScale: this.onScaleObject
+    });
+    this.projectCanvas.changeProject(this.project);
+    this.setState({
+      rooms: this.project.rooms.map(r => ({
+        id: r.id,
+        name: r.name,
+        dimensions: r.dimensions,
+        materials: r.materials
+      })),
+      selectedRoomId: 0,
+      selectedObject: null,
+      modal: null
+    });
+  };
+
+  showProjectSelection = async () => {
+    this.setState({
+      modal: ModalType.ProjectSelection
+    });
+  };
+
+  saveProject = async () => {
+    if (this.project.id == null) {
+      const name = prompt("Project name:", this.project.name);
+      if (!name) {
+        return;
+      }
+      this.project.name = name;
     }
-  }
+    await this.project.save();
+  };
 
-  componentWillUnmount(): void {
-    this.projectCanvas.detach();
-  }
+  importProject = async () => {
+    this.project.close();
+    this.project = await openZip();
+    this.project.events = {
+      onSelect: this.onSelectObject,
+      onTranslate: this.onTranslateObject,
+      onScale: this.onScaleObject
+    };
+    this.projectCanvas.changeProject(this.project);
+    this.setState({
+      rooms: this.project.rooms.map(r => ({
+        id: r.id,
+        name: r.name,
+        dimensions: r.dimensions,
+        materials: r.materials
+      })),
+      selectedRoomId: 0,
+      selectedObject: null
+    });
+  };
 
-  onSelectObject = (o: GameObject | null) => {
-    if (o) {
-      this.setState({
-        selectedObject: {
-          id: o.id,
-          name: o.name,
-          position: o.position,
-          scale: o.scale,
-          rotation: o.rotation
-        }
-      });
-    } else {
+  exportProject = () => {
+    saveAsZip(this.project);
+  };
+
+  addObject = () => {
+    this.project.activeRoom.addObject();
+  };
+
+  deleteObject = () => {
+    if (this.project.activeObject) {
+      this.project.activeRoom.remove(this.project.activeObject);
+      this.project.activeObject = null;
       this.setState({ selectedObject: null });
     }
   };
 
-  onTranslateObject = (p: Vector3) => {
-    this.setState(({ selectedObject }) => ({
-      selectedObject: selectedObject && {
-        ...selectedObject,
-        position: p
-      }
+  addRoom = () => {
+    const room = this.project.addRoom();
+    this.setState(s => ({
+      rooms: [
+        ...s.rooms,
+        {
+          id: room.id,
+          name: room.name,
+          dimensions: room.dimensions,
+          materials: room.materials
+        }
+      ],
+      selectedRoomId: s.rooms.length
     }));
   };
 
-  onScaleObject = (s: Vector3) => {
-    this.setState(({ selectedObject }) => ({
-      selectedObject: selectedObject && {
-        ...selectedObject,
-        size: {
-          width: s.x,
-          height: s.y,
-          depth: s.z
-        }
-      }
-    }));
+  deleteRoom = () => {
+    // Ensure the first room cannot be deleted
+    if (this.state.selectedRoomId > 0) {
+      this.project.rooms.splice(this.state.selectedRoomId, 1);
+      this.setState(s => ({
+        rooms: [
+          ...s.rooms.slice(0, s.selectedRoomId),
+          ...s.rooms.slice(s.selectedRoomId + 1)
+        ],
+        selectedRoomId: 0
+      }));
+    }
   };
+
+  showAudioLibrary = () => {
+    this.setState({ modal: ModalType.AudioLibrary });
+  };
+
+  // Room specific editor functionality
 
   selectRoom(id: number): void {
-    this.projectCanvas.selectObject(null);
-    this.project.activeRoom = this.project.rooms[id];
+    this.project.selectRoom(this.project.rooms[id]);
     this.setState({ selectedRoomId: id, selectedObject: null });
   }
 
@@ -137,6 +213,22 @@ export default class Editor extends React.Component<{}, State> {
       ]
     }));
   };
+
+  updateRoomMaterials = (materials: RoomMaterials) => {
+    this.project.activeRoom.materials = materials;
+    this.setState(({ rooms, selectedRoomId }) => ({
+      rooms: [
+        ...rooms.slice(0, selectedRoomId),
+        {
+          ...rooms[selectedRoomId],
+          materials
+        },
+        ...rooms.slice(selectedRoomId + 1)
+      ]
+    }));
+  };
+
+  // Object editor functionality
 
   updateName = (name: string) => {
     if (this.project.activeObject) {
@@ -186,76 +278,144 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
-  updateAudio = (data: ArrayBuffer) => {
-    this.projectCanvas.addAudioToActiveMesh(data);
+  showAudioSelection = () => {
+    this.setState({
+      modal: ModalType.AudioSelection
+    });
   };
 
-  onAddRoomClick = () => {
-    const room = new Room(this.project.audioLibrary, "New room", {
-      width: 10,
-      depth: 10,
-      height: 3
+  // Modal events
+
+  dismissModal = () => {
+    this.setState({ modal: null });
+  };
+
+  selectAudio = (audio: AudioEntry) => {
+    if (this.project.activeObject) {
+      this.project.activeObject.loadAudio(audio.id);
+      this.setState(({ selectedObject }) => ({
+        selectedObject: selectedObject && {
+          ...selectedObject,
+          audio
+        },
+        modal: null
+      }));
+    }
+  };
+
+  loadProject = (data: ProjectData) => {
+    this.project.close();
+    this.project = new Project().fromData(data, data.id);
+    this.project.events = {
+      onSelect: this.onSelectObject,
+      onTranslate: this.onTranslateObject,
+      onScale: this.onScaleObject
+    };
+    this.projectCanvas.changeProject(this.project);
+    this.setState({
+      rooms: this.project.rooms.map(r => ({
+        id: r.id,
+        name: r.name,
+        dimensions: r.dimensions,
+        materials: r.materials
+      })),
+      selectedRoomId: 0,
+      selectedObject: null,
+      modal: null
     });
-    this.project.rooms.push(room);
-    this.project.activeRoom = room;
-    this.projectCanvas.selectObject(room.addCube());
-    this.setState(s => ({
-      rooms: [
-        ...s.rooms,
-        {
-          id: room.id,
-          name: room.name,
-          dimensions: room.dimensions
+  };
+
+  // Project canvas events
+
+  onSelectObject = (o: GameObject | null) => {
+    if (o) {
+      this.setState({
+        selectedObject: {
+          id: o.id,
+          name: o.name,
+          position: o.position,
+          scale: o.scale,
+          rotation: o.rotation,
+          audio: o.audioFile && {
+            ...o.audioFile,
+            id: o.audioId!
+          }
         }
-      ],
-      selectedRoomId: s.rooms.length
+      });
+    } else {
+      this.setState({ selectedObject: null });
+    }
+  };
+
+  onTranslateObject = (p: Vector3) => {
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        position: p
+      }
     }));
   };
 
-  onAddCubeClick = () => {
-    this.project.activeRoom.addCube();
+  onScaleObject = (s: Vector3) => {
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        size: {
+          width: s.x,
+          height: s.y,
+          depth: s.z
+        }
+      }
+    }));
   };
 
-  onImportClick = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "application/zip";
-    input.onchange = async e => {
-      console.log("selected file");
-      const file = input.files![0];
-      this.project = await loadZip(file);
-      this.project.events = {
-        onSelect: this.onSelectObject,
-        onTranslate: this.onTranslateObject,
-        onScale: this.onScaleObject
-      };
-      this.projectCanvas.changeProject(this.project);
-      this.setState({
-        rooms: this.project.rooms.map(r => ({
-          id: r.id,
-          name: r.name,
-          dimensions: r.dimensions
-        })),
-        selectedRoomId: 0,
-        selectedObject: null
-      });
-    };
-    input.click();
-  };
+  // React component lifecycle methods
 
-  onExportClick = () => {
-    saveAsZip(this.project);
-  };
+  componentDidMount(): void {
+    if (this.mainRef.current) {
+      this.projectCanvas.attach(this.mainRef.current);
+      this.projectCanvas.focus();
+    }
+  }
+
+  componentWillUnmount(): void {
+    this.projectCanvas.detach();
+  }
 
   render(): React.ReactNode {
+    const { modal } = this.state;
     const o = this.state.selectedObject;
+
     return (
       <Container>
+        {(modal === ModalType.AudioLibrary ||
+          modal === ModalType.AudioSelection) && (
+          <AudioLibraryModal
+            audioLibrary={this.project.audioLibrary}
+            onDismiss={this.dismissModal}
+            onSelect={
+              modal === ModalType.AudioSelection ? this.selectAudio : undefined
+            }
+          />
+        )}
+        {modal === ModalType.ProjectSelection && (
+          <ProjectManagerModal
+            onSelectProject={this.loadProject}
+            onNewProject={this.newProject}
+            onDismiss={this.dismissModal}
+          />
+        )}
         <MenuBar
-          onImportProject={this.onImportClick}
-          onExportProject={this.onExportClick}
-          onAddObject={this.onAddCubeClick}
-          onAddRoom={this.onAddRoomClick}
+          onNewProject={this.newProject}
+          onLoadProject={this.showProjectSelection}
+          onSaveProject={this.saveProject}
+          onImportProject={this.importProject}
+          onExportProject={this.exportProject}
+          onAddObject={this.addObject}
+          onDeleteObject={this.deleteObject}
+          onAddRoom={this.addRoom}
+          onDeleteRoom={this.deleteRoom}
+          onShowAudioLibrary={this.showAudioLibrary}
         />
         <InnerContainer>
           <Sidebar>
@@ -268,7 +428,7 @@ export default class Editor extends React.Component<{}, State> {
                     onClick={() => this.selectRoom(i)}
                     active={i === this.state.selectedRoomId}
                   >
-                    {r.name}
+                    {r.name || "Anonymous Room"}
                   </RoomListItem>
                 ))}
               </RoomList>
@@ -278,6 +438,7 @@ export default class Editor extends React.Component<{}, State> {
                 room={this.state.rooms[this.state.selectedRoomId]}
                 onUpdateName={this.updateRoomName}
                 onUpdateDimensions={this.updateRoomDimensions}
+                onUpdateMaterials={this.updateRoomMaterials}
               />
             )}
             {o && (
@@ -287,11 +448,13 @@ export default class Editor extends React.Component<{}, State> {
                 onUpdatePosition={this.updatePosition}
                 onUpdateRotation={this.updateRotation}
                 onUpdateScale={this.updateScale}
-                onUpdateAudio={this.updateAudio}
+                onShowAudioSelection={this.showAudioSelection}
               />
             )}
           </Sidebar>
-          <Main ref={this.mainRef} />
+          <Main ref={this.mainRef}>
+            <FocusedLabel>Focused</FocusedLabel>
+          </Main>
         </InnerContainer>
       </Container>
     );

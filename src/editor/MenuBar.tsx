@@ -1,7 +1,7 @@
 import React from "react";
 import styled, { css } from "styled-components";
 
-export const Container = styled.div`
+const Container = styled.div`
   flex: 0 0 auto;
   background: hsl(210, 29%, 15%);
   color: #fff;
@@ -18,24 +18,25 @@ interface MenubarItemProps {
   isActive?: boolean;
 }
 
-export const MenubarItem = styled.div<MenubarItemProps>`
+const MenubarItem = styled.div<MenubarItemProps>`
   position: relative;
   display: inline-block;
   padding: 10px 15px;
   cursor: pointer;
 
   :hover {
-    background: hsl(210, 29%, 20%);
+    background: hsl(210, 25%, 20%);
   }
 
   ${props =>
     props.isActive &&
     css`
-      background: hsl(210, 29%, 20%);
+      background: hsl(210, 25%, 20%);
     `}
 `;
 
-export const Menu = styled.div`
+const Menu = styled.div`
+  z-index: 1;
   position: absolute;
   left: 0;
   top: 100%;
@@ -51,34 +52,42 @@ export const Menu = styled.div`
   cursor: default;
 `;
 
-export const MenuItem = styled.div`
+const MenuItem = styled.div`
   white-space: nowrap;
   padding: 8px 20px;
   margin: 2px 0;
   cursor: pointer;
 
   :hover {
-    background: hsl(210, 25%, 30%);
+    background: hsl(210, 29%, 15%);
   }
 `;
 
-export const MenuDivider = styled.div`
+const MenuDivider = styled.div`
   height: 0;
   margin: 5px;
   border-bottom: 1px solid hsl(210, 15%, 35%);
 `;
 
 interface Props {
+  onNewProject(): void;
+  onLoadProject(): void;
+  onSaveProject(): void;
   onImportProject(): void;
   onExportProject(): void;
 
   onAddObject(): void;
+  onDeleteObject(): void;
   onAddRoom(): void;
+  onDeleteRoom(): void;
+
+  onShowAudioLibrary(): void;
 }
 
 enum MenuType {
   FileMenu,
   EditMenu,
+  ViewMenu,
   HelpMenu
 }
 
@@ -112,13 +121,14 @@ export default class MenuBar extends React.Component<Props, State> {
         >
           File
           <Menu hidden={activeMenu !== MenuType.FileMenu}>
-            <MenuItem>New project</MenuItem>
-            <MenuItem>Load project</MenuItem>
-            <MenuItem>Save project</MenuItem>
+            <MenuItem onClick={this.props.onNewProject}>New project</MenuItem>
             <MenuDivider />
+            <MenuItem onClick={this.props.onLoadProject}>Load project</MenuItem>
             <MenuItem onClick={this.props.onImportProject}>
               Import project
             </MenuItem>
+            <MenuDivider />
+            <MenuItem onClick={this.props.onSaveProject}>Save project</MenuItem>
             <MenuItem onClick={this.props.onExportProject}>
               Export project
             </MenuItem>
@@ -132,13 +142,29 @@ export default class MenuBar extends React.Component<Props, State> {
         >
           Edit
           <Menu hidden={activeMenu !== MenuType.EditMenu}>
-            <MenuItem onClick={this.props.onAddObject}>New object</MenuItem>
-            <MenuItem>Delete object</MenuItem>
+            <MenuItem onClick={this.props.onAddObject}>Add object</MenuItem>
+            <MenuItem onClick={this.props.onDeleteObject}>
+              Delete object
+            </MenuItem>
             <MenuDivider />
-            <MenuItem onClick={this.props.onAddRoom}>New room</MenuItem>
-            <MenuItem>Delete room</MenuItem>
+            <MenuItem onClick={this.props.onAddRoom}>Add room</MenuItem>
+            <MenuItem onClick={this.props.onDeleteRoom}>Delete room</MenuItem>
             <MenuDivider />
             <MenuItem>Release the kraken</MenuItem>
+          </Menu>
+        </MenubarItem>
+        <MenubarItem
+          isActive={activeMenu === MenuType.ViewMenu}
+          onClick={() => this.toggleMenu(MenuType.ViewMenu)}
+        >
+          View
+          <Menu hidden={activeMenu !== MenuType.ViewMenu}>
+            <MenuItem onClick={this.props.onShowAudioLibrary}>
+              Audio Library
+            </MenuItem>
+            <MenuItem>Project Manager</MenuItem>
+            <MenuDivider />
+            <MenuItem>Toggle Fullscreen</MenuItem>
           </Menu>
         </MenubarItem>
         <MenubarItem
@@ -147,9 +173,34 @@ export default class MenuBar extends React.Component<Props, State> {
         >
           Help
           <Menu hidden={activeMenu !== MenuType.HelpMenu}>
-            <MenuItem>Issues</MenuItem>
-            <MenuItem>Repository</MenuItem>
-            <MenuItem>About</MenuItem>
+            <MenuItem
+              onClick={() =>
+                window.open(
+                  "https://github.com/niklaskorz/audio3d/issues",
+                  "_blank"
+                )
+              }
+            >
+              Issues
+            </MenuItem>
+            <MenuItem
+              onClick={() =>
+                window.open("https://github.com/niklaskorz/audio3d", "_blank")
+              }
+            >
+              Source Code
+            </MenuItem>
+            <MenuDivider />
+            <MenuItem
+              onClick={() =>
+                window.open(
+                  "https://github.com/niklaskorz/audio3d/blob/master/README.md",
+                  "_blank"
+                )
+              }
+            >
+              About
+            </MenuItem>
           </Menu>
         </MenubarItem>
       </Container>

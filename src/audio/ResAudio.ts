@@ -3,7 +3,8 @@
  */
 
 import { ResonanceAudio } from "resonance-audio";
-import { Object3D, Quaternion, Vector3 } from "three";
+import { Object3D } from "three";
+import AudioNode from "./AudioNode";
 
 /**
  * Class extends Object3D in order to work with the SceneCanvas.
@@ -11,70 +12,51 @@ import { Object3D, Quaternion, Vector3 } from "three";
  * accordingly.
  */
 
-export default class ResAudio extends Object3D {
+export default class ResAudio extends Object3D implements AudioNode {
+  audioContext: AudioContext;
   audioSource: AudioBufferSourceNode;
   source: ResonanceAudio.Source;
-  isPlaying: boolean;
 
-  constructor(audioScene: ResonanceAudio, private audioContext: AudioContext) {
+  constructor(audioScene: ResonanceAudio, audioContext: AudioContext) {
     super();
+    this.audioContext = audioContext;
     this.audioSource = audioContext.createBufferSource();
-    this.audioSource.loop = true;
     this.source = audioScene.createSource({
       position: new Float32Array([0, 1, 3]),
       forward: new Float32Array([1, 0, 0])
     });
     this.audioSource.connect(this.source.input);
-    this.isPlaying = false;
   }
 
   updateMatrixWorld(force: boolean): void {
     super.updateMatrixWorld(force);
-
-    const position = new Vector3();
-    const quaternion = new Quaternion();
-    const scale = new Vector3();
-    const orientation = new Vector3();
-
-    this.matrixWorld.decompose(position, quaternion, scale);
-
-    console.log(position.x, position.y, position.z);
-
-    orientation.set(0, 0, 1).applyQuaternion(quaternion);
-
-    this.source.setPosition(position.x, position.y, position.z);
-    this.source.setOrientation(
-      orientation.x,
-      orientation.y,
-      orientation.z,
-      this.up.x,
-      this.up.y,
-      this.up.z
-    );
+    this.source.setFromMatrix(this.matrixWorld);
   }
 
-  async play(src: string): Promise<void> {
-    if (this.isPlaying === true) {
-      console.warn("ResAudio: Audio is already playing.");
-      return;
+  setBuffer(buffer: AudioBuffer): void {
+    if (this.audioSource.buffer) {
+      // Chrome does not allow "resetting" the buffer and throws an error
+      // with this message: Cannot set buffer to non-null after it has been already been set to a non-null buffer
+      // To circumvent this, we have to create a new buffer source
+      this.audioSource.stop();
+      this.audioSource.disconnect();
+      this.audioSource = this.audioContext.createBufferSource();
+      this.audioSource.connect(this.source.input);
     }
-    const resp = await fetch(src);
-    const data = await resp.arrayBuffer();
-    const buffer = await this.audioContext.decodeAudioData(data);
-
     this.audioSource.buffer = buffer;
-    this.audioSource.start();
-    this.isPlaying = true;
   }
 
-  pause(): void {
-    this.audioSource.stop();
-    this.isPlaying = false;
+  setLoop(loop: boolean): void {
+    this.audioSource.loop = loop;
+  }
+
+  play(): void {
+    this.audioSource.start();
   }
 
   stop(): void {
-    this.audioSource.stop();
-    this.isPlaying = false;
-    this.audioSource.buffer = null;
+    if (this.audioSource.buffer) {
+      this.audioSource.stop();
+    }
   }
 }

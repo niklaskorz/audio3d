@@ -19,7 +19,7 @@ import Project from "../project/Project";
 // The object drag direction is required for calculating the plane to ray cast
 // against later on. Also, of course, to determine whether the object should be
 // moved on one or two axes.
-export enum ObjectDragDirection {
+enum ObjectDragDirection {
   AxisX,
   AxisY,
   AxisZ,
@@ -43,6 +43,8 @@ export enum ObjectDragDirection {
 // in this case.
 // Beware though that intersection points are always given in absolute world coordinates.
 export default class VisualControls extends Scene {
+  project: Project;
+
   objectDragDirection: ObjectDragDirection | null = null;
   isScaling: boolean = false;
   // The drag offset is used to determine the distance of the point where the
@@ -69,8 +71,10 @@ export default class VisualControls extends Scene {
   planeXZ: Mesh;
   planeXY: Mesh;
 
-  constructor(public project: Project) {
+  constructor(project: Project) {
     super();
+
+    this.project = project;
 
     // Setup visual controls for transformation
 
@@ -245,7 +249,9 @@ export default class VisualControls extends Scene {
     let altPlane: Plane | null = null;
 
     // Update the normal and constant (^= position) of the plane
-    // TODO: The origin of the plane has to be negative somehow, otherwise everything is mirrored. Why?
+    // The second parameter of the Plane constructor is called the "constant" and
+    // is used for defining the plane in Hessian normal form. It defines
+    // the negative distance from the origin to the plane.
     switch (this.objectDragDirection) {
       case ObjectDragDirection.AxisX:
         p.set(new Vector3(0, 1, 0), -c.y);
