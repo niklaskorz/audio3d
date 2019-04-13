@@ -86,7 +86,7 @@ export default class ProjectManagerModal extends React.Component<Props, State> {
   };
 
   exportProject = (data: ProjectData) => {
-    const project = new Project().fromData(data);
+    const project = new Project().fromData(data, data.id);
     saveAsZip(project);
   };
 
