@@ -206,22 +206,34 @@ export default class Runtime {
     }
 
     //Check for an object to interact with. If found, mark it as active (mostly for debugging and visual help for possible spectators)
-    this.raycaster.setFromCamera({ x: 0, y: 0 }, camera); //The raycaster helps to check for objects in sight
-    const intersections = this.raycaster.intersectObjects(
-      this.project.activeRoom.children
-    );
+    //The raycaster helps to check for objects in sight. To ensure that objects on the bottom of sight are interactable too, the raycasting is called multiple times
+    //That way, objects from the mid of the sight to the middle bottom of the screen are scanned and checked for their distance.
     let nearestDist = Infinity;
     let nearestObj: GameObject | null = null;
-    for (const intersection of intersections) {
-      const o = intersection.object;
-      if (o instanceof GameObject && intersection.distance < nearestDist) {
-        nearestDist = intersection.distance;
-        nearestObj = o;
+
+    for (let i = 0; i >= -1; i -= 0.1) {
+      //From middle (0) to bottom (-1)
+      this.raycaster.setFromCamera({ x: 0, y: i }, camera);
+      let intersections = this.raycaster.intersectObjects(
+        //perform raycasting with the given settings, originating from the main camera
+        this.project.activeRoom.children
+      );
+
+      for (const intersection of intersections) {
+        //Check, if the intersecting objects are actual GameObjects and if they are closer than the current closest intersecting GameObject
+        const o = intersection.object;
+        if (o instanceof GameObject && intersection.distance < nearestDist) {
+          nearestDist = intersection.distance;
+          nearestObj = o;
+        }
       }
     }
-    if (nearestDist <= 0.5 && nearestObj != null) {
+
+    if (nearestDist <= 1.5 && nearestObj != null) {
+      //If the clostest GameObject is closer or equal than 1.5m (and not null for safety), select it
       this.project.selectObject(nearestObj);
     } else {
+      //Otherwise, unselect all
       this.project.selectObject(null);
     }
   }
