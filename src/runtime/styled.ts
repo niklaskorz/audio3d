@@ -42,13 +42,24 @@ export const RunningButtonContainer = styled.div`
   justify-content: left;
 `;
 
-export const RunningButton = styled.div`
+interface RunningButtonProps {
+  selected?: boolean;
+}
+
+export const RunningButton = styled.div<RunningButtonProps>`
   padding: 10px 15px;
   margin: 5px;
   color: #fff;
   font-size: 15px;
   border-radius: 3px;
   background: hsla(0, 0%, 100%, 0.2);
+  ${props =>
+    props.selected &&
+    css`
+      box-shadow: 0px 0px 10px #00ff00;
+      background: #19611c;
+    `}
+
   border: 1px solid hsl(210, 15%, 40%);
   text-align: center;
   cursor: pointer;

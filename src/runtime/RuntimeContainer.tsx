@@ -19,11 +19,21 @@ interface Props {
   project: Project;
   onExit(): void;
 }
+interface State {
+  audioImplementation: AudioImplementation;
+}
 
 export default class RuntimeContainer extends React.Component<Props> {
   targetRef = React.createRef<HTMLDivElement>();
   runtime = new Runtime(this.props.project);
   activeButtonRef: HTMLElement | null = null;
+
+  state: State = { audioImplementation: AudioImplementation.WebAudio };
+
+  constructor(props: Props) {
+    super(props);
+    this.state.audioImplementation = this.props.project.activeAudioImplementation;
+  }
 
   componentDidMount(): void {
     if (this.targetRef.current) {
@@ -50,6 +60,7 @@ export default class RuntimeContainer extends React.Component<Props> {
     audio: AudioImplementation
   ) => {
     this.props.project.selectAudioImplementation(audio);
+    this.setState({ audioImplementation: audio });
     event.currentTarget.style.background = "#19611c";
     event.currentTarget.style.boxShadow = "0px 0px 10px #00FF00";
     if (
@@ -62,37 +73,9 @@ export default class RuntimeContainer extends React.Component<Props> {
     this.activeButtonRef = event.currentTarget;
   };
 
-  checkIfSelectedImplementation = (target: HTMLElement | null) => {
-    if (target != null) {
-      if (
-        this.props.project.activeAudioImplementation ==
-          AudioImplementation.WebAudio &&
-        target.innerHTML == "Web Audio API"
-      ) {
-        target.style.background = "#19611c";
-        target.style.boxShadow = "0px 0px 10px #00FF00";
-        this.activeButtonRef = target;
-      } else if (
-        this.props.project.activeAudioImplementation ==
-          AudioImplementation.ResonanceAudio &&
-        target.innerHTML == "Resonance Audio"
-      ) {
-        target.style.background = "#19611c";
-        target.style.boxShadow = "0px 0px 10px #00FF00";
-        this.activeButtonRef = target;
-      } else if (
-        this.props.project.activeAudioImplementation ==
-          AudioImplementation.Binaural &&
-        target.innerHTML == "BinauralFIR"
-      ) {
-        target.style.background = "#19611c";
-        target.style.boxShadow = "0px 0px 10px #00FF00";
-        this.activeButtonRef = target;
-      }
-    }
-  };
-
   render(): React.ReactNode {
+    const { audioImplementation } = this.state;
+
     return (
       <Main ref={this.targetRef}>
         <RunningLabel>
@@ -108,21 +91,23 @@ export default class RuntimeContainer extends React.Component<Props> {
           <RunningButtonContainer>
             <RunningButton
               onClick={e => this.onChangeAudio(e, AudioImplementation.WebAudio)}
-              ref={this.checkIfSelectedImplementation}
+              selected={audioImplementation === AudioImplementation.WebAudio}
             >
               Web Audio API
             </RunningButton>
             <RunningButton
+              selected={audioImplementation === AudioImplementation.Binaural}
               onClick={e => this.onChangeAudio(e, AudioImplementation.Binaural)}
-              ref={this.checkIfSelectedImplementation}
             >
               BinauralFIR
             </RunningButton>
             <RunningButton
+              selected={
+                audioImplementation === AudioImplementation.ResonanceAudio
+              }
               onClick={e =>
                 this.onChangeAudio(e, AudioImplementation.ResonanceAudio)
               }
-              ref={this.checkIfSelectedImplementation}
             >
               Resonance Audio
             </RunningButton>
