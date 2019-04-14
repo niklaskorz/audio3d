@@ -1,3 +1,6 @@
+/**
+ * @author Niklas Korz
+ */
 import React from "react";
 import styled, { css } from "styled-components";
 import AudioImplementation from "../audio/AudioImplementation";
@@ -83,6 +86,9 @@ interface Props {
   onDeleteRoom(): void;
 
   onShowAudioLibrary(): void;
+  onShowProjectManager(): void;
+
+  onRunProject(): void;
 }
 
 enum MenuType {
@@ -166,7 +172,9 @@ export default class MenuBar extends React.Component<Props, State> {
             <MenuItem onClick={this.props.onShowAudioLibrary}>
               Audio Library
             </MenuItem>
-            <MenuItem>Project Manager</MenuItem>
+            <MenuItem onClick={this.props.onShowProjectManager}>
+              Project Manager
+            </MenuItem>
             <MenuDivider />
             <MenuItem>Toggle Fullscreen</MenuItem>
           </Menu>
@@ -248,6 +256,7 @@ export default class MenuBar extends React.Component<Props, State> {
             </MenuItem>
           </Menu>
         </MenubarItem>
+        <MenubarItem onClick={this.props.onRunProject}>Run</MenubarItem>
       </Container>
     );
   }

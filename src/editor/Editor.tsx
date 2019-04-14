@@ -10,10 +10,11 @@ import GameObject from "../project/GameObject";
 import Project from "../project/Project";
 import { ProjectData } from "../data/schema";
 import AudioImplementation from "../audio/AudioImplementation";
+import RuntimeContainer from "../runtime/RuntimeContainer";
 import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
-import ProjectCanvas from "./ProjectCanvas";
+import EditorCanvas from "./EditorCanvas";
 import RoomEditor from "./RoomEditor";
 import {
   Container,
@@ -40,11 +41,12 @@ interface State {
   selectedRoomId: number;
   selectedObject: EditorObject | null;
   modal: ModalType | null;
+  isRunning: boolean;
 }
 
 export default class Editor extends React.Component<{}, State> {
   project: Project = new Project();
-  projectCanvas = new ProjectCanvas(this.project);
+  projectCanvas = new EditorCanvas(this.project);
 
   state: State = {
     rooms: this.project.rooms.map(r => ({
@@ -55,7 +57,8 @@ export default class Editor extends React.Component<{}, State> {
     })),
     selectedRoomId: 0,
     selectedObject: null,
-    modal: null
+    modal: null,
+    isRunning: false
   };
   mainRef = React.createRef<HTMLElement>();
 
@@ -183,6 +186,9 @@ export default class Editor extends React.Component<{}, State> {
 
   selectAudioImplementation = (audioImplementation: AudioImplementation) => {
     this.project.selectAudioImplementation(audioImplementation);
+  };
+  showProjectManager = () => {
+    this.setState({ modal: ModalType.ProjectManager });
   };
 
   // Room specific editor functionality
@@ -331,6 +337,11 @@ export default class Editor extends React.Component<{}, State> {
     });
   };
 
+  runProject = () => {
+    this.projectCanvas.detach();
+    this.setState({ isRunning: true });
+  };
+
   // Project canvas events
 
   onSelectObject = (o: GameObject | null) => {
@@ -389,8 +400,12 @@ export default class Editor extends React.Component<{}, State> {
   }
 
   render(): React.ReactNode {
-    const { modal } = this.state;
+    const { modal, isRunning } = this.state;
     const o = this.state.selectedObject;
+
+    if (isRunning) {
+      return <RuntimeContainer project={this.project} />;
+    }
 
     return (
       <Container>
@@ -404,11 +419,16 @@ export default class Editor extends React.Component<{}, State> {
             }
           />
         )}
-        {modal === ModalType.ProjectSelection && (
+        {(modal === ModalType.ProjectManager ||
+          modal === ModalType.ProjectSelection) && (
           <ProjectManagerModal
-            onSelectProject={this.loadProject}
             onNewProject={this.newProject}
             onDismiss={this.dismissModal}
+            onSelectProject={
+              modal === ModalType.ProjectSelection
+                ? this.loadProject
+                : undefined
+            }
           />
         )}
         <MenuBar
@@ -423,6 +443,8 @@ export default class Editor extends React.Component<{}, State> {
           onAddRoom={this.addRoom}
           onDeleteRoom={this.deleteRoom}
           onShowAudioLibrary={this.showAudioLibrary}
+          onShowProjectManager={this.showProjectManager}
+          onRunProject={this.runProject}
         />
         <InnerContainer>
           <Sidebar>

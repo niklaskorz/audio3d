@@ -34,7 +34,7 @@ export default class AudioFileModal extends React.Component<Props> {
           <Action onClick={() => this.props.onExport(audioEntry)}>
             Export
           </Action>
-          <Action onClick={this.props.onCancel}>Cancel</Action>
+          <Action onClick={this.props.onCancel}>Back</Action>
         </ActionGroup>
       </Modal>
     );
