@@ -1,3 +1,6 @@
+/**
+ * @author Niklas Korz
+ */
 export default class CodeBlock {
   source: string;
   func?: Function;
