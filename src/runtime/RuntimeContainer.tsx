@@ -41,6 +41,10 @@ export default class RuntimeContainer extends React.Component<Props> {
     this.props.onExit();
   };
 
+  onVisualToggle = () => {
+    this.runtime.toggleRendering();
+  };
+
   onChangeWebAudio = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     this.props.project.selectAudioImplementation(AudioImplementation.WebAudio);
     event.currentTarget.style.background = "#19611c";
@@ -123,6 +127,9 @@ export default class RuntimeContainer extends React.Component<Props> {
           <RunningHeadline>Menu</RunningHeadline>
           <RunningButtonContainer>
             <RunningButton onClick={this.onExit}>Exit</RunningButton>
+            <RunningButton onClick={this.onVisualToggle}>
+              Toggle visuals
+            </RunningButton>
           </RunningButtonContainer>
           <RunningHeadline>Audio implementation</RunningHeadline>
           <RunningButtonContainer>

@@ -96,6 +96,16 @@ export default class Runtime {
     this.renderer.render(this.project.activeRoom, this.project.camera);
   };
 
+  toggleRendering(): void {
+    if (this.target) {
+      if (this.target.contains(this.canvas)) {
+        this.target.removeChild(this.canvas);
+      } else {
+        this.target.appendChild(this.canvas);
+      }
+    }
+  }
+
   // Helper method to check if a number (check) is between or equal to two boundaries (from, to). E.g.: isBetween(2, 1, 5)==true, isBetween(6, 1, 5)==false
   isBetween(check: number, from: number, to: number): boolean {
     const min = Math.min.apply(Math, [from, to]),
