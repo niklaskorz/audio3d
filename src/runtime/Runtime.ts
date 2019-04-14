@@ -23,6 +23,8 @@ export default class Runtime {
   lastCollisionSound = 0; //Timestamp, when the last sound for collision was played
   lastKnownButtonStatus = false; //Variable to check whether or not the button[0] was pressed in the last update() or not (to prevent multiple clicks)
 
+  shouldRender = true; //Should the visuals be rendered or should it be audio-only?
+
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
 
@@ -93,17 +95,14 @@ export default class Runtime {
     this.previousTimestamp = t;
     this.update(dt);
 
-    this.renderer.render(this.project.activeRoom, this.project.camera);
+    if (this.shouldRender) {
+      this.renderer.render(this.project.activeRoom, this.project.camera);
+    }
   };
 
   toggleRendering(): void {
-    if (this.target) {
-      if (this.target.contains(this.canvas)) {
-        this.target.removeChild(this.canvas);
-      } else {
-        this.target.appendChild(this.canvas);
-      }
-    }
+    this.shouldRender = this.shouldRender ? false : true;
+    this.renderer.clear();
   }
 
   // Helper method to check if a number (check) is between or equal to two boundaries (from, to). E.g.: isBetween(2, 1, 5)==true, isBetween(6, 1, 5)==false
