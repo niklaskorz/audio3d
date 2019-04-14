@@ -61,16 +61,6 @@ export default class RuntimeContainer extends React.Component<Props> {
   ) => {
     this.props.project.selectAudioImplementation(audio);
     this.setState({ audioImplementation: audio });
-    event.currentTarget.style.background = "#19611c";
-    event.currentTarget.style.boxShadow = "0px 0px 10px #00FF00";
-    if (
-      this.activeButtonRef != null &&
-      this.activeButtonRef != event.currentTarget
-    ) {
-      this.activeButtonRef.style.removeProperty("background");
-      this.activeButtonRef.style.removeProperty("box-shadow");
-    }
-    this.activeButtonRef = event.currentTarget;
   };
 
   render(): React.ReactNode {

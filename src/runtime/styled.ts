@@ -65,7 +65,11 @@ export const RunningButton = styled.div<RunningButtonProps>`
   cursor: pointer;
 
   :hover {
-    background: hsla(0, 0%, 100%, 0.4);
+    ${props =>
+      !props.selected &&
+      css`
+        background: hsla(0, 0%, 100%, 0.4);
+      `}
   }
 `;
 
