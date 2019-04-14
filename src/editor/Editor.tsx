@@ -386,6 +386,14 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
+  // Runtime events
+  exitRuntime = () => {
+    if (this.mainRef.current != null) {
+      this.projectCanvas.attach(this.mainRef.current);
+    }
+    this.setState({ isRunning: false });
+  };
+
   // React component lifecycle methods
 
   componentDidMount(): void {
@@ -404,7 +412,9 @@ export default class Editor extends React.Component<{}, State> {
     const o = this.state.selectedObject;
 
     if (isRunning) {
-      return <RuntimeContainer project={this.project} />;
+      return (
+        <RuntimeContainer project={this.project} onExit={this.exitRuntime} />
+      );
     }
 
     return (
