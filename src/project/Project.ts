@@ -8,12 +8,10 @@ import {
   PerspectiveCamera,
   Vector3
 } from "three";
-import { HRTF } from "binauralfir";
-import BinauralFIR from "binauralfir";
 import Serializable, { SerializedData } from "../data/Serializable";
 import { ProjectData } from "../data/schema";
 import { saveProject } from "../data/db";
-import { loadHRTFDataset } from "../audio/binaural/hrtf";
+import AudioImplementation from "../audio/AudioImplementation";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 import Room from "./Room";
@@ -39,11 +37,11 @@ export default class Project implements Serializable {
 
   id?: number;
   name = "New project";
-  hrtf: HRTF[] = [];
 
   rooms: Room[] = [];
   audioType: number = 1;
 
+  activeAudioImplementation = AudioImplementation.WebAudio;
   activeRoom: Room;
   activeObject: GameObject | null = null;
 
@@ -65,15 +63,14 @@ export default class Project implements Serializable {
       color: 0xffffff,
       side: BackSide
     });
-    loadHRTFDataset().then(hrtf => {
-      this.hrtf = hrtf;
-    });
     this.outlineMesh.scale.multiplyScalar(1.05);
+
+    (window as any).p = this;
   }
 
   close(): void {
     for (const room of this.rooms) {
-      room.audioContext.close();
+      room.audioScene.close();
     }
   }
 
@@ -85,9 +82,14 @@ export default class Project implements Serializable {
     return room;
   }
 
+  selectAudioImplementation(audioImplementation: AudioImplementation): void {
+    this.activeAudioImplementation = audioImplementation;
+    this.activeRoom.audioScene.selectAudioImplementation(audioImplementation);
+  }
+
   selectRoom(room: Room): void {
-    this.activeRoom.audioContext.suspend();
-    room.audioContext.resume();
+    this.activeRoom.audioScene.suspend();
+    room.audioScene.selectAudioImplementation(this.activeAudioImplementation);
     room.camera.aspect = this.activeRoom.camera.aspect;
     room.camera.updateProjectionMatrix();
     this.activeRoom = room;
@@ -132,7 +134,7 @@ export default class Project implements Serializable {
 
     // Disable audio in all inactive rooms
     for (let i = 1; i < this.rooms.length; i++) {
-      this.rooms[i].audioContext.suspend();
+      this.rooms[i].audioScene.suspend();
     }
 
     return this;

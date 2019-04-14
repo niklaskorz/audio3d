@@ -9,6 +9,7 @@ import { openZip } from "../data/import";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
 import { ProjectData } from "../data/schema";
+import AudioImplementation from "../audio/AudioImplementation";
 import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
@@ -177,6 +178,10 @@ export default class Editor extends React.Component<{}, State> {
 
   showAudioLibrary = () => {
     this.setState({ modal: ModalType.AudioLibrary });
+  };
+
+  selectAudioImplementation = (audioImplementation: AudioImplementation) => {
+    this.project.selectAudioImplementation(audioImplementation);
   };
 
   // Room specific editor functionality
@@ -406,6 +411,7 @@ export default class Editor extends React.Component<{}, State> {
           />
         )}
         <MenuBar
+          onAudioChange={this.selectAudioImplementation}
           onNewProject={this.newProject}
           onLoadProject={this.showProjectSelection}
           onSaveProject={this.saveProject}

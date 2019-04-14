@@ -1,5 +1,6 @@
 import React from "react";
 import styled, { css } from "styled-components";
+import AudioImplementation from "../audio/AudioImplementation";
 
 const Container = styled.div`
   flex: 0 0 auto;
@@ -75,7 +76,7 @@ interface Props {
   onSaveProject(): void;
   onImportProject(): void;
   onExportProject(): void;
-
+  onAudioChange(audioImplementation: AudioImplementation): void;
   onAddObject(): void;
   onDeleteObject(): void;
   onAddRoom(): void;
@@ -87,17 +88,20 @@ interface Props {
 enum MenuType {
   FileMenu,
   EditMenu,
+  AudioMenu,
   ViewMenu,
   HelpMenu
 }
 
 interface State {
+  audioImplementation: AudioImplementation;
   activeMenu: MenuType | null;
 }
 
 export default class MenuBar extends React.Component<Props, State> {
   state: State = {
-    activeMenu: null
+    activeMenu: null,
+    audioImplementation: AudioImplementation.WebAudio
   };
 
   toggleMenu(menuType: MenuType): void {
@@ -165,6 +169,36 @@ export default class MenuBar extends React.Component<Props, State> {
             <MenuItem>Project Manager</MenuItem>
             <MenuDivider />
             <MenuItem>Toggle Fullscreen</MenuItem>
+          </Menu>
+        </MenubarItem>
+        <MenubarItem
+          isActive={activeMenu === MenuType.AudioMenu}
+          onClick={() => this.toggleMenu(MenuType.AudioMenu)}
+        >
+          Audio
+          <Menu hidden={activeMenu !== MenuType.AudioMenu}>
+            <MenuItem
+              onClick={() =>
+                this.props.onAudioChange(AudioImplementation.WebAudio)
+              }
+            >
+              Web Audio API
+            </MenuItem>
+            <MenuItem
+              onClick={() =>
+                this.props.onAudioChange(AudioImplementation.Binaural)
+              }
+            >
+              Binaural FIR
+            </MenuItem>
+
+            <MenuItem
+              onClick={() =>
+                this.props.onAudioChange(AudioImplementation.ResonanceAudio)
+              }
+            >
+              Resonance Audio API
+            </MenuItem>
           </Menu>
         </MenubarItem>
         <MenubarItem

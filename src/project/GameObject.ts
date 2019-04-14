@@ -2,10 +2,11 @@
  * @author Niklas Korz
  */
 import { BoxGeometry, Mesh, MeshLambertMaterial } from "three";
-import { ResonanceAudio } from "resonance-audio";
 import Serializable, { SerializedData } from "../data/Serializable";
-import ResAudio from "../audio/ResAudio";
 import { ObjectData, AudioFile } from "../data/schema";
+import AudioScene from "../audio/AudioScene";
+import Audio3D from "../audio/Audio3D";
+import defaultAudioContext from "../audio/defaultAudioContext";
 import AudioLibrary from "./AudioLibrary";
 
 const cubeGeometry = new BoxGeometry(1, 1, 1);
@@ -16,33 +17,24 @@ export default class GameObject extends Mesh implements Serializable {
   audioId?: number;
   audioFile?: AudioFile;
 
-  audioContext: AudioContext;
-  audioScene: ResonanceAudio;
-  //audioScene: BinauralScene;
-  audio: ResAudio;
+  audio: Audio3D;
 
-  constructor(
-    audioLibrary: AudioLibrary,
-    audioContext: AudioContext,
-    audioScene: ResonanceAudio
-  ) {
+  constructor(audioLibrary: AudioLibrary, audioScene: AudioScene) {
     super(cubeGeometry, cubeMaterial);
     this.audioLibrary = audioLibrary;
-    this.audioContext = audioContext;
-    this.audioScene = audioScene;
-    //this.audio = new BinauralAudio(this.audioScene);
-    this.audio = new ResAudio(audioScene, audioContext);
+
+    this.audio = audioScene.createAudio3D();
     this.add(this.audio);
   }
 
   async loadAudio(id: number): Promise<void> {
     this.audioId = id;
     this.audioFile = await this.audioLibrary.get(id);
+    this.audio.stop();
     if (this.audioFile) {
-      const buffer = await this.audioContext.decodeAudioData(
+      const buffer = await defaultAudioContext.decodeAudioData(
         this.audioFile.data.slice(0)
       );
-      this.audio.stop();
       this.audio.setBuffer(buffer);
       this.audio.setLoop(true);
       this.audio.play();

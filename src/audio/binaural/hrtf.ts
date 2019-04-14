@@ -1,12 +1,11 @@
 import { HRTF } from "binauralfir";
-
-let audioContext = new AudioContext();
+import defaultAudioContext from "../defaultAudioContext";
 
 const firCoefficientsToAudioBuffer = (
   firCoeffsLeft: number[],
   firCoeffsRight: number[]
 ): AudioBuffer => {
-  const buffer = audioContext.createBuffer(2, 512, 44100);
+  const buffer = defaultAudioContext.createBuffer(2, 512, 44100);
   buffer.copyToChannel(new Float32Array(firCoeffsLeft), 0);
   buffer.copyToChannel(new Float32Array(firCoeffsRight), 1);
   return buffer;

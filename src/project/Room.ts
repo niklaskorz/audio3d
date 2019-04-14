@@ -15,8 +15,9 @@ import {
   Vector3
 } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
-import ResListener from "../audio/ResListener";
 import { RoomData } from "../data/schema";
+import AudioScene from "../audio/AudioScene";
+import AudioImplementation from "../audio/AudioImplementation";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 
@@ -39,9 +40,7 @@ export default class Room extends Scene implements Serializable {
   wallWest = new Mesh(wallGeometry, wallMaterial);
   camera = new PerspectiveCamera(60, 1, 0.1, 1000);
 
-  audioContext = new AudioContext();
-  audioScene: ResonanceAudio;
-  listener: ResListener;
+  audioScene: AudioScene;
 
   get dimensions(): RoomDimensions {
     return this.roomDimensions;
@@ -106,23 +105,16 @@ export default class Room extends Scene implements Serializable {
     this.camera.lookAt(new Vector3(0, 1, 0));
 
     // Audio setup
-
-    this.audioScene = new ResonanceAudio(this.audioContext, {
-      dimensions,
-      materials
+    this.audioScene = new AudioScene({
+      dimensions: dimensions,
+      materials: materials
     });
-    this.listener = new ResListener(this.audioScene);
 
-    this.audioScene.output.connect(this.audioContext.destination);
-    this.camera.add(this.listener);
+    this.camera.add(this.audioScene.listener3D);
   }
 
   addObject(): GameObject {
-    const object = new GameObject(
-      this.audioLibrary,
-      this.audioContext,
-      this.audioScene
-    );
+    const object = new GameObject(this.audioLibrary, this.audioScene);
     object.position.y += 0.5;
     object.name = "New object";
 
@@ -163,11 +155,7 @@ export default class Room extends Scene implements Serializable {
     }
 
     const gameObjects = data.objects.map((o: SerializedData) =>
-      new GameObject(
-        this.audioLibrary,
-        this.audioContext,
-        this.audioScene
-      ).fromData(o)
+      new GameObject(this.audioLibrary, this.audioScene).fromData(o)
     );
     this.add(...gameObjects);
 

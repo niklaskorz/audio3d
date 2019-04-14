@@ -24,19 +24,28 @@ export default class BinauralSource {
   }
 
   update(): void {
+    const listenerAzimuth = Math.atan2(
+      this.scene.listenerOrientation.x,
+      this.scene.listenerOrientation.z
+    );
+
     const distance = this.binauralFIR.distance(
       this.position,
       this.scene.listenerPosition
     );
+
+    const deltaZ = this.position.z - this.scene.listenerPosition.z;
     const azimuth = radToDeg(
-      Math.atan(
-        (this.position.x - this.scene.listenerPosition.x) /
-          (this.position.z - this.scene.listenerPosition.z)
-      )
+      listenerAzimuth + deltaZ &&
+        Math.atan((this.position.x - this.scene.listenerPosition.x) / deltaZ)
     );
-    const elevation = radToDeg(
-      Math.asin((this.position.y - this.scene.listenerPosition.y) / distance)
-    );
+
+    const elevation =
+      distance &&
+      radToDeg(
+        Math.asin((this.position.y - this.scene.listenerPosition.y) / distance)
+      );
+
     this.binauralFIR.setPosition(azimuth, elevation, distance);
   }
 }
