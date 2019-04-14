@@ -1,5 +1,5 @@
 /**
- * @author Niklas Korz
+ * @author Leon Erath
  */
 import React from "react";
 import styled from "styled-components";
