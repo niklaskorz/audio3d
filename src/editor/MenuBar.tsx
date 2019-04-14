@@ -187,10 +187,14 @@ export default class MenuBar extends React.Component<Props, State> {
           isActive={activeMenu === MenuType.AudioMenu}
           onClick={() => this.toggleMenu(MenuType.AudioMenu)}
         >
-          Audio: {audioImplementation === AudioImplementation.WebAudio && "Web"}
-          {audioImplementation === AudioImplementation.Binaural && "Binaural"}
-          {audioImplementation === AudioImplementation.ResonanceAudio &&
-            "Resonance"}
+          {" "}
+          <MenubarItemLabel>
+            Audio:{" "}
+            {audioImplementation === AudioImplementation.WebAudio && "Web"}
+            {audioImplementation === AudioImplementation.Binaural && "Binaural"}
+            {audioImplementation === AudioImplementation.ResonanceAudio &&
+              "Resonance"}
+          </MenubarItemLabel>
           <Menu hidden={activeMenu !== MenuType.AudioMenu}>
             <MenuItem
               onClick={() => {
