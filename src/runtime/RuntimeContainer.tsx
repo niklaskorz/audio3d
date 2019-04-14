@@ -50,9 +50,9 @@ export default class RuntimeContainer extends React.Component<Props> {
           </RunningButtonContainer>
           <RunningHeadline>Audio implementation</RunningHeadline>
           <RunningButtonContainer>
-            <RunningButton>Web</RunningButton>
-            <RunningButton>Binaural</RunningButton>
-            <RunningButton>Resonance</RunningButton>
+            <RunningButton>Web Audio API</RunningButton>
+            <RunningButton>BinauralFIR</RunningButton>
+            <RunningButton>Resonance Audio</RunningButton>
           </RunningButtonContainer>
           <RunningHeadline>Controls</RunningHeadline>
           <ControlsTable>

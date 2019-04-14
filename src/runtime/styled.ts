@@ -33,14 +33,13 @@ export const RunningLabel = styled.div`
 export const RunningHeadline = styled.p`
   color: #fff;
   font-size: 15px;
-  text-align: center;
   margin: 12px 10px 5px 10px;
   font-weight: bold;
 `;
 
 export const RunningButtonContainer = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: left;
 `;
 
 export const RunningButton = styled.div`
