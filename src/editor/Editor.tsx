@@ -417,14 +417,21 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
+  // Runtime events
+  exitRuntime = () => {
+    this.setState({ isRunning: false });
+  };
+
   // React component lifecycle methods
 
-  componentDidMount(): void {
-    if (this.mainRef.current) {
-      this.projectCanvas.attach(this.mainRef.current);
+  attachCanvas = (target: HTMLElement | null) => {
+    if (target != null) {
+      this.projectCanvas.attach(target);
       this.projectCanvas.focus();
+    } else {
+      this.projectCanvas.detach();
     }
-  }
+  };
 
   componentWillUnmount(): void {
     this.projectCanvas.detach();
@@ -435,7 +442,9 @@ export default class Editor extends React.Component<{}, State> {
     const o = this.state.selectedObject;
 
     if (isRunning) {
-      return <RuntimeContainer project={this.project} />;
+      return (
+        <RuntimeContainer project={this.project} onExit={this.exitRuntime} />
+      );
     }
 
     return (
@@ -514,7 +523,7 @@ export default class Editor extends React.Component<{}, State> {
               />
             )}
           </Sidebar>
-          <Main ref={this.mainRef}>
+          <Main ref={this.attachCanvas}>
             <FocusedLabel>Focused</FocusedLabel>
           </Main>
         </InnerContainer>
