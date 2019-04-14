@@ -103,6 +103,16 @@ export default class Runtime {
     return check >= min && check <= max;
   }
 
+  invokeInteraction(): boolean {
+    let toInteractWith = this.project.activeObject;
+    if (toInteractWith != null) {
+      toInteractWith.rotateX(0.1); //TODO - Invoke interaction method on object (not implemented yet)
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   update(dt: number): void {
     const { camera } = this.project;
     this.dummyCamera.position.copy(camera.position); //Copy values of the real camera object to the dummy camera, to be used later on for collision detection
@@ -111,6 +121,9 @@ export default class Runtime {
     let moveX = 0;
     let moveZ = 0;
     let rotateY = 0;
+
+    //Sidenote on movement: We really wanted to implement the possibility to look up and down, but it turned out to be way too complex for us to implement in this project.
+    //All tries resulted in either a buggy camera or a buggy movement through the environment, which we were not fine with.
 
     //Keyboard actions (W/A/S/D to move, Left&Right arrows to rotate)
     if (this.keys.isPressed("w")) {
@@ -207,7 +220,6 @@ export default class Runtime {
       camera.position.copy(this.dummyCamera.position);
     } else if (this.lastCollisionSound + 1000 < Date.now()) {
       //TODO - Play sound
-      console.log("Collision at " + Date.now()); //DEBUG ONLY
       this.lastCollisionSound = Date.now();
     }
 
@@ -245,18 +257,17 @@ export default class Runtime {
 
     //Interact with nearest (selected) object
     if (
-      // Is the button clicked?
-      this.gamepads.getButtonStatus(0) &&
+      // Is the button or key clicked
+      (this.gamepads.getButtonStatus(0) || this.keys.isPressed("e")) &&
       //Prevent multiple actions on button hold
       !this.lastKnownButtonStatus
     ) {
       this.lastKnownButtonStatus = true;
-      let toInteractWith = this.project.activeObject;
-      if (toInteractWith != null) {
-        toInteractWith.rotateX(0.1);
-      }
-    } else if (!this.gamepads.getButtonStatus(0)) {
+      this.invokeInteraction();
+    } else if (!this.gamepads.getButtonStatus(0) && !this.keys.isPressed("e")) {
       this.lastKnownButtonStatus = false; //Last known button status was unpressed, so clear the value
     }
+
+    //TODO - sounds for footsteps
   }
 }
