@@ -78,6 +78,7 @@ const MenuDivider = styled.div`
 `;
 
 interface Props {
+  onShowSettings(): void;
   onNewProject(): void;
   onLoadProject(): void;
   onSaveProject(): void;
@@ -147,7 +148,7 @@ export default class MenuBar extends React.Component<Props, State> {
               Export project
             </MenuItem>
             <MenuDivider />
-            <MenuItem>Settings</MenuItem>
+            <MenuItem onClick={this.props.onShowSettings}>Settings</MenuItem>
           </Menu>
         </MenubarItem>
         <MenubarItem

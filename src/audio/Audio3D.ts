@@ -6,6 +6,7 @@ import { Object3D, Vector3, Quaternion } from "three";
 import { ResonanceAudio } from "resonance-audio";
 import BinauralSource from "./binaural/BinauralSource";
 import AudioImplementation from "./AudioImplementation";
+import DistanceModel from "./DistanceModel";
 
 /**
  * Class extends Object3D in order to work with the three.js scene graph.
@@ -52,6 +53,20 @@ export default class Audio3D extends Object3D {
     this.resonanceBufferSource.connect(resonanceSource.input);
 
     this.webAudioPannerNode.connect(webAudioContext.destination);
+  }
+
+  setDistanceModel(distanceModel: DistanceModel): void {
+    switch (distanceModel) {
+      case DistanceModel.linear:
+        this.webAudioPannerNode.distanceModel = "linear";
+        break;
+      case DistanceModel.inverse:
+        this.webAudioPannerNode.distanceModel = "inverse";
+        break;
+      case DistanceModel.exponential:
+        this.webAudioPannerNode.distanceModel = "exponential";
+        break;
+    }
   }
 
   updateMatrixWorld(force: boolean): void {

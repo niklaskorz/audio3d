@@ -11,6 +11,7 @@ import Project from "../project/Project";
 import { ProjectData } from "../data/schema";
 import AudioImplementation from "../audio/AudioImplementation";
 import RuntimeContainer from "../runtime/RuntimeContainer";
+import DistanceModel from "../audio/DistanceModel";
 import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
@@ -28,12 +29,14 @@ import {
 } from "./styled";
 import { EditorObject, EditorRoom, AudioEntry } from "./types";
 import ProjectManagerModal from "./ProjectManagerModal";
+import SettingsModal from "./SettingsModal";
 
 enum ModalType {
   AudioLibrary,
   AudioSelection,
   ProjectManager,
-  ProjectSelection
+  ProjectSelection,
+  Settings
 }
 
 interface State {
@@ -183,12 +186,24 @@ export default class Editor extends React.Component<{}, State> {
   showAudioLibrary = () => {
     this.setState({ modal: ModalType.AudioLibrary });
   };
+  getDistanceModel = () => {
+    if (this.project != undefined) return this.project.getDistanceModel();
+    return DistanceModel.inverse;
+  };
+
+  selectDistanceModel = (distanceModel: DistanceModel) => {
+    this.project.selectDistanceModel(distanceModel);
+  };
 
   selectAudioImplementation = (audioImplementation: AudioImplementation) => {
     this.project.selectAudioImplementation(audioImplementation);
   };
   showProjectManager = () => {
     this.setState({ modal: ModalType.ProjectManager });
+  };
+
+  showSettings = () => {
+    this.setState({ modal: ModalType.Settings });
   };
 
   // Room specific editor functionality
@@ -431,7 +446,15 @@ export default class Editor extends React.Component<{}, State> {
             }
           />
         )}
+        {modal === ModalType.Settings && (
+          <SettingsModal
+            onDismiss={this.dismissModal}
+            getDistanceModel={this.getDistanceModel}
+            onDistanceModelChange={this.selectDistanceModel}
+          />
+        )}
         <MenuBar
+          onShowSettings={this.showSettings}
           onAudioChange={this.selectAudioImplementation}
           onNewProject={this.newProject}
           onLoadProject={this.showProjectSelection}

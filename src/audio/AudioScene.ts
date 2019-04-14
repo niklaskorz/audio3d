@@ -45,7 +45,7 @@ export default class AudioScene {
   }
 
   createAudio3D(): Audio3D {
-    return new Audio3D(
+    const audio = new Audio3D(
       this.webAudioContext,
       this.binauralAudioContext,
       this.resonanceAudioContext,
@@ -53,6 +53,8 @@ export default class AudioScene {
       this.binauralScene.createSource(),
       this.resonanceScene.createSource()
     );
+
+    return audio;
   }
 
   close(): void {
