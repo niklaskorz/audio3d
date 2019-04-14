@@ -38,6 +38,10 @@ const MenubarItem = styled.div<MenubarItemProps>`
     `}
 `;
 
+const MenubarItemLabel = styled.label`
+  cursor: pointer;
+`;
+
 const Menu = styled.div`
   z-index: 1;
   position: absolute;
@@ -125,7 +129,7 @@ export default class MenuBar extends React.Component<Props, State> {
           isActive={activeMenu === MenuType.FileMenu}
           onClick={() => this.toggleMenu(MenuType.FileMenu)}
         >
-          File
+          <MenubarItemLabel>File</MenubarItemLabel>
           <Menu hidden={activeMenu !== MenuType.FileMenu}>
             <MenuItem onClick={this.props.onNewProject}>New project</MenuItem>
             <MenuDivider />
@@ -146,7 +150,7 @@ export default class MenuBar extends React.Component<Props, State> {
           isActive={activeMenu === MenuType.EditMenu}
           onClick={() => this.toggleMenu(MenuType.EditMenu)}
         >
-          Edit
+          <MenubarItemLabel>Editor</MenubarItemLabel>
           <Menu hidden={activeMenu !== MenuType.EditMenu}>
             <MenuItem onClick={this.props.onAddObject}>Add object</MenuItem>
             <MenuItem onClick={this.props.onDeleteObject}>
@@ -163,7 +167,7 @@ export default class MenuBar extends React.Component<Props, State> {
           isActive={activeMenu === MenuType.ViewMenu}
           onClick={() => this.toggleMenu(MenuType.ViewMenu)}
         >
-          View
+          <MenubarItemLabel>View</MenubarItemLabel>
           <Menu hidden={activeMenu !== MenuType.ViewMenu}>
             <MenuItem onClick={this.props.onShowAudioLibrary}>
               Audio Library
@@ -179,7 +183,7 @@ export default class MenuBar extends React.Component<Props, State> {
           isActive={activeMenu === MenuType.HelpMenu}
           onClick={() => this.toggleMenu(MenuType.HelpMenu)}
         >
-          Help
+          <MenubarItemLabel>Help</MenubarItemLabel>
           <Menu hidden={activeMenu !== MenuType.HelpMenu}>
             <MenuItem
               onClick={() =>
@@ -211,7 +215,9 @@ export default class MenuBar extends React.Component<Props, State> {
             </MenuItem>
           </Menu>
         </MenubarItem>
-        <MenubarItem onClick={this.props.onRunProject}>Run</MenubarItem>
+        <MenubarItem onClick={this.props.onRunProject}>
+          <MenubarItemLabel>Run</MenubarItemLabel>
+        </MenubarItem>
       </Container>
     );
   }
