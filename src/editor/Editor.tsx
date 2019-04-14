@@ -9,6 +9,7 @@ import { openZip } from "../data/import";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
 import { ProjectData } from "../data/schema";
+import AudioImplementation from "../audio/AudioImplementation";
 import RuntimeContainer from "../runtime/RuntimeContainer";
 import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
@@ -143,6 +144,7 @@ export default class Editor extends React.Component<{}, State> {
   deleteObject = () => {
     if (this.project.activeObject) {
       this.project.activeRoom.remove(this.project.activeObject);
+      this.project.activeObject.audio.stop();
       this.project.activeObject = null;
       this.setState({ selectedObject: null });
     }
@@ -182,6 +184,9 @@ export default class Editor extends React.Component<{}, State> {
     this.setState({ modal: ModalType.AudioLibrary });
   };
 
+  selectAudioImplementation = (audioImplementation: AudioImplementation) => {
+    this.project.selectAudioImplementation(audioImplementation);
+  };
   showProjectManager = () => {
     this.setState({ modal: ModalType.ProjectManager });
   };
@@ -427,6 +432,7 @@ export default class Editor extends React.Component<{}, State> {
           />
         )}
         <MenuBar
+          onAudioChange={this.selectAudioImplementation}
           onNewProject={this.newProject}
           onLoadProject={this.showProjectSelection}
           onSaveProject={this.saveProject}

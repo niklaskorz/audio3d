@@ -3,6 +3,7 @@
  */
 import React from "react";
 import styled, { css } from "styled-components";
+import AudioImplementation from "../audio/AudioImplementation";
 
 const Container = styled.div`
   flex: 0 0 auto;
@@ -82,7 +83,7 @@ interface Props {
   onSaveProject(): void;
   onImportProject(): void;
   onExportProject(): void;
-
+  onAudioChange(audioImplementation: AudioImplementation): void;
   onAddObject(): void;
   onDeleteObject(): void;
   onAddRoom(): void;
@@ -97,17 +98,20 @@ interface Props {
 enum MenuType {
   FileMenu,
   EditMenu,
+  AudioMenu,
   ViewMenu,
   HelpMenu
 }
 
 interface State {
+  audioImplementation: AudioImplementation;
   activeMenu: MenuType | null;
 }
 
 export default class MenuBar extends React.Component<Props, State> {
   state: State = {
-    activeMenu: null
+    activeMenu: null,
+    audioImplementation: AudioImplementation.WebAudio
   };
 
   toggleMenu(menuType: MenuType): void {
@@ -121,7 +125,7 @@ export default class MenuBar extends React.Component<Props, State> {
   }
 
   render(): React.ReactNode {
-    const { activeMenu } = this.state;
+    const { activeMenu, audioImplementation } = this.state;
 
     return (
       <Container tabIndex={-1} onBlur={() => this.closeMenu()}>
@@ -177,6 +181,51 @@ export default class MenuBar extends React.Component<Props, State> {
             </MenuItem>
             <MenuDivider />
             <MenuItem>Toggle Fullscreen</MenuItem>
+          </Menu>
+        </MenubarItem>
+        <MenubarItem
+          isActive={activeMenu === MenuType.AudioMenu}
+          onClick={() => this.toggleMenu(MenuType.AudioMenu)}
+        >
+          <MenubarItemLabel>
+            Audio:{" "}
+            {audioImplementation === AudioImplementation.WebAudio && "Web"}
+            {audioImplementation === AudioImplementation.Binaural && "Binaural"}
+            {audioImplementation === AudioImplementation.ResonanceAudio &&
+              "Resonance"}
+          </MenubarItemLabel>
+          <Menu hidden={activeMenu !== MenuType.AudioMenu}>
+            <MenuItem
+              onClick={() => {
+                this.setState({
+                  audioImplementation: AudioImplementation.WebAudio
+                });
+                this.props.onAudioChange(AudioImplementation.WebAudio);
+              }}
+            >
+              Web Audio API
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                this.setState({
+                  audioImplementation: AudioImplementation.Binaural
+                });
+                this.props.onAudioChange(AudioImplementation.Binaural);
+              }}
+            >
+              Binaural FIR
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
+                this.setState({
+                  audioImplementation: AudioImplementation.ResonanceAudio
+                });
+                this.props.onAudioChange(AudioImplementation.ResonanceAudio);
+              }}
+            >
+              Resonance Audio API
+            </MenuItem>
           </Menu>
         </MenubarItem>
         <MenubarItem
