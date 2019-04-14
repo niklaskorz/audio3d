@@ -83,13 +83,7 @@ export default class Audio3D extends Object3D {
       // with this message: Cannot set buffer to non-null after it has been already been set to a non-null buffer
       // To circumvent this, we have to create a new buffer source
 
-      this.webAudioBufferSource.stop();
-      this.binauralBufferSource.stop();
-      this.resonanceBufferSource.stop();
-
-      this.webAudioBufferSource.disconnect();
-      this.binauralBufferSource.disconnect();
-      this.resonanceBufferSource.disconnect();
+      this.stop();
 
       this.webAudioBufferSource = this.webAudioContext.createBufferSource();
       this.binauralBufferSource = this.binauralAudioContext.createBufferSource();
@@ -122,6 +116,10 @@ export default class Audio3D extends Object3D {
       this.webAudioBufferSource.stop();
       this.binauralBufferSource.stop();
       this.resonanceBufferSource.stop();
+
+      this.webAudioBufferSource.disconnect();
+      this.binauralBufferSource.disconnect();
+      this.resonanceBufferSource.disconnect();
     }
   }
 }

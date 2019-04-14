@@ -115,7 +115,7 @@ export default class MenuBar extends React.Component<Props, State> {
   }
 
   render(): React.ReactNode {
-    const { activeMenu } = this.state;
+    const { activeMenu, audioImplementation } = this.state;
 
     return (
       <Container tabIndex={-1} onBlur={() => this.closeMenu()}>
@@ -175,27 +175,38 @@ export default class MenuBar extends React.Component<Props, State> {
           isActive={activeMenu === MenuType.AudioMenu}
           onClick={() => this.toggleMenu(MenuType.AudioMenu)}
         >
-          Audio
+          Audio: {audioImplementation === 0 && "Web"}
+          {audioImplementation === 1 && "Binaural"}
+          {audioImplementation === 2 && "Resonance"}
           <Menu hidden={activeMenu !== MenuType.AudioMenu}>
             <MenuItem
-              onClick={() =>
-                this.props.onAudioChange(AudioImplementation.WebAudio)
-              }
+              onClick={() => {
+                this.setState({
+                  audioImplementation: AudioImplementation.WebAudio
+                });
+                this.props.onAudioChange(AudioImplementation.WebAudio);
+              }}
             >
               Web Audio API
             </MenuItem>
             <MenuItem
-              onClick={() =>
-                this.props.onAudioChange(AudioImplementation.Binaural)
-              }
+              onClick={() => {
+                this.setState({
+                  audioImplementation: AudioImplementation.Binaural
+                });
+                this.props.onAudioChange(AudioImplementation.Binaural);
+              }}
             >
               Binaural FIR
             </MenuItem>
 
             <MenuItem
-              onClick={() =>
-                this.props.onAudioChange(AudioImplementation.ResonanceAudio)
-              }
+              onClick={() => {
+                this.setState({
+                  audioImplementation: AudioImplementation.ResonanceAudio
+                });
+                this.props.onAudioChange(AudioImplementation.ResonanceAudio);
+              }}
             >
               Resonance Audio API
             </MenuItem>

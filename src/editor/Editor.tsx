@@ -141,6 +141,7 @@ export default class Editor extends React.Component<{}, State> {
   deleteObject = () => {
     if (this.project.activeObject) {
       this.project.activeRoom.remove(this.project.activeObject);
+      this.project.activeObject.audio.stop();
       this.project.activeObject = null;
       this.setState({ selectedObject: null });
     }
