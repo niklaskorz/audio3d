@@ -54,4 +54,19 @@ export default class GamepadListener {
     }
     return value;
   }
+
+  getButtonStatus(index: number): boolean {
+    const gamepads = navigator.getGamepads();
+
+    for (const gamepad of gamepads) {
+      if (!gamepad || gamepad.mapping !== "standard") {
+        continue;
+      }
+
+      if (gamepad.buttons[index].pressed) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

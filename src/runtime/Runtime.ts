@@ -1,7 +1,7 @@
 /**
  * @author Daniel Salomon
  */
-import { Raycaster, Vector3, WebGLRenderer, Object3D, Mesh } from "three";
+import { Raycaster, Vector3, WebGLRenderer, Object3D, Mesh, Box3 } from "three";
 import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
 import Project from "../project/Project";
@@ -21,6 +21,7 @@ export default class Runtime {
   previousTimestamp = 0;
   playerHeight = 1.8; //1,80m player height, eyes are ~10cm lower
   lastCollisionSound = 0; //Timestamp, when the last sound for collision was played
+  lastKnownButtonStatus = false; //Variable to check whether or not the button[0] was pressed in the last update() or not (to prevent multiple clicks)
 
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
@@ -175,13 +176,18 @@ export default class Runtime {
       }
       const thresholdMovement = 0.25; //Minimum allowed distance to an object
       const thresholdHeight = 0.05; //Minimum allowed distance to an object below or above the player (player height is 1,80[m])
+
+      var bbox = new Box3().setFromObject(i); //Bounding box to take rotation of the object into account.
+      let bboxposition = bbox.getCenter(new Vector3());
+      let bboxscale = bbox.getSize(new Vector3());
+
       //Estimate boundaries of all (visible) objects in the current room
-      let boundX1 = i.position.x + i.scale.x / 2 + thresholdMovement;
-      let boundX2 = i.position.x - i.scale.x / 2 - thresholdMovement;
-      let boundY1 = i.position.y + i.scale.y / 2 + thresholdHeight;
-      let boundY2 = i.position.y - i.scale.y / 2 - thresholdHeight;
-      let boundZ1 = i.position.z + i.scale.z / 2 + thresholdMovement;
-      let boundZ2 = i.position.z - i.scale.z / 2 - thresholdMovement;
+      let boundX1 = bboxposition.x + bboxscale.x / 2 + thresholdMovement;
+      let boundX2 = bboxposition.x - bboxscale.x / 2 - thresholdMovement;
+      let boundY1 = bboxposition.y + bboxscale.y / 2 + thresholdHeight;
+      let boundY2 = bboxposition.y - bboxscale.y / 2 - thresholdHeight;
+      let boundZ1 = bboxposition.z + bboxscale.z / 2 + thresholdMovement;
+      let boundZ2 = bboxposition.z - bboxscale.z / 2 - thresholdMovement;
 
       //Check if the next position of the camera collides with the bondaries or the object (and effectively if a collision is about to happen)
       if (
@@ -206,13 +212,13 @@ export default class Runtime {
     }
 
     //Check for an object to interact with. If found, mark it as active (mostly for debugging and visual help for possible spectators)
-    //The raycaster helps to check for objects in sight. To ensure that objects on the bottom of sight are interactable too, the raycasting is called multiple times
-    //That way, objects from the mid of the sight to the middle bottom of the screen are scanned and checked for their distance.
+    //The raycaster helps to check for objects in sight. To ensure that objects on the bottom and top of sight are interactable too, the raycasting is called multiple times
+    //That way, objects from the middle top of the sight to the middle bottom of the screen are scanned and checked for their distance.
     let nearestDist = Infinity;
     let nearestObj: GameObject | null = null;
 
-    for (let i = 0; i >= -1; i -= 0.1) {
-      //From middle (0) to bottom (-1)
+    for (let i = 1; i >= -1; i -= 0.1) {
+      //From top (1) to middle(0) to bottom (-1)
       this.raycaster.setFromCamera({ x: 0, y: i }, camera);
       let intersections = this.raycaster.intersectObjects(
         //perform raycasting with the given settings, originating from the main camera
@@ -235,6 +241,22 @@ export default class Runtime {
     } else {
       //Otherwise, unselect all
       this.project.selectObject(null);
+    }
+
+    //Interact with nearest (selected) object
+    if (
+      // Is the button clicked?
+      this.gamepads.getButtonStatus(0) &&
+      //Prevent multiple actions on button hold
+      !this.lastKnownButtonStatus
+    ) {
+      this.lastKnownButtonStatus = true;
+      let toInteractWith = this.project.activeObject;
+      if (toInteractWith != null) {
+        toInteractWith.rotateX(0.1);
+      }
+    } else if (!this.gamepads.getButtonStatus(0)) {
+      this.lastKnownButtonStatus = false; //Last known button status was unpressed, so clear the value
     }
   }
 }
