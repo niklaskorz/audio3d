@@ -45,38 +45,11 @@ export default class RuntimeContainer extends React.Component<Props> {
     this.runtime.toggleRendering();
   };
 
-  onChangeWebAudio = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    this.props.project.selectAudioImplementation(AudioImplementation.WebAudio);
-    event.currentTarget.style.background = "#19611c";
-    event.currentTarget.style.boxShadow = "0px 0px 10px #00FF00";
-    if (
-      this.activeButtonRef != null &&
-      this.activeButtonRef != event.currentTarget
-    ) {
-      this.activeButtonRef.style.removeProperty("background");
-      this.activeButtonRef.style.removeProperty("box-shadow");
-    }
-    this.activeButtonRef = event.currentTarget;
-  };
-
-  onChangeBinaural = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    this.props.project.selectAudioImplementation(AudioImplementation.Binaural);
-    event.currentTarget.style.background = "#19611c";
-    event.currentTarget.style.boxShadow = "0px 0px 10px #00FF00";
-    if (
-      this.activeButtonRef != null &&
-      this.activeButtonRef != event.currentTarget
-    ) {
-      this.activeButtonRef.style.removeProperty("background");
-      this.activeButtonRef.style.removeProperty("box-shadow");
-    }
-    this.activeButtonRef = event.currentTarget;
-  };
-
-  onChangeResonance = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    this.props.project.selectAudioImplementation(
-      AudioImplementation.ResonanceAudio
-    );
+  onChangeAudio = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    audio: AudioImplementation
+  ) => {
+    this.props.project.selectAudioImplementation(audio);
     event.currentTarget.style.background = "#19611c";
     event.currentTarget.style.boxShadow = "0px 0px 10px #00FF00";
     if (
@@ -134,19 +107,21 @@ export default class RuntimeContainer extends React.Component<Props> {
           <RunningHeadline>Audio implementation</RunningHeadline>
           <RunningButtonContainer>
             <RunningButton
-              onClick={this.onChangeWebAudio}
+              onClick={e => this.onChangeAudio(e, AudioImplementation.WebAudio)}
               ref={this.checkIfSelectedImplementation}
             >
               Web Audio API
             </RunningButton>
             <RunningButton
-              onClick={this.onChangeBinaural}
+              onClick={e => this.onChangeAudio(e, AudioImplementation.Binaural)}
               ref={this.checkIfSelectedImplementation}
             >
               BinauralFIR
             </RunningButton>
             <RunningButton
-              onClick={this.onChangeResonance}
+              onClick={e =>
+                this.onChangeAudio(e, AudioImplementation.ResonanceAudio)
+              }
               ref={this.checkIfSelectedImplementation}
             >
               Resonance Audio
