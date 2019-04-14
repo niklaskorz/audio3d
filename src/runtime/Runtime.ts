@@ -5,6 +5,7 @@ import { Raycaster, Vector3, WebGLRenderer, Object3D, Mesh } from "three";
 import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
 import Project from "../project/Project";
+import GameObject from "../project/GameObject";
 
 const axes = {
   x: new Vector3(1, 0, 0),
@@ -19,7 +20,7 @@ export default class Runtime {
   rafHandle = 0;
   previousTimestamp = 0;
   playerHeight = 1.8; //1,80m player height, eyes are ~10cm lower
-  lastCollisionSound = 0;
+  lastCollisionSound = 0; //Timestamp, when the last sound for collision was played
 
   renderer = new WebGLRenderer();
   canvas: HTMLCanvasElement;
@@ -70,12 +71,6 @@ export default class Runtime {
     this.canvas.focus();
   }
 
-  changeProject(project: Project): void {
-    this.project = project;
-    // Ensure the selected project's camera has the correct aspect ratio
-    this.resize();
-  }
-
   resize = (): void => {
     if (!this.target) {
       return;
@@ -100,6 +95,7 @@ export default class Runtime {
     this.renderer.render(this.project.activeRoom, this.project.camera);
   };
 
+  // Helper method to check if a number (check) is between or equal to two boundaries (from, to). E.g.: isBetween(2, 1, 5)==true, isBetween(6, 1, 5)==false
   isBetween(check: number, from: number, to: number): boolean {
     let min = Math.min.apply(Math, [from, to]),
       max = Math.max.apply(Math, [from, to]);
@@ -108,13 +104,14 @@ export default class Runtime {
 
   update(dt: number): void {
     const { camera } = this.project;
-    this.dummyCamera.position.copy(camera.position);
+    this.dummyCamera.position.copy(camera.position); //Copy values of the real camera object to the dummy camera, to be used later on for collision detection
     this.dummyCamera.rotation.copy(camera.rotation);
 
     let moveX = 0;
     let moveZ = 0;
     let rotateY = 0;
 
+    //Keyboard actions (W/A/S/D to move, Left&Right arrows to rotate)
     if (this.keys.isPressed("w")) {
       let newZ = -2 * dt;
       moveZ = Math.abs(moveZ) < Math.abs(newZ) ? newZ : moveZ;
@@ -141,12 +138,12 @@ export default class Runtime {
       rotateY = Math.abs(rotateY) < Math.abs(newY) ? newY : rotateY;
     }
 
+    //Collect necessary information from the gamepad API, supports analog sticks (slower and faster movement)
     const gamepadAxes = {
       x: this.gamepads.getAxis(0),
       y: this.gamepads.getAxis(1),
       rX: this.gamepads.getAxis(2)
     };
-    // console.log(axes);
     if (gamepadAxes.x) {
       let newX = 2 * dt * gamepadAxes.x;
       moveX = Math.abs(moveX) < Math.abs(newX) ? newX : moveX;
@@ -178,6 +175,7 @@ export default class Runtime {
       }
       const thresholdMovement = 0.25; //Minimum allowed distance to an object
       const thresholdHeight = 0.05; //Minimum allowed distance to an object below or above the player (player height is 1,80[m])
+      //Estimate boundaries of all (visible) objects in the current room
       let boundX1 = i.position.x + i.scale.x / 2 + thresholdMovement;
       let boundX2 = i.position.x - i.scale.x / 2 - thresholdMovement;
       let boundY1 = i.position.y + i.scale.y / 2 + thresholdHeight;
@@ -185,6 +183,7 @@ export default class Runtime {
       let boundZ1 = i.position.z + i.scale.z / 2 + thresholdMovement;
       let boundZ2 = i.position.z - i.scale.z / 2 - thresholdMovement;
 
+      //Check if the next position of the camera collides with the bondaries or the object (and effectively if a collision is about to happen)
       if (
         this.isBetween(newX, boundX2, boundX1) &&
         this.isBetween(newZ, boundZ2, boundZ1) &&
@@ -197,12 +196,33 @@ export default class Runtime {
       }
     }
 
+    // Move to new position if no collision occured, otherwise play a collision sound
     if (!collided) {
       camera.position.copy(this.dummyCamera.position);
     } else if (this.lastCollisionSound + 1000 < Date.now()) {
       //TODO - Play sound
       console.log("Collision at " + Date.now()); //DEBUG ONLY
       this.lastCollisionSound = Date.now();
+    }
+
+    //Check for an object to interact with. If found, mark it as active (mostly for debugging and visual help for possible spectators)
+    this.raycaster.setFromCamera({ x: 0, y: 0 }, camera); //The raycaster helps to check for objects in sight
+    const intersections = this.raycaster.intersectObjects(
+      this.project.activeRoom.children
+    );
+    let nearestDist = Infinity;
+    let nearestObj: GameObject | null = null;
+    for (const intersection of intersections) {
+      const o = intersection.object;
+      if (o instanceof GameObject && intersection.distance < nearestDist) {
+        nearestDist = intersection.distance;
+        nearestObj = o;
+      }
+    }
+    if (nearestDist <= 0.5 && nearestObj != null) {
+      this.project.selectObject(nearestObj);
+    } else {
+      this.project.selectObject(null);
     }
   }
 }
