@@ -6,11 +6,12 @@ import { RoomDimensions, RoomMaterials } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import { saveAsZip } from "../data/export";
 import { openZip } from "../data/import";
-import GameObject from "../project/GameObject";
+import GameObject, { InteractionType } from "../project/GameObject";
 import Project from "../project/Project";
 import { ProjectData } from "../data/schema";
 import AudioImplementation from "../audio/AudioImplementation";
 import RuntimeContainer from "../runtime/RuntimeContainer";
+import CodeBlock from "../project/CodeBlock";
 import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
@@ -290,6 +291,34 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
+  updateInteractionType = (interactionType: InteractionType) => {
+    if (this.project.activeObject) {
+      this.project.activeObject.interactionType = interactionType;
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        interactionType
+      }
+    }));
+  };
+
+  updateCodeBlockSource = (codeBlockSource: string) => {
+    if (this.project.activeObject) {
+      if (this.project.activeObject.codeBlock) {
+        this.project.activeObject.codeBlock.update(codeBlockSource);
+      } else {
+        this.project.activeObject.codeBlock = new CodeBlock(codeBlockSource);
+      }
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        codeBlockSource
+      }
+    }));
+  };
+
   showAudioSelection = () => {
     this.setState({
       modal: ModalType.AudioSelection
@@ -353,6 +382,8 @@ export default class Editor extends React.Component<{}, State> {
           position: o.position,
           scale: o.scale,
           rotation: o.rotation,
+          interactionType: o.interactionType,
+          codeBlockSource: o.codeBlock && o.codeBlock.source,
           audio: o.audioFile && {
             ...o.audioFile,
             id: o.audioId!
@@ -486,6 +517,8 @@ export default class Editor extends React.Component<{}, State> {
                 onUpdatePosition={this.updatePosition}
                 onUpdateRotation={this.updateRotation}
                 onUpdateScale={this.updateScale}
+                onUpdateInteractionType={this.updateInteractionType}
+                onUpdateCodeBlockSource={this.updateCodeBlockSource}
                 onShowAudioSelection={this.showAudioSelection}
               />
             )}

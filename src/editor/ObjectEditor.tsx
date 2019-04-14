@@ -3,7 +3,15 @@
  */
 import React from "react";
 import { degToRad, radToDeg, roundToPrecision } from "../utils/math";
-import { Group, Input, InputGroup } from "./styled";
+import { InteractionType } from "../project/GameObject";
+import {
+  Group,
+  Input,
+  InputGroup,
+  CustomInput,
+  Select,
+  CodeEditor
+} from "./styled";
 import { EditorObject } from "./types";
 
 interface Props {
@@ -12,19 +20,54 @@ interface Props {
   onUpdatePosition(x: number, y: number, z: number): void;
   onUpdateRotation(x: number, y: number, z: number): void;
   onUpdateScale(x: number, y: number, z: number): void;
+  onUpdateInteractionType(interactionType: InteractionType): void;
+  onUpdateCodeBlockSource(source: string): void;
   onShowAudioSelection(): void;
 }
 
+interface State {
+  codeError?: string;
+}
+
 // UI component for editing properties specific to objects inside a room
-export default class ObjectEditor extends React.Component<Props> {
+export default class ObjectEditor extends React.Component<Props, State> {
+  codeCheckTimeout: number | null = null;
+  state: State = {};
+
+  checkCode = () => {
+    const { codeBlockSource } = this.props.object;
+    if (!codeBlockSource) {
+      return;
+    }
+
+    try {
+      // Try to parse the code block source
+      new Function("playerState", "roomState", codeBlockSource);
+      this.setState({ codeError: undefined });
+    } catch (ex) {
+      this.setState({ codeError: ex.toString() });
+    }
+  };
+
+  updateCodeBlockSource: React.ChangeEventHandler<HTMLTextAreaElement> = e => {
+    this.props.onUpdateCodeBlockSource(e.currentTarget.value);
+    if (this.codeCheckTimeout != null) {
+      window.clearTimeout(this.codeCheckTimeout);
+    }
+    window.setTimeout(this.checkCode, 2000);
+  };
+
   render(): React.ReactNode {
     const {
       object: o,
       onUpdateName,
       onUpdatePosition,
       onUpdateRotation,
-      onUpdateScale
+      onUpdateScale,
+      onUpdateInteractionType,
+      onShowAudioSelection
     } = this.props;
+    const { codeError } = this.state;
 
     return (
       <div>
@@ -167,18 +210,35 @@ export default class ObjectEditor extends React.Component<Props> {
         </Group>
         <Group>
           <label>Audio</label>
-          <Input
-            type="text"
-            readOnly={true}
-            value={
-              o.audio
-                ? `${o.audio.name} (${Math.ceil(
-                    o.audio.data.byteLength / 1024
-                  )} KiB)`
-                : "None"
+          <CustomInput onClick={onShowAudioSelection}>
+            {o.audio
+              ? `${o.audio.name} (${Math.ceil(
+                  o.audio.data.byteLength / 1024
+                )} KiB)`
+              : "None"}
+          </CustomInput>
+        </Group>
+        <Group>
+          <label>Interaction</label>
+          <Select
+            value={o.interactionType}
+            onChange={e =>
+              onUpdateInteractionType(e.currentTarget.value as InteractionType)
             }
-            onClick={this.props.onShowAudioSelection}
-          />
+          >
+            {Object.values(InteractionType).map(t => (
+              <option key={t}>{t}</option>
+            ))}
+          </Select>
+          {o.interactionType === InteractionType.CodeBlock && (
+            <>
+              <CodeEditor
+                value={o.codeBlockSource}
+                onChange={this.updateCodeBlockSource}
+              />
+              <p>{codeError || "No syntax errors detected"}</p>
+            </>
+          )}
         </Group>
       </div>
     );

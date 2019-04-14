@@ -84,6 +84,22 @@ export const Select = styled(Input.withComponent("select"))`
   cursor: pointer;
 `;
 
+export const CustomInput = styled(Input.withComponent("div"))`
+  cursor: pointer;
+`;
+
+export const CodeEditor = styled(Input.withComponent("textarea"))`
+  min-height: 200px;
+  font-family: "Fira Code Retina", "Fira Code", Consolas, Menlo, Monaco,
+    monospace;
+  white-space: pre;
+  line-height: 1.5;
+
+  /* Disable user resizing of width */
+  min-width: 100%;
+  max-width: 100%;
+`;
+
 export const InputGroup = styled.div`
   display: flex;
   flex-direction: row;

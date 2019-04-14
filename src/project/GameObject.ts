@@ -8,9 +8,18 @@ import AudioScene from "../audio/AudioScene";
 import Audio3D from "../audio/Audio3D";
 import defaultAudioContext from "../audio/defaultAudioContext";
 import AudioLibrary from "./AudioLibrary";
+import CodeBlock from "./CodeBlock";
 
 const cubeGeometry = new BoxGeometry(1, 1, 1);
 const cubeMaterial = new MeshLambertMaterial();
+
+export enum InteractionType {
+  None = "No interaction",
+  CodeBlock = "Code block",
+  Teleport = "Teleport",
+  PlaySound = "Play sound",
+  EndGame = "End game"
+}
 
 export default class GameObject extends Mesh implements Serializable {
   audioLibrary: AudioLibrary;
@@ -18,6 +27,11 @@ export default class GameObject extends Mesh implements Serializable {
   audioFile?: AudioFile;
 
   audio: Audio3D;
+
+  // Interaction specific
+  interactionType = InteractionType.None;
+  interactionAudioId?: number;
+  codeBlock?: CodeBlock;
 
   constructor(audioLibrary: AudioLibrary, audioScene: AudioScene) {
     super(cubeGeometry, cubeMaterial);
@@ -59,6 +73,12 @@ export default class GameObject extends Mesh implements Serializable {
 
     if (data.audioId != null) {
       this.loadAudio(data.audioId);
+    }
+
+    this.interactionType = data.interactionType || InteractionType.None;
+    this.interactionAudioId = data.interactionAudioId;
+    if (data.codeBlockSource) {
+      this.codeBlock = new CodeBlock(data.codeBlockSource);
     }
 
     return this;
