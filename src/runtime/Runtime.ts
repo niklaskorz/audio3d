@@ -98,13 +98,13 @@ export default class Runtime {
 
   // Helper method to check if a number (check) is between or equal to two boundaries (from, to). E.g.: isBetween(2, 1, 5)==true, isBetween(6, 1, 5)==false
   isBetween(check: number, from: number, to: number): boolean {
-    let min = Math.min.apply(Math, [from, to]),
+    const min = Math.min.apply(Math, [from, to]),
       max = Math.max.apply(Math, [from, to]);
     return check >= min && check <= max;
   }
 
   invokeInteraction(): boolean {
-    let toInteractWith = this.project.activeObject;
+    const toInteractWith = this.project.activeObject;
     if (toInteractWith != null) {
       toInteractWith.rotateX(0.1); //TODO - Invoke interaction method on object (not implemented yet)
       return true;
@@ -127,28 +127,28 @@ export default class Runtime {
 
     //Keyboard actions (W/A/S/D to move, Left&Right arrows to rotate)
     if (this.keys.isPressed("w")) {
-      let newZ = -2 * dt;
+      const newZ = -2 * dt;
       moveZ = Math.abs(moveZ) < Math.abs(newZ) ? newZ : moveZ;
     }
     if (this.keys.isPressed("s")) {
-      let newZ = 2 * dt;
+      const newZ = 2 * dt;
       moveZ = Math.abs(moveZ) < Math.abs(newZ) ? newZ : moveZ;
     }
     if (this.keys.isPressed("a")) {
-      let newX = -2 * dt;
+      const newX = -2 * dt;
       moveX = Math.abs(moveX) < Math.abs(newX) ? newX : moveX;
     }
     if (this.keys.isPressed("d")) {
-      let newX = 2 * dt;
+      const newX = 2 * dt;
       moveX = Math.abs(moveX) < Math.abs(newX) ? newX : moveX;
     }
 
     if (this.keys.isPressed("ArrowLeft")) {
-      let newY = dt;
+      const newY = dt;
       rotateY = Math.abs(rotateY) < Math.abs(newY) ? newY : rotateY;
     }
     if (this.keys.isPressed("ArrowRight")) {
-      let newY = -dt;
+      const newY = -dt;
       rotateY = Math.abs(rotateY) < Math.abs(newY) ? newY : rotateY;
     }
 
@@ -159,15 +159,15 @@ export default class Runtime {
       rX: this.gamepads.getAxis(2)
     };
     if (gamepadAxes.x) {
-      let newX = 2 * dt * gamepadAxes.x;
+      const newX = 2 * dt * gamepadAxes.x;
       moveX = Math.abs(moveX) < Math.abs(newX) ? newX : moveX;
     }
     if (gamepadAxes.y) {
-      let newZ = 2 * dt * gamepadAxes.y;
+      const newZ = 2 * dt * gamepadAxes.y;
       moveZ = Math.abs(moveZ) < Math.abs(newZ) ? newZ : moveZ;
     }
     if (gamepadAxes.rX) {
-      let newY = -dt * gamepadAxes.rX;
+      const newY = -dt * gamepadAxes.rX;
       rotateY = Math.abs(rotateY) < Math.abs(newY) ? newY : rotateY;
     }
 
@@ -178,12 +178,12 @@ export default class Runtime {
     this.dummyCamera.translateOnAxis(axes.x, moveX); // Move left & right
 
     //Values to check for collision
-    let newX = this.dummyCamera.position.x;
-    let newZ = this.dummyCamera.position.z;
+    const newX = this.dummyCamera.position.x;
+    const newZ = this.dummyCamera.position.z;
 
     //Check for collision
     let collided = false;
-    for (let i of this.project.activeRoom.children) {
+    for (const i of this.project.activeRoom.children) {
       if (!(i instanceof Mesh)) {
         continue;
       }
@@ -191,16 +191,16 @@ export default class Runtime {
       const thresholdHeight = 0.05; //Minimum allowed distance to an object below or above the player (player height is 1,80[m])
 
       var bbox = new Box3().setFromObject(i); //Bounding box to take rotation of the object into account.
-      let bboxposition = bbox.getCenter(new Vector3());
-      let bboxscale = bbox.getSize(new Vector3());
+      const bboxposition = bbox.getCenter(new Vector3());
+      const bboxscale = bbox.getSize(new Vector3());
 
       //Estimate boundaries of all (visible) objects in the current room
-      let boundX1 = bboxposition.x + bboxscale.x / 2 + thresholdMovement;
-      let boundX2 = bboxposition.x - bboxscale.x / 2 - thresholdMovement;
-      let boundY1 = bboxposition.y + bboxscale.y / 2 + thresholdHeight;
-      let boundY2 = bboxposition.y - bboxscale.y / 2 - thresholdHeight;
-      let boundZ1 = bboxposition.z + bboxscale.z / 2 + thresholdMovement;
-      let boundZ2 = bboxposition.z - bboxscale.z / 2 - thresholdMovement;
+      const boundX1 = bboxposition.x + bboxscale.x / 2 + thresholdMovement;
+      const boundX2 = bboxposition.x - bboxscale.x / 2 - thresholdMovement;
+      const boundY1 = bboxposition.y + bboxscale.y / 2 + thresholdHeight;
+      const boundY2 = bboxposition.y - bboxscale.y / 2 - thresholdHeight;
+      const boundZ1 = bboxposition.z + bboxscale.z / 2 + thresholdMovement;
+      const boundZ2 = bboxposition.z - bboxscale.z / 2 - thresholdMovement;
 
       //Check if the next position of the camera collides with the bondaries or the object (and effectively if a collision is about to happen)
       if (
@@ -232,7 +232,7 @@ export default class Runtime {
     for (let i = 1; i >= -1; i -= 0.1) {
       //From top (1) to middle(0) to bottom (-1)
       this.raycaster.setFromCamera({ x: 0, y: i }, camera);
-      let intersections = this.raycaster.intersectObjects(
+      const intersections = this.raycaster.intersectObjects(
         //perform raycasting with the given settings, originating from the main camera
         this.project.activeRoom.children
       );
