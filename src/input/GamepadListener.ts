@@ -2,7 +2,7 @@
  * @author Niklas Korz
  */
 
-const AXIS_THRESHOLD = 0.1;
+const AXIS_THRESHOLD = 0.15; //Inaccuracy of gamepads (tested XBOX One S gamepad up to 0.11 - Daniel)
 
 export default class GamepadListener {
   listen(): void {
@@ -53,5 +53,20 @@ export default class GamepadListener {
       }
     }
     return value;
+  }
+
+  getButtonStatus(index: number): boolean {
+    const gamepads = navigator.getGamepads();
+
+    for (const gamepad of gamepads) {
+      if (!gamepad || gamepad.mapping !== "standard") {
+        continue;
+      }
+
+      if (gamepad.buttons[index].pressed) {
+        return true;
+      }
+    }
+    return false;
   }
 }
