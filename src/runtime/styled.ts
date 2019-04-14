@@ -52,6 +52,11 @@ export const RunningButton = styled.div`
   background: hsla(0, 0%, 100%, 0.2);
   border: 1px solid hsl(210, 15%, 40%);
   text-align: center;
+  cursor: pointer;
+
+  :hover {
+    background: hsla(0, 0%, 100%, 0.4);
+  }
 `;
 
 export const ControlsTable = styled.table`

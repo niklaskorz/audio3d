@@ -47,7 +47,6 @@ export default class RuntimeContainer extends React.Component<Props> {
           <RunningHeadline>Menu</RunningHeadline>
           <RunningButtonContainer>
             <RunningButton onClick={this.onExit}>Exit</RunningButton>
-            <RunningButton>Test</RunningButton>
           </RunningButtonContainer>
           <RunningHeadline>Audio implementation</RunningHeadline>
           <RunningButtonContainer>
