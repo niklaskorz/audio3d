@@ -97,6 +97,16 @@ export default class Runtime {
 
     if (this.shouldRender) {
       this.renderer.render(this.project.activeRoom, this.project.camera);
+    } else {
+      // When we are not actively rendering, position updates are not passed down
+      // to children in the scene graph automatically.
+      // To enforce this update, we have to update the scene graphs root manually
+      // (i.e., the scene itself), which will in turn update all nodes contained in the
+      // scene graph.
+      // As the camera is not a part of the scene graph, it has to be updated
+      // manually as well.
+      this.project.activeRoom.updateMatrixWorld();
+      this.project.activeRoom.camera.updateMatrixWorld(false);
     }
   };
 
