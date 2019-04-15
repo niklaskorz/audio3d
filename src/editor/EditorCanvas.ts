@@ -21,7 +21,7 @@ const axes = {
 };
 
 export default class EditorCanvas {
-  target: HTMLElement | null = null;
+  target!: HTMLElement;
   project: Project;
 
   rafHandle = 0;
@@ -86,7 +86,7 @@ export default class EditorCanvas {
 
     if (this.target) {
       this.target.removeChild(this.canvas);
-      this.target = null;
+      delete this.target;
     }
 
     this.keys.stop();
@@ -216,8 +216,8 @@ export default class EditorCanvas {
   updateRaycaster(e: MouseEvent): void {
     const size = this.renderer.getSize(new Vector2());
     // Normalize screen coordinates
-    const x = ((e.pageX - this.target!.offsetLeft) / size.x) * 2 - 1;
-    const y = -((e.pageY - this.target!.offsetTop) / size.y) * 2 + 1;
+    const x = ((e.pageX - this.target.offsetLeft) / size.x) * 2 - 1;
+    const y = -((e.pageY - this.target.offsetTop) / size.y) * 2 + 1;
     // Update raycaster
     this.raycaster.setFromCamera({ x, y }, this.project.camera);
   }

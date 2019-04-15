@@ -391,10 +391,13 @@ export default class Editor extends React.Component<{}, State> {
           rotation: o.rotation,
           interactionType: o.interactionType,
           codeBlockSource: o.codeBlock && o.codeBlock.source,
-          audio: o.audioFile && {
-            ...o.audioFile,
-            id: o.audioId!
-          }
+          audio:
+            o.audioFile && o.audioId != null
+              ? {
+                  ...o.audioFile,
+                  id: o.audioId
+                }
+              : undefined
         }
       });
     } else {

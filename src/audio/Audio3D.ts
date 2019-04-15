@@ -5,7 +5,6 @@
 import { Object3D, Vector3, Quaternion } from "three";
 import { ResonanceAudio } from "resonance-audio";
 import BinauralSource from "./binaural/BinauralSource";
-import AudioImplementation from "./AudioImplementation";
 
 /**
  * Class extends Object3D in order to work with the three.js scene graph.
