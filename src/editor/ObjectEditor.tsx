@@ -233,6 +233,7 @@ export default class ObjectEditor extends React.Component<Props, State> {
           {o.interactionType === InteractionType.CodeBlock && (
             <>
               <CodeEditor
+                placeholder="// JavaScript"
                 value={o.codeBlockSource}
                 onChange={this.updateCodeBlockSource}
               />
