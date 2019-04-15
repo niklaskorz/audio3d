@@ -12,7 +12,7 @@ const firCoefficientsToAudioBuffer = (
 };
 
 export const loadHRTFDataset = async (): Promise<HRTF[]> => {
-  const resp = await fetch("/data/ircam-hrtf.json");
+  const resp = await fetch("data/ircam-hrtf.json");
   const dataset = await resp.json();
 
   return dataset.map((hrtf: any) => ({

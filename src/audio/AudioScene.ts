@@ -4,9 +4,7 @@
  */
 import { ResonanceAudio, RoomMaterials, RoomDimensions } from "resonance-audio";
 import { HRTF } from "binauralfir";
-import { Object3D } from "three";
 import BinauralScene from "./binaural/BinauralScene";
-import BinauralSource from "./binaural/BinauralSource";
 import Audio3D from "./Audio3D";
 import AudioImplementation from "./AudioImplementation";
 import Listener3D from "./Listener3D";
@@ -24,9 +22,11 @@ export default class AudioScene {
   binauralAudioContext = new AudioContext();
   resonanceAudioContext = new AudioContext();
 
-  binauralHRTFDataset: HRTF[] | null = null;
   binauralScene = new BinauralScene(this.binauralAudioContext);
   resonanceScene = new ResonanceAudio(this.resonanceAudioContext);
+
+  binauralHRTFDataset: HRTF[] | null = null;
+  isLoadingBinauralHRTFDataset = false;
 
   listener3D = new Listener3D(
     this.webAudioContext.listener,
@@ -84,7 +84,8 @@ export default class AudioScene {
   selectAudioImplementation(audioImplementation: AudioImplementation): void {
     if (
       audioImplementation === AudioImplementation.Binaural &&
-      !this.binauralHRTFDataset
+      !this.binauralHRTFDataset &&
+      !this.isLoadingBinauralHRTFDataset
     ) {
       this.loadBinauralHRTFDataset();
     }
@@ -95,8 +96,14 @@ export default class AudioScene {
   }
 
   async loadBinauralHRTFDataset(): Promise<void> {
-    this.binauralHRTFDataset = await loadHRTFDataset();
-    this.binauralScene.setHRTFDataset(this.binauralHRTFDataset);
+    this.isLoadingBinauralHRTFDataset = true;
+    try {
+      this.binauralHRTFDataset = await loadHRTFDataset();
+      this.binauralScene.setHRTFDataset(this.binauralHRTFDataset);
+    } catch (ex) {
+      console.error("Failed loading BinauralFIR HRTF dataset:", ex);
+    }
+    this.isLoadingBinauralHRTFDataset = false;
   }
 
   setRoomProperties(
