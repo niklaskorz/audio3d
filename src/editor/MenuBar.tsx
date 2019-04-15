@@ -85,6 +85,8 @@ const MenuDivider = styled.div`
 `;
 
 interface Props {
+  audioImplementation: AudioImplementation;
+
   onNewProject(): void;
   onLoadProject(): void;
   onSaveProject(): void;
@@ -111,14 +113,12 @@ enum MenuType {
 }
 
 interface State {
-  audioImplementation: AudioImplementation;
   activeMenu: MenuType | null;
 }
 
 export default class MenuBar extends React.Component<Props, State> {
   state: State = {
-    activeMenu: null,
-    audioImplementation: AudioImplementation.WebAudio
+    activeMenu: null
   };
 
   toggleMenu(menuType: MenuType): void {
@@ -132,7 +132,8 @@ export default class MenuBar extends React.Component<Props, State> {
   }
 
   render(): React.ReactNode {
-    const { activeMenu, audioImplementation } = this.state;
+    const { audioImplementation, onAudioChange } = this.props;
+    const { activeMenu } = this.state;
 
     return (
       <Container tabIndex={-1} onBlur={() => this.closeMenu()}>
@@ -233,33 +234,18 @@ export default class MenuBar extends React.Component<Props, State> {
           <MenubarItemLabel>Audio: {audioImplementation}</MenubarItemLabel>
           <Menu hidden={activeMenu !== MenuType.AudioMenu}>
             <MenuItem
-              onClick={() => {
-                this.setState({
-                  audioImplementation: AudioImplementation.WebAudio
-                });
-                this.props.onAudioChange(AudioImplementation.WebAudio);
-              }}
+              onClick={() => onAudioChange(AudioImplementation.WebAudio)}
             >
               {AudioImplementation.WebAudio}
             </MenuItem>
             <MenuItem
-              onClick={() => {
-                this.setState({
-                  audioImplementation: AudioImplementation.Binaural
-                });
-                this.props.onAudioChange(AudioImplementation.Binaural);
-              }}
+              onClick={() => onAudioChange(AudioImplementation.Binaural)}
             >
               {AudioImplementation.Binaural}
             </MenuItem>
 
             <MenuItem
-              onClick={() => {
-                this.setState({
-                  audioImplementation: AudioImplementation.ResonanceAudio
-                });
-                this.props.onAudioChange(AudioImplementation.ResonanceAudio);
-              }}
+              onClick={() => onAudioChange(AudioImplementation.ResonanceAudio)}
             >
               {AudioImplementation.ResonanceAudio}
             </MenuItem>

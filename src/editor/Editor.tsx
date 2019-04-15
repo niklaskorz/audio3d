@@ -38,6 +38,7 @@ enum ModalType {
 }
 
 interface State {
+  audioImplementation: AudioImplementation;
   rooms: EditorRoom[];
   selectedRoomId: number;
   selectedObject: EditorObject | null;
@@ -50,6 +51,7 @@ export default class Editor extends React.Component<{}, State> {
   projectCanvas = new EditorCanvas(this.project);
 
   state: State = {
+    audioImplementation: this.project.activeAudioImplementation,
     rooms: this.project.rooms.map(r => ({
       id: r.id,
       name: r.name,
@@ -84,6 +86,7 @@ export default class Editor extends React.Component<{}, State> {
     });
     this.projectCanvas.changeProject(this.project);
     this.setState({
+      audioImplementation: this.project.activeAudioImplementation,
       rooms: this.project.rooms.map(r => ({
         id: r.id,
         name: r.name,
@@ -123,6 +126,7 @@ export default class Editor extends React.Component<{}, State> {
     };
     this.projectCanvas.changeProject(this.project);
     this.setState({
+      audioImplementation: this.project.activeAudioImplementation,
       rooms: this.project.rooms.map(r => ({
         id: r.id,
         name: r.name,
@@ -185,11 +189,18 @@ export default class Editor extends React.Component<{}, State> {
     this.setState({ modal: ModalType.AudioLibrary });
   };
 
-  selectAudioImplementation = (audioImplementation: AudioImplementation) => {
-    this.project.selectAudioImplementation(audioImplementation);
-  };
   showProjectManager = () => {
     this.setState({ modal: ModalType.ProjectManager });
+  };
+
+  selectAudioImplementation = (audioImplementation: AudioImplementation) => {
+    this.project.selectAudioImplementation(audioImplementation);
+    this.setState({ audioImplementation });
+  };
+
+  runProject = () => {
+    this.projectCanvas.detach();
+    this.setState({ isRunning: true });
   };
 
   // Room specific editor functionality
@@ -354,6 +365,7 @@ export default class Editor extends React.Component<{}, State> {
     };
     this.projectCanvas.changeProject(this.project);
     this.setState({
+      audioImplementation: this.project.activeAudioImplementation,
       rooms: this.project.rooms.map(r => ({
         id: r.id,
         name: r.name,
@@ -364,11 +376,6 @@ export default class Editor extends React.Component<{}, State> {
       selectedObject: null,
       modal: null
     });
-  };
-
-  runProject = () => {
-    this.projectCanvas.detach();
-    this.setState({ isRunning: true });
   };
 
   // Project canvas events
@@ -418,8 +425,12 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   // Runtime events
+
   exitRuntime = () => {
-    this.setState({ isRunning: false });
+    this.setState({
+      isRunning: false,
+      audioImplementation: this.project.activeAudioImplementation
+    });
   };
 
   // React component lifecycle methods
@@ -438,7 +449,7 @@ export default class Editor extends React.Component<{}, State> {
   }
 
   render(): React.ReactNode {
-    const { modal, isRunning } = this.state;
+    const { modal, isRunning, audioImplementation } = this.state;
     const o = this.state.selectedObject;
 
     if (isRunning) {
@@ -472,6 +483,7 @@ export default class Editor extends React.Component<{}, State> {
           />
         )}
         <MenuBar
+          audioImplementation={audioImplementation}
           onAudioChange={this.selectAudioImplementation}
           onNewProject={this.newProject}
           onLoadProject={this.showProjectSelection}
