@@ -8,7 +8,6 @@ import {
   PerspectiveCamera,
   Vector3
 } from "three";
-import { string } from "prop-types";
 import Serializable, { SerializedData } from "../data/Serializable";
 import { ProjectData } from "../data/schema";
 import { saveProject } from "../data/db";
@@ -162,7 +161,6 @@ export default class Project implements Serializable {
   // Serialize instance to a plain JavaScript object
   toData(): ProjectData {
     return {
-      id: this.id,
       savedAt: new Date(),
       name: this.name,
       rooms: this.rooms.map(r => r.toData()),

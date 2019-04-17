@@ -31,12 +31,15 @@ const dbPromise = openDB<Schema>("audio3d", 2, {
 export const loadProject = async (id: number): Promise<Project | undefined> => {
   const db = await dbPromise;
   const data = await db.get("projects", id);
-  return data && new Project().fromData(data, id);
+  return data && new Project().fromData(data);
 };
 
 export const saveProject = async (project: Project): Promise<number> => {
   const db = await dbPromise;
   const data = project.toData();
+  if (project.id) {
+    data.id = project.id;
+  }
   return await db.put("projects", data);
 };
 
