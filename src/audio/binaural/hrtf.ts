@@ -5,7 +5,11 @@ const firCoefficientsToAudioBuffer = (
   firCoeffsLeft: number[],
   firCoeffsRight: number[]
 ): AudioBuffer => {
-  const buffer = defaultAudioContext.createBuffer(2, 512, 44100);
+  const buffer = defaultAudioContext.createBuffer(
+    2,
+    512,
+    defaultAudioContext.sampleRate
+  );
   buffer.copyToChannel(new Float32Array(firCoeffsLeft), 0);
   buffer.copyToChannel(new Float32Array(firCoeffsRight), 1);
   return buffer;
