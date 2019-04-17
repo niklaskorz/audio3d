@@ -54,8 +54,19 @@ export default class ObjectEditor extends React.Component<Props, State> {
     if (this.codeCheckTimeout != null) {
       window.clearTimeout(this.codeCheckTimeout);
     }
-    window.setTimeout(this.checkCode, 2000);
+    this.codeCheckTimeout = window.setTimeout(this.checkCode, 2000);
   };
+
+  componentDidMount(): void {
+    this.checkCode();
+  }
+
+  componentWillUnmount(): void {
+    if (this.codeCheckTimeout != null) {
+      window.clearTimeout(this.codeCheckTimeout);
+      this.codeCheckTimeout = null;
+    }
+  }
 
   render(): React.ReactNode {
     const {
