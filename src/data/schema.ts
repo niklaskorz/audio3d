@@ -7,7 +7,7 @@ import { RoomDimensions, RoomMaterials } from "resonance-audio";
 import { InteractionType, TeleportTarget } from "../project/GameObject";
 
 export interface ObjectData {
-  id: number;
+  uuid: string;
   name: string;
   position: number[];
   scale: number[];
@@ -20,14 +20,14 @@ export interface ObjectData {
 }
 
 export interface SpawnData {
-  id: number;
+  uuid: string;
   name: string;
   position: number[];
   rotation: number;
 }
 
 export interface RoomData {
-  id: number;
+  uuid: string;
   name: string;
   dimensions: RoomDimensions;
   materials: RoomMaterials;

@@ -104,18 +104,20 @@ export default class RuntimeContainer extends React.Component<Props> {
           </RunningButtonContainer>
           <RunningHeadline>Controls</RunningHeadline>
           <ControlsTable>
-            <tr>
-              <td>Move</td>
-              <td>W/A/S/D or left stick</td>
-            </tr>
-            <tr>
-              <td>View</td>
-              <td>Arrow keys or right stick</td>
-            </tr>
-            <tr>
-              <td>Interact</td>
-              <td>E or A (XBOX)</td>
-            </tr>
+            <tbody>
+              <tr>
+                <td>Move</td>
+                <td>W/A/S/D or left stick</td>
+              </tr>
+              <tr>
+                <td>View</td>
+                <td>Arrow keys or right stick</td>
+              </tr>
+              <tr>
+                <td>Interact</td>
+                <td>E or A (XBOX)</td>
+              </tr>
+            </tbody>
           </ControlsTable>
         </RunningLabel>
         <FocusedLabel>Focused</FocusedLabel>

@@ -16,15 +16,14 @@ const cubeMaterial = new MeshLambertMaterial();
 
 export enum InteractionType {
   None = "No interaction",
-  CodeBlock = "Code block",
-  Teleport = "Teleport",
   PlaySound = "Play sound",
-  EndGame = "End game"
+  Teleport = "Teleport",
+  CodeBlock = "Code block"
 }
 
 export interface TeleportTarget {
-  roomId: number;
-  spawnId: number;
+  roomId: string;
+  spawnId: string;
 }
 
 export default class GameObject extends Mesh implements Serializable {
@@ -52,7 +51,7 @@ export default class GameObject extends Mesh implements Serializable {
     switch (this.interactionType) {
       case InteractionType.CodeBlock:
         if (this.codeBlock) {
-          this.codeBlock.execute(new Map(), new Map(), this);
+          this.codeBlock.execute(this, project, project.activeRoom.roomState);
         }
         break;
       case InteractionType.Teleport:
@@ -61,51 +60,41 @@ export default class GameObject extends Mesh implements Serializable {
           project.teleportPlayer(roomId, spawnId);
         }
         if (this.interactionAudioId != null) {
-          this.playSound(this.interactionAudioId);
+          this.playAudio(this.interactionAudioId);
         }
         break;
       case InteractionType.PlaySound:
         if (this.interactionAudioId != null) {
-          this.playSound(this.interactionAudioId);
+          this.playAudio(this.interactionAudioId);
         }
-        break;
-      case InteractionType.EndGame:
-        if (this.interactionAudioId != null) {
-          this.playSound(this.interactionAudioId);
-        }
-        alert("You have reached the end of this game, congratulations!");
         break;
       default:
         break;
     }
   }
 
-  async playSound(id: number): Promise<void> {
-    const audioFile = await this.audioLibrary.get(id);
-    if (audioFile) {
-      const buffer = await defaultAudioContext.decodeAudioData(
-        audioFile.data.slice(0)
-      );
-    }
-  }
-
-  async loadAudio(id: number): Promise<void> {
+  async playAudio(id: number, loop: boolean = false): Promise<void> {
     this.audioId = id;
     this.audioFile = await this.audioLibrary.get(id);
-    this.audio.stop();
     if (this.audioFile) {
       const buffer = await defaultAudioContext.decodeAudioData(
         this.audioFile.data.slice(0)
       );
       this.audio.setBuffer(buffer);
-      this.audio.setLoop(true);
+      this.audio.setLoop(loop);
       this.audio.play();
+    } else {
+      console.log(
+        "Audio with id",
+        id,
+        "could not be found and can't be played"
+      );
     }
   }
 
   toData(): ObjectData {
     return {
-      id: this.id,
+      uuid: this.uuid,
       name: this.name,
       position: this.position.toArray(),
       scale: this.scale.toArray(),
@@ -119,14 +108,14 @@ export default class GameObject extends Mesh implements Serializable {
   }
 
   fromData(data: SerializedData): this {
-    this.id = data.id != null ? data.id : this.id;
+    this.uuid = data.uuid != null ? data.uuid : this.uuid;
     this.name = data.name;
     this.position.set(data.position[0], data.position[1], data.position[2]);
     this.scale.set(data.scale[0], data.scale[1], data.scale[2]);
     this.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2]);
 
     if (data.audioId != null) {
-      this.loadAudio(data.audioId);
+      this.playAudio(data.audioId, true);
     }
 
     this.interactionType = data.interactionType || InteractionType.None;

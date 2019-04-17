@@ -16,24 +16,23 @@ export default class SpawnMarker extends Mesh implements Serializable {
   constructor() {
     super(spawnGeometry, spawnMaterial);
     this.position.set(0, 0.05, 2);
-    this.rotation.y = Math.PI;
 
     const directionMarker = new Mesh(directionGeometry, spawnMaterial);
-    directionMarker.position.z = 0.5;
+    directionMarker.position.z = -0.5;
     this.add(directionMarker);
   }
 
   toData(): SpawnData {
     return {
-      id: this.id,
+      uuid: this.uuid,
       name: this.name,
-      position: [this.position.x, this.position.y],
+      position: [this.position.x, this.position.z],
       rotation: this.rotation.y
     };
   }
 
   fromData(data: SerializedData): this {
-    this.id = data.id;
+    this.uuid = data.uuid;
     this.name = data.name;
     this.position.set(data.position[0], 0.05, data.position[1]);
     this.rotation.set(0, data.rotation, 0);

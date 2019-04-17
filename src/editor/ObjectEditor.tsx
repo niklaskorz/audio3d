@@ -11,7 +11,8 @@ import {
   InputGroup,
   CustomInput,
   Select,
-  CodeEditor
+  CodeEditor,
+  Hint
 } from "./styled";
 import { EditorObject } from "./types";
 
@@ -26,6 +27,7 @@ interface Props {
   onUpdateCodeBlockSource(source: string): void;
   onUpdateTeleportTarget(teleportTarget: TeleportTarget): void;
   onShowAudioSelection(): void;
+  onShowInteractionAudioSelection(): void;
 }
 
 interface State {
@@ -39,7 +41,7 @@ export default class ObjectEditor extends React.Component<Props, State> {
 
   checkCode = () => {
     const { codeBlockSource } = this.props.object;
-    if (!codeBlockSource) {
+    if (codeBlockSource == null) {
       return;
     }
 
@@ -63,8 +65,8 @@ export default class ObjectEditor extends React.Component<Props, State> {
   updateTeleportTargetRoomId: React.ChangeEventHandler<
     HTMLSelectElement
   > = e => {
-    const roomId = parseInt(e.currentTarget.value);
-    this.props.onUpdateTeleportTarget({ roomId, spawnId: 0 });
+    const roomId = e.currentTarget.value;
+    this.props.onUpdateTeleportTarget({ roomId, spawnId: "" });
   };
 
   updateTeleportTargetSpawnId: React.ChangeEventHandler<
@@ -72,7 +74,7 @@ export default class ObjectEditor extends React.Component<Props, State> {
   > = e => {
     const { object: o, onUpdateTeleportTarget } = this.props;
     if (o.teleportTarget) {
-      const spawnId = parseInt(e.currentTarget.value);
+      const spawnId = e.currentTarget.value;
       onUpdateTeleportTarget({ ...o.teleportTarget, spawnId });
     }
   };
@@ -97,11 +99,12 @@ export default class ObjectEditor extends React.Component<Props, State> {
       onUpdateRotation,
       onUpdateScale,
       onUpdateInteractionType,
-      onShowAudioSelection
+      onShowAudioSelection,
+      onShowInteractionAudioSelection
     } = this.props;
     const { codeError } = this.state;
     const teleportTargetRoom =
-      o.teleportTarget && rooms.find(r => r.id === o.teleportTarget!.roomId);
+      o.teleportTarget && rooms.find(r => r.uuid === o.teleportTarget!.roomId);
 
     return (
       <div>
@@ -272,17 +275,18 @@ export default class ObjectEditor extends React.Component<Props, State> {
                 value={o.codeBlockSource}
                 onChange={this.updateCodeBlockSource}
               />
-              <p>{codeError || "No syntax errors detected"}</p>
+              <Hint>{codeError || "No syntax errors detected"}</Hint>
             </>
           )}
           {o.interactionType === InteractionType.Teleport && o.teleportTarget && (
-            <>
+            <Group>
+              <label>Teleport Target</label>
               <Select
                 value={o.teleportTarget.roomId}
                 onChange={this.updateTeleportTargetRoomId}
               >
                 {rooms.map(r => (
-                  <option key={r.id} value={r.id}>
+                  <option key={r.uuid} value={r.uuid}>
                     {r.name || "Anonymous Room"}
                   </option>
                 ))}
@@ -293,14 +297,27 @@ export default class ObjectEditor extends React.Component<Props, State> {
                   onChange={this.updateTeleportTargetSpawnId}
                 >
                   {teleportTargetRoom.spawns.map(s => (
-                    <option key={s.id} value={s.id}>
+                    <option key={s.uuid} value={s.uuid}>
                       {s.name || "New spawn"}
                     </option>
                   ))}
                 </Select>
               )}
-            </>
+            </Group>
           )}
+          {o.interactionType !== InteractionType.None &&
+            o.interactionType !== InteractionType.CodeBlock && (
+              <Group>
+                <label>Interaction Sound</label>
+                <CustomInput onClick={onShowInteractionAudioSelection}>
+                  {o.interactionAudio
+                    ? `${o.interactionAudio.name} (${Math.ceil(
+                        o.interactionAudio.data.byteLength / 1024
+                      )} KiB)`
+                    : "No audio selected"}
+                </CustomInput>
+              </Group>
+            )}
         </Group>
       </div>
     );

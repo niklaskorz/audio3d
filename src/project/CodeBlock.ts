@@ -1,3 +1,6 @@
+import GameObject from "./GameObject";
+import Project from "./Project";
+
 /**
  * @author Niklas Korz
  */
@@ -14,22 +17,32 @@ export default class CodeBlock {
     this.func = undefined;
   }
 
-  execute(playerState: any, roomState: any, thisObject: any = null): void {
+  execute(
+    object: GameObject,
+    project: Project,
+    roomState: Map<string, any>
+  ): void {
     try {
       if (!this.func) {
-        this.func = new Function("playerState", "roomState", this.source);
+        this.func = new Function(
+          "game",
+          "playerState",
+          "roomState",
+          this.source
+        );
       }
-      this.func.call(thisObject, playerState, roomState);
+      // The first parameter is the "this" object
+      this.func.call(object, project, project.playerState, roomState);
     } catch (ex) {
       console.error(
         "Execution of code block failed with error:",
         ex,
-        "playerState:",
-        playerState,
+        "object:",
+        object,
+        "project:",
+        project,
         "roomState:",
-        roomState,
-        "this:",
-        thisObject
+        roomState
       );
     }
   }

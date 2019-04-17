@@ -5,7 +5,8 @@ import { Raycaster, Vector3, WebGLRenderer, Object3D, Mesh, Box3 } from "three";
 import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
 import Project from "../project/Project";
-import GameObject from "../project/GameObject";
+import GameObject, { InteractionType } from "../project/GameObject";
+import SpawnMarker from "../project/SpawnMarker";
 
 const axes = {
   x: new Vector3(1, 0, 0),
@@ -19,7 +20,6 @@ export default class Runtime {
 
   rafHandle = 0;
   previousTimestamp = 0;
-  playerHeight = 1.8; //1,80m player height, eyes are ~10cm lower
   lastCollisionSound = 0; //Timestamp, when the last sound for collision was played
   lastKnownButtonStatus = false; //Variable to check whether or not the button[0] was pressed in the last update() or not (to prevent multiple clicks)
 
@@ -40,9 +40,15 @@ export default class Runtime {
     this.canvas = this.renderer.domElement;
     this.canvas.tabIndex = -1; // Make element focusable
 
-    this.project.selectRoom(this.project.rooms[0]);
-    this.project.camera.position.set(0, this.playerHeight - 0.1, 2);
-    this.project.camera.rotation.set(0, 0, 0);
+    const room = this.project.rooms[0];
+    this.project.selectRoom(room);
+    const spawn = room.spawns[0];
+    this.project.camera.position.set(
+      spawn.position.x,
+      this.project.playerHeight - 0.1,
+      spawn.position.z
+    );
+    this.project.camera.rotation.set(0, spawn.rotation.y, 0);
   }
 
   attach(target: HTMLElement): void {
@@ -125,7 +131,7 @@ export default class Runtime {
   invokeInteraction(): boolean {
     const toInteractWith = this.project.activeObject;
     if (toInteractWith != null) {
-      toInteractWith.rotateX(0.1); //TODO - Invoke interaction method on object (not implemented yet)
+      toInteractWith.triggerInteraction(this.project);
       return true;
     } else {
       return false;
@@ -203,7 +209,7 @@ export default class Runtime {
     //Check for collision
     let collided = false;
     for (const i of this.project.activeRoom.children) {
-      if (!(i instanceof Mesh)) {
+      if (!(i instanceof Mesh) || i instanceof SpawnMarker) {
         continue;
       }
       const thresholdMovement = 0.25; //Minimum allowed distance to an object
@@ -225,9 +231,9 @@ export default class Runtime {
       if (
         this.isBetween(newX, boundX2, boundX1) &&
         this.isBetween(newZ, boundZ2, boundZ1) &&
-        (this.isBetween(boundY1, 0, this.playerHeight) ||
-          this.isBetween(boundY2, 0, this.playerHeight) ||
-          (this.isBetween(this.playerHeight, boundY2, boundY1) &&
+        (this.isBetween(boundY1, 0, this.project.playerHeight) ||
+          this.isBetween(boundY2, 0, this.project.playerHeight) ||
+          (this.isBetween(this.project.playerHeight, boundY2, boundY1) &&
             this.isBetween(0, boundY2, boundY1)))
       ) {
         collided = true;
@@ -266,7 +272,11 @@ export default class Runtime {
       }
     }
 
-    if (nearestDist <= 1.5 && nearestObj != null) {
+    if (
+      nearestDist <= 1.5 &&
+      nearestObj != null &&
+      nearestObj.interactionType !== InteractionType.None
+    ) {
       //If the clostest GameObject is closer or equal than 1.5m (and not null for safety), select it
       this.project.selectObject(nearestObj);
     } else {

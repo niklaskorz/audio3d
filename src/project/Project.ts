@@ -8,6 +8,7 @@ import {
   PerspectiveCamera,
   Vector3
 } from "three";
+import { string } from "prop-types";
 import Serializable, { SerializedData } from "../data/Serializable";
 import { ProjectData } from "../data/schema";
 import { saveProject } from "../data/db";
@@ -44,6 +45,9 @@ export default class Project implements Serializable {
   rooms: Room[] = [];
   audioType: number = 1;
 
+  playerHeight = 1.8; // 1.80m player height, eyes are ~10cm lower
+  playerState = new Map<string, any>(); // Needed by runtime
+
   activeAudioImplementation = AudioImplementation.WebAudio;
   activeRoom: Room;
   activeSpawn: SpawnMarker | null = null;
@@ -77,6 +81,10 @@ export default class Project implements Serializable {
     for (const room of this.rooms) {
       room.audioScene.close();
     }
+  }
+
+  suspend(): void {
+    this.activeRoom.audioScene.suspend();
   }
 
   addRoom(): Room {
@@ -135,20 +143,26 @@ export default class Project implements Serializable {
     this.events.onSelectObject(o);
   }
 
-  teleportPlayer(roomId: number, spawnId: number): void {
-    const room = this.rooms.find(r => r.id === roomId);
+  teleportPlayer(roomId: string, spawnId: string): void {
+    const room = this.rooms.find(r => r.uuid === roomId);
     if (room) {
       this.selectRoom(room);
-      const spawn = room.spawns.find(s => s.id === spawnId) || room.spawns[0];
-      room.camera.position.x = spawn.position.x;
-      room.camera.position.z = spawn.position.z;
-      room.camera.rotation.y = spawn.rotation.y;
+      const spawn = room.spawns.find(s => s.uuid === spawnId) || room.spawns[0];
+      room.camera.position.set(
+        spawn.position.x,
+        this.playerHeight - 0.1,
+        spawn.position.z
+      );
+      room.camera.rotation.set(0, spawn.rotation.y, 0);
+    } else {
+      console.log("Target room not found, not teleporting");
     }
   }
 
   // Serialize instance to a plain JavaScript object
   toData(): ProjectData {
     return {
+      id: this.id,
       savedAt: new Date(),
       name: this.name,
       rooms: this.rooms.map(r => r.toData()),

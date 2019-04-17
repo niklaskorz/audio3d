@@ -42,6 +42,11 @@ enum ModalType {
   ProjectSelection
 }
 
+enum AudioSelectionTarget {
+  ObjectAudio,
+  InteractionAudio
+}
+
 interface State {
   audioImplementation: AudioImplementation;
   rooms: EditorRoom[];
@@ -49,7 +54,7 @@ interface State {
   selectedSpawn: EditorSpawn | null;
   selectedObject: EditorObject | null;
   modal: ModalType | null;
-  isRunning: boolean;
+  runningProject: Project | null;
 }
 
 export default class Editor extends React.Component<{}, State> {
@@ -68,8 +73,9 @@ export default class Editor extends React.Component<{}, State> {
     selectedSpawn: null,
     selectedObject: null,
     modal: null,
-    isRunning: false
+    runningProject: null
   };
+  audioSelectionTarget = AudioSelectionTarget.ObjectAudio;
   mainRef = React.createRef<HTMLElement>();
 
   constructor(props: {}) {
@@ -229,7 +235,14 @@ export default class Editor extends React.Component<{}, State> {
 
   runProject = () => {
     this.projectCanvas.detach();
-    this.setState({ isRunning: true });
+    // Copy project so any changes made during runtime are not persisted
+    const runningProject = new Project().fromData(
+      this.project.toData(),
+      this.project.id
+    );
+    runningProject.audioLibrary = this.project.audioLibrary;
+    this.project.suspend();
+    this.setState({ runningProject });
   };
 
   // Room specific editor functionality
@@ -372,8 +385,8 @@ export default class Editor extends React.Component<{}, State> {
 
   updateObjectInteractionType = (interactionType: InteractionType) => {
     const defaultTarget: TeleportTarget = {
-      roomId: this.project.rooms[0].id,
-      spawnId: 0
+      roomId: this.project.rooms[0].uuid,
+      spawnId: ""
     };
     if (this.project.activeObject) {
       this.project.activeObject.interactionType = interactionType;
@@ -418,6 +431,14 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   showAudioSelection = () => {
+    this.audioSelectionTarget = AudioSelectionTarget.ObjectAudio;
+    this.setState({
+      modal: ModalType.AudioSelection
+    });
+  };
+
+  showInteractionAudioSelection = () => {
+    this.audioSelectionTarget = AudioSelectionTarget.InteractionAudio;
     this.setState({
       modal: ModalType.AudioSelection
     });
@@ -431,14 +452,25 @@ export default class Editor extends React.Component<{}, State> {
 
   selectAudio = (audio: AudioEntry) => {
     if (this.project.activeObject) {
-      this.project.activeObject.loadAudio(audio.id);
-      this.setState(({ selectedObject }) => ({
-        selectedObject: selectedObject && {
-          ...selectedObject,
-          audio
-        },
-        modal: null
-      }));
+      if (this.audioSelectionTarget === AudioSelectionTarget.InteractionAudio) {
+        this.project.activeObject.interactionAudioId = audio.id;
+        this.setState(({ selectedObject }) => ({
+          selectedObject: selectedObject && {
+            ...selectedObject,
+            interactionAudio: audio
+          },
+          modal: null
+        }));
+      } else {
+        this.project.activeObject.playAudio(audio.id, true);
+        this.setState(({ selectedObject }) => ({
+          selectedObject: selectedObject && {
+            ...selectedObject,
+            audio
+          },
+          modal: null
+        }));
+      }
     }
   };
 
@@ -481,7 +513,11 @@ export default class Editor extends React.Component<{}, State> {
     });
   };
 
-  onSelectObject = (o: GameObject | null) => {
+  onSelectObject = async (o: GameObject | null) => {
+    const interactionAudio =
+      o && o.interactionAudioId != null
+        ? await this.project.audioLibrary.get(o.interactionAudioId)
+        : undefined;
     this.setState({
       selectedSpawn: null,
       selectedObject: o && {
@@ -490,14 +526,21 @@ export default class Editor extends React.Component<{}, State> {
         position: o.position,
         scale: o.scale,
         rotation: o.rotation,
-        interactionType: o.interactionType,
-        codeBlockSource: o.codeBlock && o.codeBlock.source,
-        teleportTarget: o.teleportTarget,
         audio:
           o.audioFile && o.audioId != null
             ? {
                 ...o.audioFile,
                 id: o.audioId
+              }
+            : undefined,
+        interactionType: o.interactionType,
+        codeBlockSource: o.codeBlock && o.codeBlock.source,
+        teleportTarget: o.teleportTarget,
+        interactionAudio:
+          interactionAudio && o.interactionAudioId != null
+            ? {
+                ...interactionAudio,
+                id: o.interactionAudioId
               }
             : undefined
       }
@@ -529,9 +572,15 @@ export default class Editor extends React.Component<{}, State> {
   // Runtime events
 
   exitRuntime = () => {
+    if (!this.state.runningProject) {
+      return;
+    }
+    const { activeAudioImplementation } = this.state.runningProject;
+    this.state.runningProject.close();
+    this.project.selectAudioImplementation(activeAudioImplementation);
     this.setState({
-      isRunning: false,
-      audioImplementation: this.project.activeAudioImplementation
+      runningProject: null,
+      audioImplementation: activeAudioImplementation
     });
   };
 
@@ -551,12 +600,12 @@ export default class Editor extends React.Component<{}, State> {
   }
 
   render(): React.ReactNode {
-    const { modal, isRunning, audioImplementation } = this.state;
+    const { modal, runningProject, audioImplementation } = this.state;
     const { selectedSpawn: s, selectedObject: o } = this.state;
 
-    if (isRunning) {
+    if (runningProject) {
       return (
-        <RuntimeContainer project={this.project} onExit={this.exitRuntime} />
+        <RuntimeContainer project={runningProject} onExit={this.exitRuntime} />
       );
     }
 
@@ -646,6 +695,9 @@ export default class Editor extends React.Component<{}, State> {
                 onUpdateCodeBlockSource={this.updateObjectCodeBlockSource}
                 onUpdateTeleportTarget={this.updateObjectTeleportTarget}
                 onShowAudioSelection={this.showAudioSelection}
+                onShowInteractionAudioSelection={
+                  this.showInteractionAudioSelection
+                }
               />
             )}
           </Sidebar>

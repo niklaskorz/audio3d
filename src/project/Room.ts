@@ -40,6 +40,8 @@ export default class Room extends Scene implements Serializable {
   wallWest = new Mesh(wallGeometry, wallMaterial);
   camera = new PerspectiveCamera(60, 1, 0.1, 1000);
 
+  roomState = new Map<string, any>(); // Needed by runtime
+
   audioScene: AudioScene;
   spawns: SpawnMarker[] = [];
 
@@ -147,7 +149,7 @@ export default class Room extends Scene implements Serializable {
 
   toData(): RoomData {
     return {
-      id: this.id,
+      uuid: this.uuid,
       name: this.name,
       dimensions: this.dimensions,
       materials: this.materials,
@@ -159,7 +161,7 @@ export default class Room extends Scene implements Serializable {
   }
 
   fromData(data: SerializedData): this {
-    this.id = data.id != null ? data.id : this.id;
+    this.uuid = data.uuid != null ? data.uuid : this.uuid;
     this.name = data.name;
     this.dimensions = data.dimensions;
     if (data.materials) {
