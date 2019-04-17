@@ -24,16 +24,6 @@ export const InnerContainer = styled.div`
   flex-direction: row;
 `;
 
-export const Sidebar = styled.aside`
-  flex: 0 0 300px;
-  height: 100%;
-  background: hsl(210, 29%, 29%);
-  color: #fff;
-  padding: 0 15px;
-  overflow-x: hidden;
-  overflow-y: auto;
-`;
-
 export const FocusedLabel = styled.div`
   display: none;
   position: absolute;
@@ -58,20 +48,41 @@ export const Main = styled.main`
   }
 `;
 
+export const Sidebar = styled.aside`
+  font-size: 0.9em;
+  flex: 0 0 300px;
+  height: 100%;
+  background: hsl(210, 29%, 29%);
+  color: #fff;
+  padding: 0 15px;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  scrollbar-color: hsl(210, 15%, 40%) hsl(210, 29%, 15%);
+`;
+
 export const Group = styled.div`
-  margin: 20px 0;
+  margin: 1.4em 0;
+
+  & > & {
+    font-size: 0.9em;
+  }
+`;
+
+export const Hint = styled.p`
+  color: hsl(210, 20%, 90%);
 `;
 
 export const Input = styled.input`
   display: block;
   appearance: none;
   background: hsl(210, 29%, 24%);
-  border-radius: 3px;
-  border: 2px solid hsl(210, 29%, 24%);
+  border-radius: 0.2em;
+  border: 0.15em solid hsl(210, 29%, 24%);
   color: #fff;
   width: 100%;
-  padding: 10px 12px;
-  margin: 5px 0;
+  padding: 0.7em 0.85em;
+  margin: 0.35em 0;
 
   transition: 0.2s ease border-color;
   :focus {
