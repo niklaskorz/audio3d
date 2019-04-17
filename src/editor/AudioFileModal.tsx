@@ -19,6 +19,9 @@ export default class AudioFileModal extends React.Component<Props> {
     return (
       <Modal title="Audio File" onDismiss={this.props.onDismiss}>
         <p>
+          <b>ID:</b> {audioEntry.id}
+        </p>
+        <p>
           <b>Name:</b> {audioEntry.name}
         </p>
         <p>

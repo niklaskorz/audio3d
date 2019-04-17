@@ -15,9 +15,22 @@ export default class CodeBlock {
   }
 
   execute(playerState: any, roomState: any, thisObject: any = null): void {
-    if (!this.func) {
-      this.func = new Function("playerState", "roomState", this.source);
+    try {
+      if (!this.func) {
+        this.func = new Function("playerState", "roomState", this.source);
+      }
+      this.func.call(thisObject, playerState, roomState);
+    } catch (ex) {
+      console.error(
+        "Execution of code block failed with error:",
+        ex,
+        "playerState:",
+        playerState,
+        "roomState:",
+        roomState,
+        "this:",
+        thisObject
+      );
     }
-    this.func.call(thisObject, playerState, roomState);
   }
 }

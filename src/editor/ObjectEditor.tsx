@@ -86,6 +86,7 @@ export default class ObjectEditor extends React.Component<Props, State> {
           <label>Object Name</label>
           <Input
             type="text"
+            placeholder="New object"
             value={o.name}
             onChange={e => onUpdateName(e.currentTarget.value)}
           />

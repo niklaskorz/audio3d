@@ -6,8 +6,16 @@ import { openDB } from "idb";
 import Project from "../project/Project";
 import { Schema, AudioWithIds, AudioFile, ProjectData } from "./schema";
 
-const dbPromise = openDB<Schema>("audio3d", 1, {
-  upgrade(db) {
+const dbPromise = openDB<Schema>("audio3d", 2, {
+  upgrade(db, oldVersion) {
+    if (oldVersion === 1) {
+      // Version 1 didn't store the unique ids of rooms and objects.
+      // As we can't retrieve them, we'll delete any old versions of the
+      // database here.
+      db.deleteObjectStore("projects");
+      db.deleteObjectStore("audios");
+    }
+
     const projectStore = db.createObjectStore("projects", {
       keyPath: "id",
       autoIncrement: true

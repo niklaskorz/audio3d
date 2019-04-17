@@ -6,6 +6,7 @@ import { DBSchema } from "idb";
 import { RoomDimensions, RoomMaterials } from "resonance-audio";
 
 export interface ObjectData {
+  id: number;
   name: string;
   position: number[];
   scale: number[];
@@ -13,10 +14,19 @@ export interface ObjectData {
   audioId?: number;
 }
 
+export interface SpawnData {
+  id: number;
+  name: string;
+  position: number[];
+  rotation: number;
+}
+
 export interface RoomData {
+  id: number;
   name: string;
   dimensions: RoomDimensions;
   materials: RoomMaterials;
+  spawns: SpawnData[];
   objects: ObjectData[];
 }
 

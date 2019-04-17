@@ -271,7 +271,7 @@ export default class Runtime {
       this.project.selectObject(nearestObj);
     } else {
       //Otherwise, unselect all
-      this.project.selectObject(null);
+      this.project.unselect();
     }
 
     //Interact with nearest (selected) object

@@ -92,15 +92,18 @@ interface Props {
   onSaveProject(): void;
   onImportProject(): void;
   onExportProject(): void;
-  onAudioChange(audioImplementation: AudioImplementation): void;
+
   onAddObject(): void;
   onDeleteObject(): void;
+  onAddSpawn(): void;
+  onDeleteSpawn(): void;
   onAddRoom(): void;
   onDeleteRoom(): void;
 
   onShowAudioLibrary(): void;
   onShowProjectManager(): void;
 
+  onAudioChange(audioImplementation: AudioImplementation): void;
   onRunProject(): void;
 }
 
@@ -168,6 +171,9 @@ export default class MenuBar extends React.Component<Props, State> {
             <MenuItem onClick={this.props.onDeleteObject}>
               Delete object
             </MenuItem>
+            <MenuDivider />
+            <MenuItem onClick={this.props.onAddSpawn}>Add spawn</MenuItem>
+            <MenuItem onClick={this.props.onDeleteSpawn}>Delete spawn</MenuItem>
             <MenuDivider />
             <MenuItem onClick={this.props.onAddRoom}>Add room</MenuItem>
             <MenuItem onClick={this.props.onDeleteRoom}>Delete room</MenuItem>

@@ -6,7 +6,8 @@ import GamepadListener from "../input/GamepadListener";
 import KeyboardListener from "../input/KeyboardListener";
 import GameObject from "../project/GameObject";
 import Project from "../project/Project";
-import VisualControls from "./VisualControls";
+import SpawnMarker from "../project/SpawnMarker";
+import VisualControls, { ControlMode } from "./VisualControls";
 
 enum MouseButton {
   Primary = 0,
@@ -128,10 +129,17 @@ export default class EditorCanvas {
     this.renderer.clear();
     this.renderer.render(this.project.activeRoom, this.project.camera);
 
-    if (this.project.activeObject) {
+    if (this.project.activeObject || this.project.activeSpawn) {
+      if (this.project.activeObject) {
+        this.controls.setMode(ControlMode.Normal);
+        this.controls.position.copy(this.project.activeObject.position);
+      } else if (this.project.activeSpawn) {
+        this.controls.setMode(ControlMode.RestrictedXZ);
+        this.controls.position.copy(this.project.activeSpawn.position);
+      }
+
       // Draw controls in front of all other objects
       // https://stackoverflow.com/questions/12666570/how-to-change-the-zorder-of-object-with-threejs/12666937#12666937
-      this.controls.position.copy(this.project.activeObject.position);
       this.renderer.clearDepth();
       this.renderer.render(this.controls, this.project.camera);
     }
@@ -198,18 +206,23 @@ export default class EditorCanvas {
   }
 
   checkSceneClick(raycaster: Raycaster): boolean {
+    this.project.unselect();
+
     const intersections = raycaster.intersectObjects(
       this.project.activeRoom.children
     );
     for (const intersection of intersections) {
       const o = intersection.object;
+      if (o instanceof SpawnMarker) {
+        this.project.selectSpawn(o);
+        return true;
+      }
       if (o instanceof GameObject) {
         this.project.selectObject(o);
         return true;
       }
     }
 
-    this.project.selectObject(null);
     return false;
   }
 

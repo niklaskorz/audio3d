@@ -15,18 +15,21 @@ import AudioImplementation from "../audio/AudioImplementation";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 import Room from "./Room";
+import SpawnMarker from "./SpawnMarker";
 
 export interface ProjectEvents {
-  onSelect(object: GameObject | null): void;
+  onSelectSpawn(spawnMarker: SpawnMarker | null): void;
+  onSelectObject(object: GameObject | null): void;
   onTranslate(position: Vector3): void;
   onScale(scale: Vector3): void;
 }
 
 const noop = (): void => {
-  /* noop */
+  /* no operation */
 };
 const defaultEvents: ProjectEvents = {
-  onSelect: noop,
+  onSelectSpawn: noop,
+  onSelectObject: noop,
   onScale: noop,
   onTranslate: noop
 };
@@ -43,6 +46,7 @@ export default class Project implements Serializable {
 
   activeAudioImplementation = AudioImplementation.WebAudio;
   activeRoom: Room;
+  activeSpawn: SpawnMarker | null = null;
   activeObject: GameObject | null = null;
 
   outlineMesh = new Mesh();
@@ -55,6 +59,7 @@ export default class Project implements Serializable {
     this.events = events;
 
     const firstRoom = new Room(this.audioLibrary, "First room");
+    firstRoom.addSpawn();
     firstRoom.addObject();
     this.rooms.push(firstRoom);
     this.activeRoom = firstRoom;
@@ -76,6 +81,7 @@ export default class Project implements Serializable {
 
   addRoom(): Room {
     const room = new Room(this.audioLibrary, "New room");
+    room.addSpawn();
     room.addObject();
     this.rooms.push(room);
     this.selectRoom(room);
@@ -93,21 +99,47 @@ export default class Project implements Serializable {
     room.camera.aspect = this.activeRoom.camera.aspect;
     room.camera.updateProjectionMatrix();
     this.activeRoom = room;
-    this.selectObject(null);
+    this.unselect();
   }
 
-  selectObject(o: GameObject | null): void {
+  unselect(): void {
+    if (this.activeSpawn) {
+      this.activeSpawn.remove(this.outlineMesh);
+      this.activeSpawn = null;
+      this.events.onSelectSpawn(null);
+    }
     if (this.activeObject) {
       this.activeObject.remove(this.outlineMesh);
+      this.activeObject = null;
+      this.events.onSelectObject(null);
     }
+  }
 
-    if (o) {
-      this.outlineMesh.geometry = o.geometry;
-      o.add(this.outlineMesh);
-    }
+  selectSpawn(s: SpawnMarker): void {
+    this.outlineMesh.geometry = s.geometry;
+    s.add(this.outlineMesh);
+
+    this.activeSpawn = s;
+    this.events.onSelectSpawn(s);
+  }
+
+  selectObject(o: GameObject): void {
+    this.outlineMesh.geometry = o.geometry;
+    o.add(this.outlineMesh);
 
     this.activeObject = o;
-    this.events.onSelect(o);
+    this.events.onSelectObject(o);
+  }
+
+  teleportPlayer(roomId: number, spawnId: number): void {
+    const room = this.rooms.find(r => r.id === roomId);
+    if (room) {
+      this.selectRoom(room);
+      const spawn = room.spawns.find(s => s.id === spawnId) || room.spawns[0];
+      room.camera.position.x = spawn.position.x;
+      room.camera.position.z = spawn.position.z;
+      room.camera.rotation.y = spawn.rotation.y;
+    }
   }
 
   // Serialize instance to a plain JavaScript object

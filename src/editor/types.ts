@@ -17,6 +17,13 @@ export interface EditorRoom {
   materials: RoomMaterials;
 }
 
+export interface EditorSpawn {
+  id: number;
+  name: string;
+  position: Vector3;
+  rotation: number; // Y axis
+}
+
 export interface EditorObject {
   id: number;
   name: string;

@@ -40,6 +40,7 @@ export default class RoomEditor extends React.Component<Props> {
           <label>Room Name</label>
           <Input
             type="text"
+            placeholder="Anonymous Room"
             value={r.name}
             onChange={e => onUpdateName(e.currentTarget.value)}
           />
