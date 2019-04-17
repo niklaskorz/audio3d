@@ -241,6 +241,9 @@ export default class Editor extends React.Component<{}, State> {
       this.project.id
     );
     runningProject.audioLibrary = this.project.audioLibrary;
+    runningProject.selectAudioImplementation(
+      this.project.activeAudioImplementation
+    );
     this.project.suspend();
     this.setState({ runningProject });
   };
