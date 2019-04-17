@@ -73,6 +73,7 @@ export default class GameObject extends Mesh implements Serializable {
         if (this.interactionAudioId != null) {
           this.playSound(this.interactionAudioId);
         }
+        alert("You have reached the end of this game, congratulations!");
         break;
       default:
         break;
@@ -109,7 +110,11 @@ export default class GameObject extends Mesh implements Serializable {
       position: this.position.toArray(),
       scale: this.scale.toArray(),
       rotation: this.rotation.toArray().slice(0, 3),
-      audioId: this.audioId
+      audioId: this.audioId,
+      interactionType: this.interactionType,
+      interactionAudioId: this.interactionAudioId,
+      codeBlockSource: this.codeBlock && this.codeBlock.source,
+      teleportTarget: this.teleportTarget
     };
   }
 
@@ -129,6 +134,7 @@ export default class GameObject extends Mesh implements Serializable {
     if (data.codeBlockSource) {
       this.codeBlock = new CodeBlock(data.codeBlockSource);
     }
+    this.teleportTarget = data.teleportTarget;
 
     return this;
   }

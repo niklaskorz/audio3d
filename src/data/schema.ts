@@ -4,6 +4,7 @@
  */
 import { DBSchema } from "idb";
 import { RoomDimensions, RoomMaterials } from "resonance-audio";
+import { InteractionType, TeleportTarget } from "../project/GameObject";
 
 export interface ObjectData {
   id: number;
@@ -12,6 +13,10 @@ export interface ObjectData {
   scale: number[];
   rotation: number[];
   audioId?: number;
+  interactionType: InteractionType;
+  interactionAudioId?: number;
+  codeBlockSource?: string;
+  teleportTarget?: TeleportTarget;
 }
 
 export interface SpawnData {
