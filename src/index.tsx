@@ -14,11 +14,7 @@ if (!global.AudioContext && global.webkitAudioContext) {
 if (process.env.NODE_ENV === "production") {
   // If we are running in the production environment, make sure the user
   // does not close the editor unintentionally.
-  window.addEventListener(
-    "beforeunload",
-    () =>
-      "Do you really want to close the editor? You might have unsaved changes."
-  );
+  window.addEventListener("beforeunload", e => e.preventDefault());
 }
 
 ReactDOM.render(<Editor />, document.getElementById("root"));
