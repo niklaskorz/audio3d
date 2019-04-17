@@ -116,6 +116,8 @@ export default class Project implements Serializable {
   }
 
   selectSpawn(s: SpawnMarker): void {
+    this.unselect();
+
     this.outlineMesh.geometry = s.geometry;
     s.add(this.outlineMesh);
 
@@ -124,6 +126,8 @@ export default class Project implements Serializable {
   }
 
   selectObject(o: GameObject): void {
+    this.unselect();
+
     this.outlineMesh.geometry = o.geometry;
     o.add(this.outlineMesh);
 

@@ -206,8 +206,6 @@ export default class EditorCanvas {
   }
 
   checkSceneClick(raycaster: Raycaster): boolean {
-    this.project.unselect();
-
     const intersections = raycaster.intersectObjects(
       this.project.activeRoom.children
     );
@@ -223,6 +221,7 @@ export default class EditorCanvas {
       }
     }
 
+    this.project.unselect();
     return false;
   }
 

@@ -116,6 +116,7 @@ export default class Room extends Scene implements Serializable {
 
   addSpawn(): SpawnMarker {
     const marker = new SpawnMarker();
+    marker.name = "New spawn";
     this.spawns.push(marker);
     this.add(marker);
     return marker;

@@ -6,7 +6,10 @@ import { RoomDimensions, RoomMaterials } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import { saveAsZip } from "../data/export";
 import { openZip } from "../data/import";
-import GameObject, { InteractionType } from "../project/GameObject";
+import GameObject, {
+  InteractionType,
+  TeleportTarget
+} from "../project/GameObject";
 import Project from "../project/Project";
 import { ProjectData } from "../data/schema";
 import AudioImplementation from "../audio/AudioImplementation";
@@ -152,7 +155,8 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   addObject = () => {
-    this.project.activeRoom.addObject();
+    const object = this.project.activeRoom.addObject();
+    this.project.selectObject(object);
   };
 
   deleteObject = () => {
@@ -164,7 +168,8 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   addSpawn = () => {
-    this.project.activeRoom.addSpawn();
+    const spawn = this.project.activeRoom.addSpawn();
+    this.project.selectSpawn(spawn);
   };
 
   deleteSpawn = () => {
@@ -231,7 +236,7 @@ export default class Editor extends React.Component<{}, State> {
 
   selectRoom(id: number): void {
     this.project.selectRoom(this.project.rooms[id]);
-    this.setState({ selectedRoomId: id, selectedObject: null });
+    this.setState({ selectedRoomId: id });
   }
 
   updateRoomName = (name: string) => {
@@ -366,13 +371,20 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   updateObjectInteractionType = (interactionType: InteractionType) => {
+    const defaultTarget: TeleportTarget = {
+      roomId: this.project.rooms[0].id,
+      spawnId: 0
+    };
     if (this.project.activeObject) {
       this.project.activeObject.interactionType = interactionType;
+      this.project.activeObject.teleportTarget =
+        this.project.activeObject.teleportTarget || defaultTarget;
     }
     this.setState(({ selectedObject }) => ({
       selectedObject: selectedObject && {
         ...selectedObject,
-        interactionType
+        interactionType,
+        teleportTarget: selectedObject.teleportTarget || defaultTarget
       }
     }));
   };
@@ -389,6 +401,18 @@ export default class Editor extends React.Component<{}, State> {
       selectedObject: selectedObject && {
         ...selectedObject,
         codeBlockSource
+      }
+    }));
+  };
+
+  updateObjectTeleportTarget = (teleportTarget: TeleportTarget) => {
+    if (this.project.activeObject) {
+      this.project.activeObject.teleportTarget = teleportTarget;
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        teleportTarget
       }
     }));
   };
@@ -452,12 +476,14 @@ export default class Editor extends React.Component<{}, State> {
         name: s.name,
         position: s.position,
         rotation: s.rotation.y
-      }
+      },
+      selectedObject: null
     });
   };
 
   onSelectObject = (o: GameObject | null) => {
     this.setState({
+      selectedSpawn: null,
       selectedObject: o && {
         id: o.id,
         name: o.name,
@@ -466,6 +492,7 @@ export default class Editor extends React.Component<{}, State> {
         rotation: o.rotation,
         interactionType: o.interactionType,
         codeBlockSource: o.codeBlock && o.codeBlock.source,
+        teleportTarget: o.teleportTarget,
         audio:
           o.audioFile && o.audioId != null
             ? {
@@ -610,12 +637,14 @@ export default class Editor extends React.Component<{}, State> {
             {o && (
               <ObjectEditor
                 object={o}
+                rooms={this.project.rooms}
                 onUpdateName={this.updateObjectName}
                 onUpdatePosition={this.updateObjectPosition}
                 onUpdateRotation={this.updateObjectRotation}
                 onUpdateScale={this.updateObjectScale}
                 onUpdateInteractionType={this.updateObjectInteractionType}
                 onUpdateCodeBlockSource={this.updateObjectCodeBlockSource}
+                onUpdateTeleportTarget={this.updateObjectTeleportTarget}
                 onShowAudioSelection={this.showAudioSelection}
               />
             )}

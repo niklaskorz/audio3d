@@ -3,7 +3,8 @@
  */
 import React from "react";
 import { degToRad, radToDeg, roundToPrecision } from "../utils/math";
-import { InteractionType } from "../project/GameObject";
+import { InteractionType, TeleportTarget } from "../project/GameObject";
+import Room from "../project/Room";
 import {
   Group,
   Input,
@@ -16,12 +17,14 @@ import { EditorObject } from "./types";
 
 interface Props {
   object: EditorObject;
+  rooms: Room[];
   onUpdateName(name: string): void;
   onUpdatePosition(x: number, y: number, z: number): void;
   onUpdateRotation(x: number, y: number, z: number): void;
   onUpdateScale(x: number, y: number, z: number): void;
   onUpdateInteractionType(interactionType: InteractionType): void;
   onUpdateCodeBlockSource(source: string): void;
+  onUpdateTeleportTarget(teleportTarget: TeleportTarget): void;
   onShowAudioSelection(): void;
 }
 
@@ -57,6 +60,23 @@ export default class ObjectEditor extends React.Component<Props, State> {
     this.codeCheckTimeout = window.setTimeout(this.checkCode, 2000);
   };
 
+  updateTeleportTargetRoomId: React.ChangeEventHandler<
+    HTMLSelectElement
+  > = e => {
+    const roomId = parseInt(e.currentTarget.value);
+    this.props.onUpdateTeleportTarget({ roomId, spawnId: 0 });
+  };
+
+  updateTeleportTargetSpawnId: React.ChangeEventHandler<
+    HTMLSelectElement
+  > = e => {
+    const { object: o, onUpdateTeleportTarget } = this.props;
+    if (o.teleportTarget) {
+      const spawnId = parseInt(e.currentTarget.value);
+      onUpdateTeleportTarget({ ...o.teleportTarget, spawnId });
+    }
+  };
+
   componentDidMount(): void {
     this.checkCode();
   }
@@ -71,6 +91,7 @@ export default class ObjectEditor extends React.Component<Props, State> {
   render(): React.ReactNode {
     const {
       object: o,
+      rooms,
       onUpdateName,
       onUpdatePosition,
       onUpdateRotation,
@@ -79,6 +100,8 @@ export default class ObjectEditor extends React.Component<Props, State> {
       onShowAudioSelection
     } = this.props;
     const { codeError } = this.state;
+    const teleportTargetRoom =
+      o.teleportTarget && rooms.find(r => r.id === o.teleportTarget!.roomId);
 
     return (
       <div>
@@ -227,7 +250,7 @@ export default class ObjectEditor extends React.Component<Props, State> {
               ? `${o.audio.name} (${Math.ceil(
                   o.audio.data.byteLength / 1024
                 )} KiB)`
-              : "None"}
+              : "No audio selected"}
           </CustomInput>
         </Group>
         <Group>
@@ -250,6 +273,32 @@ export default class ObjectEditor extends React.Component<Props, State> {
                 onChange={this.updateCodeBlockSource}
               />
               <p>{codeError || "No syntax errors detected"}</p>
+            </>
+          )}
+          {o.interactionType === InteractionType.Teleport && o.teleportTarget && (
+            <>
+              <Select
+                value={o.teleportTarget.roomId}
+                onChange={this.updateTeleportTargetRoomId}
+              >
+                {rooms.map(r => (
+                  <option key={r.id} value={r.id}>
+                    {r.name || "Anonymous Room"}
+                  </option>
+                ))}
+              </Select>
+              {teleportTargetRoom && (
+                <Select
+                  value={o.teleportTarget.spawnId}
+                  onChange={this.updateTeleportTargetSpawnId}
+                >
+                  {teleportTargetRoom.spawns.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name || "New spawn"}
+                    </option>
+                  ))}
+                </Select>
+              )}
             </>
           )}
         </Group>
