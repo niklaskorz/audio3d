@@ -1,5 +1,6 @@
 /**
  * @author Niklas Korz
+ * @author Daniel Salomon
  */
 import { RoomDimensions, ResonanceAudio, RoomMaterials } from "resonance-audio";
 import {
@@ -17,6 +18,7 @@ import {
 import Serializable, { SerializedData } from "../data/Serializable";
 import { RoomData } from "../data/schema";
 import AudioScene from "../audio/AudioScene";
+import Audio3D from "../audio/Audio3D";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 import SpawnMarker from "./SpawnMarker";
@@ -39,6 +41,10 @@ export default class Room extends Scene implements Serializable {
   wallSouth = new Mesh(wallGeometry, wallMaterial);
   wallWest = new Mesh(wallGeometry, wallMaterial);
   camera = new PerspectiveCamera(60, 1, 0.1, 1000);
+
+  collisionAudio: Audio3D | null = null; //Audio3D Objects for playing collision/footstep/interaction sounds, needed per room.
+  footstepAudio: Audio3D | null = null;
+  interactAvailAudio: Audio3D | null = null;
 
   roomState = new Map<string, any>(); // Needed by runtime
 
@@ -114,6 +120,16 @@ export default class Room extends Scene implements Serializable {
     });
 
     this.camera.add(this.audioScene.listener3D);
+
+    //Init audio objects for collision/footstep/... sounds
+    this.collisionAudio = this.audioScene.createAudio3D();
+    this.footstepAudio = this.audioScene.createAudio3D();
+    this.interactAvailAudio = this.audioScene.createAudio3D();
+
+    //Add audio objects for collision/footstep/... sounds to their parents
+    this.camera.add(this.footstepAudio);
+    this.add(this.collisionAudio);
+    this.add(this.interactAvailAudio);
   }
 
   addSpawn(): SpawnMarker {
