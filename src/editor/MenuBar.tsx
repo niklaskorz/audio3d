@@ -92,6 +92,7 @@ interface Props {
   onSaveProject(): void;
   onImportProject(): void;
   onExportProject(): void;
+  onShowSettings(): void;
 
   onAddObject(): void;
   onDeleteObject(): void;
@@ -158,7 +159,7 @@ export default class MenuBar extends React.Component<Props, State> {
               Export project
             </MenuItem>
             <MenuDivider />
-            <MenuItem>Settings</MenuItem>
+            <MenuItem onClick={this.props.onShowSettings}>Settings</MenuItem>
           </Menu>
         </MenubarItem>
         <MenubarItem
