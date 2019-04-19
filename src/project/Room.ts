@@ -42,9 +42,9 @@ export default class Room extends Scene implements Serializable {
   wallWest = new Mesh(wallGeometry, wallMaterial);
   camera = new PerspectiveCamera(60, 1, 0.1, 1000);
 
-  collisionAudio: Audio3D | null = null; //Audio3D Objects for playing collision/footstep/interaction sounds, needed per room.
-  footstepAudio: Audio3D | null = null;
-  interactAvailAudio: Audio3D | null = null;
+  collisionAudio: Audio3D; // Audio3D Objects for playing collision/footstep/interaction sounds, needed per room.
+  footstepAudio: Audio3D;
+  interactAvailAudio: Audio3D;
 
   roomState = new Map<string, any>(); // Needed by runtime
 

@@ -492,7 +492,7 @@ export default class Editor extends React.Component<{}, State> {
         }));
       } else {
         this.project.activeRoom.audioScene.resume();
-        this.project.activeObject.playAudio(audio.id, true);
+        this.project.activeObject.playAudio(audio.id, false);
         this.setState(({ selectedObject }) => ({
           selectedObject: selectedObject && {
             ...selectedObject,

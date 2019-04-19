@@ -9,10 +9,11 @@ import {
   Vector3
 } from "three";
 import Serializable, { SerializedData } from "../data/Serializable";
-import { ProjectData } from "../data/schema";
+import { ProjectData, AudioFile } from "../data/schema";
 import { saveProject } from "../data/db";
 import AudioImplementation from "../audio/AudioImplementation";
 import DistanceModel from "../audio/DistanceModel";
+import defaultAudioContext from "../audio/defaultAudioContext";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 import Room from "./Room";
@@ -48,6 +49,16 @@ export default class Project implements Serializable {
 
   playerHeight = 1.8; // 1.80m player height, eyes are ~10cm lower
   playerState = new Map<string, any>(); // Needed by runtime
+
+  collisionAudioID?: number; //Audio IDs, Files and buffer for collision/footstep/interaction sounds
+  footstepAudioID?: number;
+  interactAvailAudioID?: number;
+  collisionAudioFile?: AudioFile;
+  footstepAudioFile?: AudioFile;
+  interactAvailAudioFile?: AudioFile;
+  collisionAudioBuffer?: AudioBuffer;
+  footstepAudioBuffer?: AudioBuffer;
+  interactAvailAudioBuffer?: AudioBuffer;
 
   activeAudioImplementation = AudioImplementation.WebAudio;
   activeRoom: Room;
@@ -92,6 +103,12 @@ export default class Project implements Serializable {
     const room = new Room(this.audioLibrary, "New room");
     room.addSpawn();
     room.addObject();
+    if (this.collisionAudioBuffer)
+      room.collisionAudio.setBuffer(this.collisionAudioBuffer);
+    if (this.footstepAudioBuffer)
+      room.footstepAudio.setBuffer(this.footstepAudioBuffer);
+    if (this.interactAvailAudioBuffer)
+      room.interactAvailAudio.setBuffer(this.interactAvailAudioBuffer);
     this.rooms.push(room);
     this.selectRoom(room);
     return room;
@@ -209,6 +226,66 @@ export default class Project implements Serializable {
     if (this.id == null) {
       this.id = id;
       await this.audioLibrary.saveToProject(id);
+    }
+  }
+
+  async setCollisionAudio(id: number): Promise<void> {
+    this.collisionAudioID = id;
+    this.collisionAudioFile = await this.audioLibrary.get(id);
+    if (this.collisionAudioFile) {
+      this.collisionAudioBuffer = await defaultAudioContext.decodeAudioData(
+        this.collisionAudioFile.data.slice(0)
+      );
+      for (const room of this.rooms) {
+        room.collisionAudio.setBuffer(this.collisionAudioBuffer);
+        room.collisionAudio.setLoop(false);
+      }
+    } else {
+      console.log(
+        "Audio with id",
+        id,
+        "could not be found and can't be played"
+      );
+    }
+  }
+
+  async setFootstepAudio(id: number): Promise<void> {
+    this.footstepAudioID = id;
+    this.footstepAudioFile = await this.audioLibrary.get(id);
+    if (this.footstepAudioFile) {
+      this.footstepAudioBuffer = await defaultAudioContext.decodeAudioData(
+        this.footstepAudioFile.data.slice(0)
+      );
+      for (const room of this.rooms) {
+        room.footstepAudio.setBuffer(this.footstepAudioBuffer);
+        room.footstepAudio.setLoop(false);
+      }
+    } else {
+      console.log(
+        "Audio with id",
+        id,
+        "could not be found and can't be played"
+      );
+    }
+  }
+
+  async setInteractAvailAudio(id: number): Promise<void> {
+    this.interactAvailAudioID = id;
+    this.interactAvailAudioFile = await this.audioLibrary.get(id);
+    if (this.interactAvailAudioFile) {
+      this.interactAvailAudioBuffer = await defaultAudioContext.decodeAudioData(
+        this.interactAvailAudioFile.data.slice(0)
+      );
+      for (const room of this.rooms) {
+        room.interactAvailAudio.setBuffer(this.interactAvailAudioBuffer);
+        room.interactAvailAudio.setLoop(false);
+      }
+    } else {
+      console.log(
+        "Audio with id",
+        id,
+        "could not be found and can't be played"
+      );
     }
   }
 }

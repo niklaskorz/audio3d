@@ -55,6 +55,7 @@ export const Sidebar = styled.aside`
   background: hsl(210, 29%, 29%);
   color: #fff;
   padding: 0 15px;
+  padding-top: 1.4em;
   overflow-x: hidden;
   overflow-y: auto;
 
@@ -84,14 +85,17 @@ export const Sidebar = styled.aside`
 `;
 
 export const Group = styled.div`
-  margin: 1.4em 0;
+  margin: 0;
+  margin-bottom: 1.4em;
 
   & > & {
+    margin-top: 1.4em;
     font-size: 0.9em;
   }
 `;
 
 export const Hint = styled.p`
+  font-size: 0.9em;
   color: hsl(210, 20%, 90%);
 `;
 

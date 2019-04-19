@@ -25,6 +25,9 @@ export default class Audio3D extends Object3D {
   binauralBufferSource: AudioBufferSourceNode;
   resonanceBufferSource: AudioBufferSourceNode;
 
+  hasStarted = false;
+  isPlaying = false;
+
   constructor(
     webAudioContext: AudioContext,
     binauralAudioContext: AudioContext,
@@ -52,6 +55,8 @@ export default class Audio3D extends Object3D {
     this.resonanceBufferSource.connect(resonanceSource.input);
 
     this.webAudioPannerNode.connect(webAudioContext.destination);
+
+    this.webAudioBufferSource.onended = this.onAudioEnded;
   }
 
   setDistanceModel(distanceModel: DistanceModel): void {
@@ -81,6 +86,10 @@ export default class Audio3D extends Object3D {
     this.resonanceSource.setFromMatrix(this.matrixWorld);
   }
 
+  onAudioEnded = () => {
+    this.isPlaying = false;
+  };
+
   setBuffer(buffer: AudioBuffer): void {
     if (this.webAudioBufferSource.buffer) {
       // Chrome does not allow "resetting" the buffer and throws an error
@@ -96,11 +105,16 @@ export default class Audio3D extends Object3D {
       this.webAudioBufferSource.connect(this.webAudioPannerNode);
       this.binauralBufferSource.connect(this.binauralSource.input);
       this.resonanceBufferSource.connect(this.resonanceSource.input);
+
+      this.webAudioBufferSource.onended = this.onAudioEnded;
     }
 
     this.webAudioBufferSource.buffer = buffer;
     this.binauralBufferSource.buffer = buffer;
     this.resonanceBufferSource.buffer = buffer;
+
+    this.hasStarted = false;
+    this.isPlaying = false;
   }
 
   setLoop(loop: boolean): void {
@@ -110,13 +124,22 @@ export default class Audio3D extends Object3D {
   }
 
   play(): void {
-    this.webAudioBufferSource.start();
-    this.binauralBufferSource.start();
-    this.resonanceBufferSource.start();
+    if (this.webAudioBufferSource.buffer) {
+      if (this.hasStarted) {
+        this.setBuffer(this.webAudioBufferSource.buffer);
+      }
+
+      this.webAudioBufferSource.start();
+      this.binauralBufferSource.start();
+      this.resonanceBufferSource.start();
+
+      this.hasStarted = true;
+      this.isPlaying = true;
+    }
   }
 
   stop(): void {
-    if (this.webAudioBufferSource.buffer) {
+    if (this.hasStarted) {
       this.webAudioBufferSource.stop();
       this.binauralBufferSource.stop();
       this.resonanceBufferSource.stop();
