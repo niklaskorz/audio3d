@@ -109,10 +109,6 @@ export default class Project implements Serializable {
     this.distanceModel = distanceModel;
   }
 
-  getDistanceModel(): DistanceModel {
-    return this.distanceModel;
-  }
-
   selectAudioImplementation(audioImplementation: AudioImplementation): void {
     this.activeAudioImplementation = audioImplementation;
     this.activeRoom.audioScene.selectAudioImplementation(audioImplementation);
