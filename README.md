@@ -21,6 +21,8 @@ Note: Service workers are currently disabled by default until further progress i
   - [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
   - [BinauralFIR](https://github.com/Ircam-RnD/binauralFIR)
   - [Resonance Audio](https://resonance-audio.github.io/resonance-audio/)
+- Desktop Standalone:
+  - [NW.js](https://nwjs.io/)
 
 ## Available Scripts
 
@@ -50,3 +52,5 @@ The build is minified and the filenames include the hashes.
 - [breakbat.wav](https://github.com/Ircam-RnD/binauralFIR/blob/gh-pages/examples/snd/breakbeat.wav) by [Ircam Centre Pompidou](https://www.ircam.fr/)
 - [phone.mp3](https://freesound.org/people/cs272/sounds/77723/) by [cs272](https://freesound.org/people/cs272/)
 - [wind.m4a](https://freesound.org/people/Stopmotionbros/sounds/438991/) by [Stopmotionbros](https://freesound.org/people/Stopmotionbros/)
+
+[Icon by Flatart](https://www.iconfinder.com/icons/4168597/3d_change_correction_modification_object_print_printing_icon)
