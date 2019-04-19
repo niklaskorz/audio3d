@@ -133,8 +133,17 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   importProject = async () => {
-    this.project.close();
-    this.project = await openZip();
+    try {
+      const project = await openZip();
+      this.project.close();
+      this.project = project;
+    } catch (ex) {
+      alert(
+        "The selected project could not be imported, please select a valid project archive."
+      );
+      return;
+    }
+
     this.project.events = {
       onSelectSpawn: this.onSelectSpawn,
       onSelectObject: this.onSelectObject,
