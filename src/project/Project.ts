@@ -28,6 +28,7 @@ export interface ProjectEvents {
 const noop = (): void => {
   /* no operation */
 };
+
 const defaultEvents: ProjectEvents = {
   onSelectSpawn: noop,
   onSelectObject: noop,
@@ -96,6 +97,7 @@ export default class Project implements Serializable {
     this.selectRoom(room);
     return room;
   }
+
   selectDistanceModel(distanceModel: DistanceModel): void {
     for (const room of this.rooms) {
       for (const obj of room.children) {
