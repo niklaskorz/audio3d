@@ -15,6 +15,30 @@ code {
 
 html {
   box-sizing: border-box;
+
+  /* Firefox (web standards compliant) */
+  scrollbar-width: thin;
+  scrollbar-color: hsl(210, 15%, 40%) hsl(210, 29%, 15%);
+}
+
+/* Chrome and Safari (non-standard) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background-color: hsl(210, 29%, 15%);
+}
+::-webkit-scrollbar-thumb {
+  border: 1px solid hsl(210, 29%, 15%);
+  border-top: none;
+  border-bottom: none;
+  background-color: hsl(210, 15%, 40%);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(210, 15%, 50%);
+}
+::-webkit-scrollbar-thumb:active {
+  background-color: hsl(210, 15%, 60%);
 }
 
 *,

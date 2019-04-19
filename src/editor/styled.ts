@@ -58,30 +58,6 @@ export const Sidebar = styled.aside`
   padding-top: 1.4em;
   overflow-x: hidden;
   overflow-y: auto;
-
-  /* Firefox (web standard compliant) */
-  scrollbar-width: thin;
-  scrollbar-color: hsl(210, 15%, 40%) hsl(210, 29%, 15%);
-
-  /* Chrome and Safari (non-standard) */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background-color: hsl(210, 29%, 15%);
-  }
-  ::-webkit-scrollbar-thumb {
-    border: 1px solid hsl(210, 29%, 15%);
-    border-top: none;
-    border-bottom: none;
-    background-color: hsl(210, 15%, 40%);
-    :hover {
-      background-color: hsl(210, 15%, 50%);
-    }
-    :active {
-      background-color: hsl(210, 15%, 60%);
-    }
-  }
 `;
 
 export const Group = styled.div`

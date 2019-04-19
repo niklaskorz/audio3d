@@ -126,6 +126,8 @@ export default class Audio3D extends Object3D {
   play(): void {
     if (this.webAudioBufferSource.buffer) {
       if (this.hasStarted) {
+        // A buffer source node can only be played once, unfortunately.
+        // We have to "reset" the node by creating a new one and reusing the buffer.
         this.setBuffer(this.webAudioBufferSource.buffer);
       }
 
