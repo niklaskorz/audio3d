@@ -6,8 +6,16 @@ import { openDB } from "idb";
 import Project from "../project/Project";
 import { Schema, AudioWithIds, AudioFile, ProjectData } from "./schema";
 
-const dbPromise = openDB<Schema>("audio3d", 1, {
-  upgrade(db) {
+const dbPromise = openDB<Schema>("audio3d", 2, {
+  upgrade(db, oldVersion) {
+    if (oldVersion === 1) {
+      // Version 1 didn't store the unique ids of rooms and objects.
+      // As we can't retrieve them, we'll delete any old versions of the
+      // database here.
+      db.deleteObjectStore("projects");
+      db.deleteObjectStore("audios");
+    }
+
     const projectStore = db.createObjectStore("projects", {
       keyPath: "id",
       autoIncrement: true
@@ -23,12 +31,15 @@ const dbPromise = openDB<Schema>("audio3d", 1, {
 export const loadProject = async (id: number): Promise<Project | undefined> => {
   const db = await dbPromise;
   const data = await db.get("projects", id);
-  return data && new Project().fromData(data, id);
+  return data && new Project().fromData(data);
 };
 
 export const saveProject = async (project: Project): Promise<number> => {
   const db = await dbPromise;
   const data = project.toData();
+  if (project.id) {
+    data.id = project.id;
+  }
   return await db.put("projects", data);
 };
 

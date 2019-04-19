@@ -12,7 +12,11 @@ const dummyHRTFDataset: HRTF[] = [
     azimuth: 1,
     elevation: 1,
     distance: 1,
-    buffer: defaultAudioContext.createBuffer(2, 512, 44100)
+    buffer: defaultAudioContext.createBuffer(
+      2,
+      512,
+      defaultAudioContext.sampleRate
+    )
   }
 ];
 

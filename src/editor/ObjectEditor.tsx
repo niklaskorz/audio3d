@@ -3,28 +3,108 @@
  */
 import React from "react";
 import { degToRad, radToDeg, roundToPrecision } from "../utils/math";
-import { Group, Input, InputGroup } from "./styled";
+import { InteractionType, TeleportTarget } from "../project/GameObject";
+import Room from "../project/Room";
+import {
+  Group,
+  Input,
+  InputGroup,
+  CustomInput,
+  Select,
+  CodeEditor,
+  Hint
+} from "./styled";
 import { EditorObject } from "./types";
 
 interface Props {
   object: EditorObject;
+  rooms: Room[];
   onUpdateName(name: string): void;
   onUpdatePosition(x: number, y: number, z: number): void;
   onUpdateRotation(x: number, y: number, z: number): void;
   onUpdateScale(x: number, y: number, z: number): void;
+  onUpdateInteractionType(interactionType: InteractionType): void;
+  onUpdateCodeBlockSource(source: string): void;
+  onUpdateTeleportTarget(teleportTarget: TeleportTarget): void;
   onShowAudioSelection(): void;
+  onShowInteractionAudioSelection(): void;
+}
+
+interface State {
+  codeError?: string;
 }
 
 // UI component for editing properties specific to objects inside a room
-export default class ObjectEditor extends React.Component<Props> {
+export default class ObjectEditor extends React.Component<Props, State> {
+  codeCheckTimeout: number | null = null;
+  state: State = {};
+
+  checkCode = () => {
+    const { codeBlockSource } = this.props.object;
+    if (codeBlockSource == null) {
+      return;
+    }
+
+    try {
+      // Try to parse the code block source
+      new Function("playerState", "roomState", codeBlockSource);
+      this.setState({ codeError: undefined });
+    } catch (ex) {
+      this.setState({ codeError: ex.toString() });
+    }
+  };
+
+  updateCodeBlockSource: React.ChangeEventHandler<HTMLTextAreaElement> = e => {
+    this.props.onUpdateCodeBlockSource(e.currentTarget.value);
+    if (this.codeCheckTimeout != null) {
+      window.clearTimeout(this.codeCheckTimeout);
+    }
+    this.codeCheckTimeout = window.setTimeout(this.checkCode, 2000);
+  };
+
+  updateTeleportTargetRoomId: React.ChangeEventHandler<
+    HTMLSelectElement
+  > = e => {
+    const roomId = e.currentTarget.value;
+    this.props.onUpdateTeleportTarget({ roomId, spawnId: "" });
+  };
+
+  updateTeleportTargetSpawnId: React.ChangeEventHandler<
+    HTMLSelectElement
+  > = e => {
+    const { object: o, onUpdateTeleportTarget } = this.props;
+    if (o.teleportTarget) {
+      const spawnId = e.currentTarget.value;
+      onUpdateTeleportTarget({ ...o.teleportTarget, spawnId });
+    }
+  };
+
+  componentDidMount(): void {
+    this.checkCode();
+  }
+
+  componentWillUnmount(): void {
+    if (this.codeCheckTimeout != null) {
+      window.clearTimeout(this.codeCheckTimeout);
+      this.codeCheckTimeout = null;
+    }
+  }
+
   render(): React.ReactNode {
     const {
       object: o,
+      rooms,
       onUpdateName,
       onUpdatePosition,
       onUpdateRotation,
-      onUpdateScale
+      onUpdateScale,
+      onUpdateInteractionType,
+      onShowAudioSelection,
+      onShowInteractionAudioSelection
     } = this.props;
+    const { codeError } = this.state;
+    const teleportTargetRoom =
+      o.teleportTarget && rooms.find(r => r.uuid === o.teleportTarget!.roomId);
 
     return (
       <div>
@@ -32,6 +112,7 @@ export default class ObjectEditor extends React.Component<Props> {
           <label>Object Name</label>
           <Input
             type="text"
+            placeholder="New object"
             value={o.name}
             onChange={e => onUpdateName(e.currentTarget.value)}
           />
@@ -167,18 +248,76 @@ export default class ObjectEditor extends React.Component<Props> {
         </Group>
         <Group>
           <label>Audio</label>
-          <Input
-            type="text"
-            readOnly={true}
-            value={
-              o.audio
-                ? `${o.audio.name} (${Math.ceil(
-                    o.audio.data.byteLength / 1024
-                  )} KiB)`
-                : "None"
+          <CustomInput onClick={onShowAudioSelection}>
+            {o.audio
+              ? `${o.audio.name} (${Math.ceil(
+                  o.audio.data.byteLength / 1024
+                )} KiB)`
+              : "No audio selected"}
+          </CustomInput>
+        </Group>
+        <Group>
+          <label>Interaction</label>
+          <Select
+            value={o.interactionType}
+            onChange={e =>
+              onUpdateInteractionType(e.currentTarget.value as InteractionType)
             }
-            onClick={this.props.onShowAudioSelection}
-          />
+          >
+            {Object.values(InteractionType).map(t => (
+              <option key={t}>{t}</option>
+            ))}
+          </Select>
+          {o.interactionType === InteractionType.CodeBlock && (
+            <>
+              <CodeEditor
+                placeholder="// JavaScript"
+                value={o.codeBlockSource}
+                onChange={this.updateCodeBlockSource}
+              />
+              <Hint>{codeError || "No syntax errors detected"}</Hint>
+            </>
+          )}
+          {o.interactionType === InteractionType.Teleport && o.teleportTarget && (
+            <Group>
+              <label>Teleport Target</label>
+              <Select
+                value={o.teleportTarget.roomId}
+                onChange={this.updateTeleportTargetRoomId}
+              >
+                {rooms.map(r => (
+                  <option key={r.uuid} value={r.uuid}>
+                    {r.name || "Anonymous Room"}
+                  </option>
+                ))}
+              </Select>
+              {teleportTargetRoom && (
+                <Select
+                  value={o.teleportTarget.spawnId}
+                  onChange={this.updateTeleportTargetSpawnId}
+                >
+                  {teleportTargetRoom.spawns.map(s => (
+                    <option key={s.uuid} value={s.uuid}>
+                      {s.name || "New spawn"}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Group>
+          )}
+          {o.interactionType !== InteractionType.None &&
+            o.interactionType !== InteractionType.CodeBlock && (
+              <Group>
+                <label>Interaction Sound</label>
+                <CustomInput onClick={onShowInteractionAudioSelection}>
+                  {o.interactionAudio
+                    ? `${o.interactionAudio.name} (${Math.ceil(
+                        o.interactionAudio.data.byteLength / 1024
+                      )} KiB)`
+                    : "No audio selected"}
+                </CustomInput>
+              </Group>
+            )}
         </Group>
       </div>
     );

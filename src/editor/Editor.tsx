@@ -6,12 +6,17 @@ import { RoomDimensions, RoomMaterials } from "resonance-audio";
 import { Euler, Vector3 } from "three";
 import { saveAsZip } from "../data/export";
 import { openZip } from "../data/import";
-import GameObject from "../project/GameObject";
+import GameObject, {
+  InteractionType,
+  TeleportTarget
+} from "../project/GameObject";
 import Project from "../project/Project";
 import { ProjectData } from "../data/schema";
 import AudioImplementation from "../audio/AudioImplementation";
 import RuntimeContainer from "../runtime/RuntimeContainer";
 import DistanceModel from "../audio/DistanceModel";
+import CodeBlock from "../project/CodeBlock";
+import SpawnMarker from "../project/SpawnMarker";
 import AudioLibraryModal from "./AudioLibraryModal";
 import MenuBar from "./MenuBar";
 import ObjectEditor from "./ObjectEditor";
@@ -27,9 +32,10 @@ import {
   RoomListItem,
   Sidebar
 } from "./styled";
-import { EditorObject, EditorRoom, AudioEntry } from "./types";
+import { EditorObject, EditorRoom, AudioEntry, EditorSpawn } from "./types";
 import ProjectManagerModal from "./ProjectManagerModal";
 import SettingsModal from "./SettingsModal";
+import SpawnEditor from "./SpawnEditor";
 
 enum ModalType {
   AudioLibrary,
@@ -39,12 +45,19 @@ enum ModalType {
   Settings
 }
 
+enum AudioSelectionTarget {
+  ObjectAudio,
+  InteractionAudio
+}
+
 interface State {
+  audioImplementation: AudioImplementation;
   rooms: EditorRoom[];
   selectedRoomId: number;
+  selectedSpawn: EditorSpawn | null;
   selectedObject: EditorObject | null;
   modal: ModalType | null;
-  isRunning: boolean;
+  runningProject: Project | null;
 }
 
 export default class Editor extends React.Component<{}, State> {
@@ -52,6 +65,7 @@ export default class Editor extends React.Component<{}, State> {
   projectCanvas = new EditorCanvas(this.project);
 
   state: State = {
+    audioImplementation: this.project.activeAudioImplementation,
     rooms: this.project.rooms.map(r => ({
       id: r.id,
       name: r.name,
@@ -59,17 +73,20 @@ export default class Editor extends React.Component<{}, State> {
       materials: r.materials
     })),
     selectedRoomId: 0,
+    selectedSpawn: null,
     selectedObject: null,
     modal: null,
-    isRunning: false
+    runningProject: null
   };
+  audioSelectionTarget = AudioSelectionTarget.ObjectAudio;
   mainRef = React.createRef<HTMLElement>();
 
   constructor(props: {}) {
     super(props);
 
     this.project.events = {
-      onSelect: this.onSelectObject,
+      onSelectSpawn: this.onSelectSpawn,
+      onSelectObject: this.onSelectObject,
       onTranslate: this.onTranslateObject,
       onScale: this.onScaleObject
     };
@@ -80,12 +97,14 @@ export default class Editor extends React.Component<{}, State> {
   newProject = () => {
     this.project.close();
     this.project = new Project({
-      onSelect: this.onSelectObject,
+      onSelectSpawn: this.onSelectSpawn,
+      onSelectObject: this.onSelectObject,
       onTranslate: this.onTranslateObject,
       onScale: this.onScaleObject
     });
     this.projectCanvas.changeProject(this.project);
     this.setState({
+      audioImplementation: this.project.activeAudioImplementation,
       rooms: this.project.rooms.map(r => ({
         id: r.id,
         name: r.name,
@@ -93,6 +112,7 @@ export default class Editor extends React.Component<{}, State> {
         materials: r.materials
       })),
       selectedRoomId: 0,
+      selectedSpawn: null,
       selectedObject: null,
       modal: null
     });
@@ -116,15 +136,27 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   importProject = async () => {
-    this.project.close();
-    this.project = await openZip();
+    try {
+      const project = await openZip();
+      this.project.close();
+      this.project = project;
+    } catch (ex) {
+      console.log("Opening project zip failed:", ex);
+      alert(
+        "The selected project could not be imported, please select a valid project archive."
+      );
+      return;
+    }
+
     this.project.events = {
-      onSelect: this.onSelectObject,
+      onSelectSpawn: this.onSelectSpawn,
+      onSelectObject: this.onSelectObject,
       onTranslate: this.onTranslateObject,
       onScale: this.onScaleObject
     };
     this.projectCanvas.changeProject(this.project);
     this.setState({
+      audioImplementation: this.project.activeAudioImplementation,
       rooms: this.project.rooms.map(r => ({
         id: r.id,
         name: r.name,
@@ -132,6 +164,7 @@ export default class Editor extends React.Component<{}, State> {
         materials: r.materials
       })),
       selectedRoomId: 0,
+      selectedSpawn: null,
       selectedObject: null
     });
   };
@@ -141,15 +174,32 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   addObject = () => {
-    this.project.activeRoom.addObject();
+    const object = this.project.activeRoom.addObject();
+    this.project.selectObject(object);
   };
 
   deleteObject = () => {
     if (this.project.activeObject) {
       this.project.activeRoom.remove(this.project.activeObject);
       this.project.activeObject.audio.stop();
-      this.project.activeObject = null;
-      this.setState({ selectedObject: null });
+      this.project.unselect();
+    }
+  };
+
+  addSpawn = () => {
+    const spawn = this.project.activeRoom.addSpawn();
+    this.project.selectSpawn(spawn);
+  };
+
+  deleteSpawn = () => {
+    const { spawns } = this.project.activeRoom;
+    // Ensure that at least one spawn per room exists, as it is used
+    // as a fallback when a requested spawn does not exist.
+    if (this.project.activeSpawn && spawns.length > 1) {
+      spawns.splice(spawns.indexOf(this.project.activeSpawn));
+      this.project.activeRoom.remove(this.project.activeSpawn);
+      this.project.activeSpawn = null;
+      this.project.unselect();
     }
   };
 
@@ -195,11 +245,28 @@ export default class Editor extends React.Component<{}, State> {
     this.project.selectDistanceModel(distanceModel);
   };
 
-  selectAudioImplementation = (audioImplementation: AudioImplementation) => {
-    this.project.selectAudioImplementation(audioImplementation);
-  };
   showProjectManager = () => {
     this.setState({ modal: ModalType.ProjectManager });
+  };
+
+  selectAudioImplementation = (audioImplementation: AudioImplementation) => {
+    this.project.selectAudioImplementation(audioImplementation);
+    this.setState({ audioImplementation });
+  };
+
+  runProject = () => {
+    this.projectCanvas.detach();
+    // Copy project so any changes made during runtime are not persisted
+    const runningProject = new Project().fromData(
+      this.project.toData(),
+      this.project.id
+    );
+    runningProject.audioLibrary = this.project.audioLibrary;
+    runningProject.selectAudioImplementation(
+      this.project.activeAudioImplementation
+    );
+    this.project.suspend();
+    this.setState({ runningProject });
   };
 
   showSettings = () => {
@@ -210,7 +277,7 @@ export default class Editor extends React.Component<{}, State> {
 
   selectRoom(id: number): void {
     this.project.selectRoom(this.project.rooms[id]);
-    this.setState({ selectedRoomId: id, selectedObject: null });
+    this.setState({ selectedRoomId: id });
   }
 
   updateRoomName = (name: string) => {
@@ -255,9 +322,48 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
+  // Spawn editor functionality
+
+  updateSpawnName = (name: string) => {
+    if (this.project.activeSpawn) {
+      this.project.activeSpawn.name = name;
+    }
+    this.setState(({ selectedSpawn }) => ({
+      selectedSpawn: selectedSpawn && {
+        ...selectedSpawn,
+        name
+      }
+    }));
+  };
+
+  updateSpawnPosition = (x: number, z: number) => {
+    if (this.project.activeSpawn) {
+      this.project.activeSpawn.position.x = x;
+      this.project.activeSpawn.position.z = z;
+    }
+    this.setState(({ selectedSpawn }) => ({
+      selectedSpawn: selectedSpawn && {
+        ...selectedSpawn,
+        position: new Vector3(x, 0, z)
+      }
+    }));
+  };
+
+  updateSpawnRotation = (y: number) => {
+    if (this.project.activeSpawn) {
+      this.project.activeSpawn.rotation.y = y;
+    }
+    this.setState(({ selectedSpawn }) => ({
+      selectedSpawn: selectedSpawn && {
+        ...selectedSpawn,
+        rotation: y
+      }
+    }));
+  };
+
   // Object editor functionality
 
-  updateName = (name: string) => {
+  updateObjectName = (name: string) => {
     if (this.project.activeObject) {
       this.project.activeObject.name = name;
     }
@@ -269,7 +375,7 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
-  updateScale = (x: number, y: number, z: number) => {
+  updateObjectScale = (x: number, y: number, z: number) => {
     if (this.project.activeObject) {
       this.project.activeObject.scale.set(x, y, z);
     }
@@ -281,7 +387,7 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
-  updatePosition = (x: number, y: number, z: number) => {
+  updateObjectPosition = (x: number, y: number, z: number) => {
     if (this.project.activeObject) {
       this.project.activeObject.position.set(x, y, z);
     }
@@ -293,7 +399,7 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
-  updateRotation = (x: number, y: number, z: number) => {
+  updateObjectRotation = (x: number, y: number, z: number) => {
     if (this.project.activeObject) {
       this.project.activeObject.rotation.set(x, y, z);
     }
@@ -305,7 +411,62 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
+  updateObjectInteractionType = (interactionType: InteractionType) => {
+    const defaultTarget: TeleportTarget = {
+      roomId: this.project.rooms[0].uuid,
+      spawnId: ""
+    };
+    if (this.project.activeObject) {
+      this.project.activeObject.interactionType = interactionType;
+      this.project.activeObject.teleportTarget =
+        this.project.activeObject.teleportTarget || defaultTarget;
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        interactionType,
+        teleportTarget: selectedObject.teleportTarget || defaultTarget
+      }
+    }));
+  };
+
+  updateObjectCodeBlockSource = (codeBlockSource: string) => {
+    if (this.project.activeObject) {
+      if (this.project.activeObject.codeBlock) {
+        this.project.activeObject.codeBlock.update(codeBlockSource);
+      } else {
+        this.project.activeObject.codeBlock = new CodeBlock(codeBlockSource);
+      }
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        codeBlockSource
+      }
+    }));
+  };
+
+  updateObjectTeleportTarget = (teleportTarget: TeleportTarget) => {
+    if (this.project.activeObject) {
+      this.project.activeObject.teleportTarget = teleportTarget;
+    }
+    this.setState(({ selectedObject }) => ({
+      selectedObject: selectedObject && {
+        ...selectedObject,
+        teleportTarget
+      }
+    }));
+  };
+
   showAudioSelection = () => {
+    this.audioSelectionTarget = AudioSelectionTarget.ObjectAudio;
+    this.setState({
+      modal: ModalType.AudioSelection
+    });
+  };
+
+  showInteractionAudioSelection = () => {
+    this.audioSelectionTarget = AudioSelectionTarget.InteractionAudio;
     this.setState({
       modal: ModalType.AudioSelection
     });
@@ -319,14 +480,26 @@ export default class Editor extends React.Component<{}, State> {
 
   selectAudio = (audio: AudioEntry) => {
     if (this.project.activeObject) {
-      this.project.activeObject.loadAudio(audio.id);
-      this.setState(({ selectedObject }) => ({
-        selectedObject: selectedObject && {
-          ...selectedObject,
-          audio
-        },
-        modal: null
-      }));
+      if (this.audioSelectionTarget === AudioSelectionTarget.InteractionAudio) {
+        this.project.activeObject.interactionAudioId = audio.id;
+        this.setState(({ selectedObject }) => ({
+          selectedObject: selectedObject && {
+            ...selectedObject,
+            interactionAudio: audio
+          },
+          modal: null
+        }));
+      } else {
+        this.project.activeRoom.audioScene.resume();
+        this.project.activeObject.playAudio(audio.id, true);
+        this.setState(({ selectedObject }) => ({
+          selectedObject: selectedObject && {
+            ...selectedObject,
+            audio
+          },
+          modal: null
+        }));
+      }
     }
   };
 
@@ -334,12 +507,14 @@ export default class Editor extends React.Component<{}, State> {
     this.project.close();
     this.project = new Project().fromData(data, data.id);
     this.project.events = {
-      onSelect: this.onSelectObject,
+      onSelectSpawn: this.onSelectSpawn,
+      onSelectObject: this.onSelectObject,
       onTranslate: this.onTranslateObject,
       onScale: this.onScaleObject
     };
     this.projectCanvas.changeProject(this.project);
     this.setState({
+      audioImplementation: this.project.activeAudioImplementation,
       rooms: this.project.rooms.map(r => ({
         id: r.id,
         name: r.name,
@@ -347,36 +522,58 @@ export default class Editor extends React.Component<{}, State> {
         materials: r.materials
       })),
       selectedRoomId: 0,
+      selectedSpawn: null,
       selectedObject: null,
       modal: null
     });
   };
 
-  runProject = () => {
-    this.projectCanvas.detach();
-    this.setState({ isRunning: true });
-  };
-
   // Project canvas events
 
-  onSelectObject = (o: GameObject | null) => {
-    if (o) {
-      this.setState({
-        selectedObject: {
-          id: o.id,
-          name: o.name,
-          position: o.position,
-          scale: o.scale,
-          rotation: o.rotation,
-          audio: o.audioFile && {
-            ...o.audioFile,
-            id: o.audioId!
-          }
-        }
-      });
-    } else {
-      this.setState({ selectedObject: null });
-    }
+  onSelectSpawn = (s: SpawnMarker | null) => {
+    this.setState({
+      selectedSpawn: s && {
+        id: s.id,
+        name: s.name,
+        position: s.position,
+        rotation: s.rotation.y
+      },
+      selectedObject: null
+    });
+  };
+
+  onSelectObject = async (o: GameObject | null) => {
+    const interactionAudio =
+      o && o.interactionAudioId != null
+        ? await this.project.audioLibrary.get(o.interactionAudioId)
+        : undefined;
+    this.setState({
+      selectedSpawn: null,
+      selectedObject: o && {
+        id: o.id,
+        name: o.name,
+        position: o.position,
+        scale: o.scale,
+        rotation: o.rotation,
+        audio:
+          o.audioFile && o.audioId != null
+            ? {
+                ...o.audioFile,
+                id: o.audioId
+              }
+            : undefined,
+        interactionType: o.interactionType,
+        codeBlockSource: o.codeBlock && o.codeBlock.source,
+        teleportTarget: o.teleportTarget,
+        interactionAudio:
+          interactionAudio && o.interactionAudioId != null
+            ? {
+                ...interactionAudio,
+                id: o.interactionAudioId
+              }
+            : undefined
+      }
+    });
   };
 
   onTranslateObject = (p: Vector3) => {
@@ -401,25 +598,44 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
+  // Runtime events
+
+  exitRuntime = () => {
+    if (!this.state.runningProject) {
+      return;
+    }
+    const { activeAudioImplementation } = this.state.runningProject;
+    this.state.runningProject.close();
+    this.project.selectAudioImplementation(activeAudioImplementation);
+    this.setState({
+      runningProject: null,
+      audioImplementation: activeAudioImplementation
+    });
+  };
+
   // React component lifecycle methods
 
-  componentDidMount(): void {
-    if (this.mainRef.current) {
-      this.projectCanvas.attach(this.mainRef.current);
+  attachCanvas = (target: HTMLElement | null) => {
+    if (target != null) {
+      this.projectCanvas.attach(target);
       this.projectCanvas.focus();
+    } else {
+      this.projectCanvas.detach();
     }
-  }
+  };
 
   componentWillUnmount(): void {
     this.projectCanvas.detach();
   }
 
   render(): React.ReactNode {
-    const { modal, isRunning } = this.state;
-    const o = this.state.selectedObject;
+    const { modal, runningProject, audioImplementation } = this.state;
+    const { selectedSpawn: s, selectedObject: o } = this.state;
 
-    if (isRunning) {
-      return <RuntimeContainer project={this.project} />;
+    if (runningProject) {
+      return (
+        <RuntimeContainer project={runningProject} onExit={this.exitRuntime} />
+      );
     }
 
     return (
@@ -454,15 +670,18 @@ export default class Editor extends React.Component<{}, State> {
           />
         )}
         <MenuBar
-          onShowSettings={this.showSettings}
+          audioImplementation={audioImplementation}
           onAudioChange={this.selectAudioImplementation}
           onNewProject={this.newProject}
           onLoadProject={this.showProjectSelection}
           onSaveProject={this.saveProject}
           onImportProject={this.importProject}
           onExportProject={this.exportProject}
+          onShowSettings={this.showSettings}
           onAddObject={this.addObject}
           onDeleteObject={this.deleteObject}
+          onAddSpawn={this.addSpawn}
+          onDeleteSpawn={this.deleteSpawn}
           onAddRoom={this.addRoom}
           onDeleteRoom={this.deleteRoom}
           onShowAudioLibrary={this.showAudioLibrary}
@@ -485,7 +704,7 @@ export default class Editor extends React.Component<{}, State> {
                 ))}
               </RoomList>
             </Group>
-            {!o && (
+            {!(s || o) && (
               <RoomEditor
                 room={this.state.rooms[this.state.selectedRoomId]}
                 onUpdateName={this.updateRoomName}
@@ -493,18 +712,33 @@ export default class Editor extends React.Component<{}, State> {
                 onUpdateMaterials={this.updateRoomMaterials}
               />
             )}
+            {s && (
+              <SpawnEditor
+                spawn={s}
+                onUpdateName={this.updateSpawnName}
+                onUpdatePosition={this.updateSpawnPosition}
+                onUpdateRotation={this.updateSpawnRotation}
+              />
+            )}
             {o && (
               <ObjectEditor
                 object={o}
-                onUpdateName={this.updateName}
-                onUpdatePosition={this.updatePosition}
-                onUpdateRotation={this.updateRotation}
-                onUpdateScale={this.updateScale}
+                rooms={this.project.rooms}
+                onUpdateName={this.updateObjectName}
+                onUpdatePosition={this.updateObjectPosition}
+                onUpdateRotation={this.updateObjectRotation}
+                onUpdateScale={this.updateObjectScale}
+                onUpdateInteractionType={this.updateObjectInteractionType}
+                onUpdateCodeBlockSource={this.updateObjectCodeBlockSource}
+                onUpdateTeleportTarget={this.updateObjectTeleportTarget}
                 onShowAudioSelection={this.showAudioSelection}
+                onShowInteractionAudioSelection={
+                  this.showInteractionAudioSelection
+                }
               />
             )}
           </Sidebar>
-          <Main ref={this.mainRef}>
+          <Main ref={this.attachCanvas}>
             <FocusedLabel>Focused</FocusedLabel>
           </Main>
         </InnerContainer>

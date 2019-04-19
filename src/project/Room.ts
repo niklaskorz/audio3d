@@ -17,9 +17,9 @@ import {
 import Serializable, { SerializedData } from "../data/Serializable";
 import { RoomData } from "../data/schema";
 import AudioScene from "../audio/AudioScene";
-import AudioImplementation from "../audio/AudioImplementation";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
+import SpawnMarker from "./SpawnMarker";
 
 const wallGeometry = new BoxGeometry(1, 1, 1);
 const wallMaterial = new MeshLambertMaterial();
@@ -40,7 +40,10 @@ export default class Room extends Scene implements Serializable {
   wallWest = new Mesh(wallGeometry, wallMaterial);
   camera = new PerspectiveCamera(60, 1, 0.1, 1000);
 
+  roomState = new Map<string, any>(); // Needed by runtime
+
   audioScene: AudioScene;
+  spawns: SpawnMarker[] = [];
 
   get dimensions(): RoomDimensions {
     return this.roomDimensions;
@@ -113,6 +116,14 @@ export default class Room extends Scene implements Serializable {
     this.camera.add(this.audioScene.listener3D);
   }
 
+  addSpawn(): SpawnMarker {
+    const marker = new SpawnMarker();
+    marker.name = "New spawn";
+    this.spawns.push(marker);
+    this.add(marker);
+    return marker;
+  }
+
   addObject(): GameObject {
     const object = new GameObject(this.audioLibrary, this.audioScene);
     object.position.y += 0.5;
@@ -138,9 +149,11 @@ export default class Room extends Scene implements Serializable {
 
   toData(): RoomData {
     return {
+      uuid: this.uuid,
       name: this.name,
       dimensions: this.dimensions,
       materials: this.materials,
+      spawns: this.spawns.map(s => s.toData()),
       objects: this.children
         .filter((c: Object3D): c is GameObject => c instanceof GameObject)
         .map(go => go.toData())
@@ -148,10 +161,20 @@ export default class Room extends Scene implements Serializable {
   }
 
   fromData(data: SerializedData): this {
+    this.uuid = data.uuid != null ? data.uuid : this.uuid;
     this.name = data.name;
     this.dimensions = data.dimensions;
     if (data.materials) {
       this.materials = data.materials;
+    }
+
+    if (data.spawns) {
+      this.spawns = data.spawns.map((s: SerializedData) =>
+        new SpawnMarker().fromData(s)
+      );
+      this.add(...this.spawns);
+    } else {
+      this.addSpawn();
     }
 
     const gameObjects = data.objects.map((o: SerializedData) =>

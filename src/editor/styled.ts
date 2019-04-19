@@ -24,16 +24,6 @@ export const InnerContainer = styled.div`
   flex-direction: row;
 `;
 
-export const Sidebar = styled.aside`
-  flex: 0 0 300px;
-  height: 100%;
-  background: hsl(210, 29%, 29%);
-  color: #fff;
-  padding: 0 15px;
-  overflow-x: hidden;
-  overflow-y: auto;
-`;
-
 export const FocusedLabel = styled.div`
   display: none;
   position: absolute;
@@ -58,20 +48,63 @@ export const Main = styled.main`
   }
 `;
 
+export const Sidebar = styled.aside`
+  font-size: 0.9em;
+  flex: 0 0 300px;
+  height: 100%;
+  background: hsl(210, 29%, 29%);
+  color: #fff;
+  padding: 0 15px;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  /* Firefox (web standard compliant) */
+  scrollbar-width: thin;
+  scrollbar-color: hsl(210, 15%, 40%) hsl(210, 29%, 15%);
+
+  /* Chrome and Safari (non-standard) */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: hsl(210, 29%, 15%);
+  }
+  ::-webkit-scrollbar-thumb {
+    border: 1px solid hsl(210, 29%, 15%);
+    border-top: none;
+    border-bottom: none;
+    background-color: hsl(210, 15%, 40%);
+    :hover {
+      background-color: hsl(210, 15%, 50%);
+    }
+    :active {
+      background-color: hsl(210, 15%, 60%);
+    }
+  }
+`;
+
 export const Group = styled.div`
-  margin: 20px 0;
+  margin: 1.4em 0;
+
+  & > & {
+    font-size: 0.9em;
+  }
+`;
+
+export const Hint = styled.p`
+  color: hsl(210, 20%, 90%);
 `;
 
 export const Input = styled.input`
   display: block;
   appearance: none;
   background: hsl(210, 29%, 24%);
-  border-radius: 3px;
-  border: 2px solid hsl(210, 29%, 24%);
+  border-radius: 0.2em;
+  border: 0.15em solid hsl(210, 29%, 24%);
   color: #fff;
   width: 100%;
-  padding: 10px 12px;
-  margin: 5px 0;
+  padding: 0.7em 0.85em;
+  margin: 0.35em 0;
 
   transition: 0.2s ease border-color;
   :focus {
@@ -82,6 +115,22 @@ export const Input = styled.input`
 
 export const Select = styled(Input.withComponent("select"))`
   cursor: pointer;
+`;
+
+export const CustomInput = styled(Input.withComponent("div"))`
+  cursor: pointer;
+`;
+
+export const CodeEditor = styled(Input.withComponent("textarea"))`
+  min-height: 200px;
+  font-family: "Fira Code Retina", "Fira Code", Consolas, Menlo, Monaco,
+    monospace;
+  white-space: pre;
+  line-height: 1.5;
+
+  /* Disable user resizing of width */
+  min-width: 100%;
+  max-width: 100%;
 `;
 
 export const InputGroup = styled.div`
