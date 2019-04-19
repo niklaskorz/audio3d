@@ -959,6 +959,13 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.23.tgz#308a3acdc5d1c842aeadc50b867d99c46cfae868"
   integrity sha512-EKhb5NveQ3NlW5EV7B0VRtDKwUfVey8LuJRl9pp5iW0se87/ZqLjG0PMf2MCzPXAJYWZN5Ltg7pHIAf9/Dm1tQ==
 
+"@types/nw.js@^0.13.8":
+  version "0.13.8"
+  resolved "https://registry.yarnpkg.com/@types/nw.js/-/nw.js-0.13.8.tgz#c9504e2cc07de621dceb5db62dfea44b9d0bfd7d"
+  integrity sha512-Rz+gdTuXKwAvbRYo4ck6B1OKmCou8Rf3+WRLd5UI0ddPx9p1ullhG+Wb9YP7otaazLn+Z2VC8ZkiLwNROmPv7g==
+  dependencies:
+    "@types/node" "*"
+
 "@types/prop-types@*":
   version "15.5.8"
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.5.8.tgz#8ae4e0ea205fe95c3901a5a1df7f66495e3a56ce"
