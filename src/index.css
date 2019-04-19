@@ -17,7 +17,6 @@ html {
   box-sizing: border-box;
 
   /* Firefox (web standards compliant) */
-  scrollbar-width: thin;
   scrollbar-color: hsl(210, 15%, 40%) hsl(210, 29%, 15%);
 }
 

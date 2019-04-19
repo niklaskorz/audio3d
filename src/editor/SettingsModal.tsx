@@ -15,6 +15,9 @@ import { AudioEntry } from "./types";
 const InnerContainer = styled.div`
   overflow: auto;
   max-height: 400px;
+  /* Add some space between content and scrollbar */
+  padding: 0 10px;
+  margin: 0 -10px;
 `;
 
 enum AudioSelectionTarget {
