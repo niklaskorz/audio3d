@@ -57,6 +57,7 @@ interface State {
   selectedSpawn: EditorSpawn | null;
   selectedObject: EditorObject | null;
   modal: ModalType | null;
+  project: Project;
   runningProject: Project | null;
 }
 
@@ -76,6 +77,7 @@ export default class Editor extends React.Component<{}, State> {
     selectedSpawn: null,
     selectedObject: null,
     modal: null,
+    project: this.project, // Keep a reference to the project in the UI state as well to react to a project change
     runningProject: null
   };
   audioSelectionTarget = AudioSelectionTarget.ObjectAudio;
@@ -114,6 +116,7 @@ export default class Editor extends React.Component<{}, State> {
       selectedRoomId: 0,
       selectedSpawn: null,
       selectedObject: null,
+      project: this.project,
       modal: null
     });
   };
@@ -165,7 +168,9 @@ export default class Editor extends React.Component<{}, State> {
       })),
       selectedRoomId: 0,
       selectedSpawn: null,
-      selectedObject: null
+      selectedObject: null,
+      project: this.project,
+      modal: null
     });
   };
 
@@ -235,10 +240,6 @@ export default class Editor extends React.Component<{}, State> {
 
   showAudioLibrary = () => {
     this.setState({ modal: ModalType.AudioLibrary });
-  };
-  getDistanceModel = () => {
-    if (this.project != undefined) return this.project.getDistanceModel();
-    return DistanceModel.inverse;
   };
 
   selectDistanceModel = (distanceModel: DistanceModel) => {
@@ -504,8 +505,14 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   loadProject = (data: ProjectData) => {
-    this.project.close();
-    this.project = new Project().fromData(data, data.id);
+    try {
+      const project = new Project().fromData(data, data.id);
+      this.project.close();
+      this.project = project;
+    } catch (ex) {
+      console.log("Loading project failed:", ex);
+      alert("The selected project could not be loaded");
+    }
     this.project.events = {
       onSelectSpawn: this.onSelectSpawn,
       onSelectObject: this.onSelectObject,
@@ -524,6 +531,7 @@ export default class Editor extends React.Component<{}, State> {
       selectedRoomId: 0,
       selectedSpawn: null,
       selectedObject: null,
+      project: this.project,
       modal: null
     });
   };
@@ -663,11 +671,7 @@ export default class Editor extends React.Component<{}, State> {
           />
         )}
         {modal === ModalType.Settings && (
-          <SettingsModal
-            onDismiss={this.dismissModal}
-            getDistanceModel={this.getDistanceModel}
-            onDistanceModelChange={this.selectDistanceModel}
-          />
+          <SettingsModal project={this.project} onDismiss={this.dismissModal} />
         )}
         <MenuBar
           audioImplementation={audioImplementation}
