@@ -1,7 +1,7 @@
 enum DistanceModel {
-  linear,
-  inverse,
-  exponential
+  Linear = "linear",
+  Inverse = "inverse",
+  Exponential = "exponential"
 }
 
 export default DistanceModel;

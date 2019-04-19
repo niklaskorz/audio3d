@@ -5,7 +5,6 @@
 import { Object3D, Vector3, Quaternion } from "three";
 import { ResonanceAudio } from "resonance-audio";
 import BinauralSource from "./binaural/BinauralSource";
-import AudioImplementation from "./AudioImplementation";
 import DistanceModel from "./DistanceModel";
 
 /**
@@ -56,17 +55,7 @@ export default class Audio3D extends Object3D {
   }
 
   setDistanceModel(distanceModel: DistanceModel): void {
-    switch (distanceModel) {
-      case DistanceModel.linear:
-        this.webAudioPannerNode.distanceModel = "linear";
-        break;
-      case DistanceModel.inverse:
-        this.webAudioPannerNode.distanceModel = "inverse";
-        break;
-      case DistanceModel.exponential:
-        this.webAudioPannerNode.distanceModel = "exponential";
-        break;
-    }
+    this.webAudioPannerNode.distanceModel = distanceModel;
   }
 
   updateMatrixWorld(force: boolean): void {

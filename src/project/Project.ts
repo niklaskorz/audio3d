@@ -41,7 +41,7 @@ export default class Project implements Serializable {
 
   id?: number;
   name = "New project";
-  distanceModel: DistanceModel = DistanceModel.inverse;
+  distanceModel = DistanceModel.Inverse;
 
   rooms: Room[] = [];
   audioType: number = 1;
