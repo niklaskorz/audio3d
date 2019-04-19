@@ -4,12 +4,18 @@
  * @author Niklas Korz
  */
 import React from "react";
+import styled from "styled-components";
 import DistanceModel from "../audio/DistanceModel";
 import Project from "../project/Project";
 import { Group, Select, Hint, CustomInput } from "./styled";
-import Modal from "./Modal";
+import Modal, { Action, ActionGroup } from "./Modal";
 import AudioLibraryModal from "./AudioLibraryModal";
 import { AudioEntry } from "./types";
+
+const InnerContainer = styled.div`
+  overflow: auto;
+  max-height: 400px;
+`;
 
 enum AudioSelectionTarget {
   Footstep,
@@ -106,7 +112,7 @@ export default class SettingsModal extends React.Component<Props, State> {
   };
 
   render(): React.ReactNode {
-    const { project } = this.props;
+    const { project, onDismiss } = this.props;
     const {
       footstepAudio,
       collisionAudio,
@@ -125,82 +131,87 @@ export default class SettingsModal extends React.Component<Props, State> {
     }
 
     return (
-      <Modal onDismiss={this.props.onDismiss} title="Settings">
-        <Group>
-          <label>General</label>
+      <Modal onDismiss={onDismiss} title="Settings">
+        <InnerContainer>
           <Group>
-            <label>Footstep sound</label>
-            <CustomInput
-              onClick={() =>
-                this.setState({
-                  audioSelectionTarget: AudioSelectionTarget.Footstep
-                })
-              }
-            >
-              {footstepAudio
-                ? `${footstepAudio.name} (${Math.ceil(
-                    footstepAudio.data.byteLength / 1024
-                  )} KiB)`
-                : "No audio selected"}
-            </CustomInput>
+            <label>General</label>
+            <Group>
+              <label>Footstep sound</label>
+              <CustomInput
+                onClick={() =>
+                  this.setState({
+                    audioSelectionTarget: AudioSelectionTarget.Footstep
+                  })
+                }
+              >
+                {footstepAudio
+                  ? `${footstepAudio.name} (${Math.ceil(
+                      footstepAudio.data.byteLength / 1024
+                    )} KiB)`
+                  : "No audio selected"}
+              </CustomInput>
+            </Group>
+            <Group>
+              <label>Collision sound</label>
+              <CustomInput
+                onClick={() =>
+                  this.setState({
+                    audioSelectionTarget: AudioSelectionTarget.Collision
+                  })
+                }
+              >
+                {collisionAudio
+                  ? `${collisionAudio.name} (${Math.ceil(
+                      collisionAudio.data.byteLength / 1024
+                    )} KiB)`
+                  : "No audio selected"}
+              </CustomInput>
+            </Group>
+            <Group>
+              <label>Interaction available sound</label>
+              <CustomInput
+                onClick={() =>
+                  this.setState({
+                    audioSelectionTarget: AudioSelectionTarget.InteractAvail
+                  })
+                }
+              >
+                {interactAvailAudio
+                  ? `${interactAvailAudio.name} (${Math.ceil(
+                      interactAvailAudio.data.byteLength / 1024
+                    )} KiB)`
+                  : "No audio selected"}
+              </CustomInput>
+            </Group>
           </Group>
           <Group>
-            <label>Collision sound</label>
-            <CustomInput
-              onClick={() =>
-                this.setState({
-                  audioSelectionTarget: AudioSelectionTarget.Collision
-                })
-              }
-            >
-              {collisionAudio
-                ? `${collisionAudio.name} (${Math.ceil(
-                    collisionAudio.data.byteLength / 1024
-                  )} KiB)`
-                : "No audio selected"}
-            </CustomInput>
+            <label>Web Audio API</label>
+            <Group>
+              <label>Distance Model</label>
+              <Select
+                value={this.state.distanceModel}
+                onChange={this.selectDistanceModel}
+              >
+                <option value={DistanceModel.Linear}>Linear</option>
+                <option value={DistanceModel.Inverse}>Inverse</option>
+                <option value={DistanceModel.Exponential}>Exponential</option>
+              </Select>
+            </Group>
           </Group>
           <Group>
-            <label>Interaction available sound</label>
-            <CustomInput
-              onClick={() =>
-                this.setState({
-                  audioSelectionTarget: AudioSelectionTarget.InteractAvail
-                })
-              }
-            >
-              {interactAvailAudio
-                ? `${interactAvailAudio.name} (${Math.ceil(
-                    interactAvailAudio.data.byteLength / 1024
-                  )} KiB)`
-                : "No audio selected"}
-            </CustomInput>
+            <label>Resonance Audio</label>
           </Group>
-        </Group>
-        <Group>
-          <label>Web Audio API</label>
           <Group>
-            <label>Distance Model</label>
-            <Select
-              value={this.state.distanceModel}
-              onChange={this.selectDistanceModel}
-            >
-              <option value={DistanceModel.Linear}>Linear</option>
-              <option value={DistanceModel.Inverse}>Inverse</option>
-              <option value={DistanceModel.Exponential}>Exponential</option>
-            </Select>
+            <label>BinauralFIR</label>
+            <Hint>
+              There are no settings currently available for the BinauralFIR
+              implementation.
+            </Hint>
           </Group>
-        </Group>
-        <Group>
-          <label>Resonance Audio</label>
-        </Group>
-        <Group>
-          <label>BinauralFIR</label>
-          <Hint>
-            There are no settings currently available for the BinauralFIR
-            implementation.
-          </Hint>
-        </Group>
+        </InnerContainer>
+        <ActionGroup>
+          <Action onClick={onDismiss}>Done</Action>
+        </ActionGroup>
       </Modal>
     );
   }
