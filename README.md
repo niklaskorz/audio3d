@@ -1,3 +1,5 @@
+![Logo](./public/icon.png)
+
 # 3D Audio Evaluation Environment
 
 [![CircleCI](https://circleci.com/gh/niklaskorz/audio3d.svg?style=svg)](https://circleci.com/gh/niklaskorz/audio3d)
@@ -7,6 +9,8 @@ Requires Node and Yarn to run locally.
 You can run the [most recent online version](https://niklaskorz.github.io/audio3d/) directly from your browser. After the first load, it will also work offline (if your [browser supports service workers](https://caniuse.com/#feat=serviceworkers) and you didn't disable caching of files for offline usage in your browser settings.)
 
 Note: Service workers are currently disabled by default until further progress is made
+
+[Logo by Flatart](https://www.iconfinder.com/icons/4168597/3d_change_correction_modification_object_print_printing_icon)
 
 ## Based on...
 
@@ -52,5 +56,3 @@ The build is minified and the filenames include the hashes.
 - [breakbat.wav](https://github.com/Ircam-RnD/binauralFIR/blob/gh-pages/examples/snd/breakbeat.wav) by [Ircam Centre Pompidou](https://www.ircam.fr/)
 - [phone.mp3](https://freesound.org/people/cs272/sounds/77723/) by [cs272](https://freesound.org/people/cs272/)
 - [wind.m4a](https://freesound.org/people/Stopmotionbros/sounds/438991/) by [Stopmotionbros](https://freesound.org/people/Stopmotionbros/)
-
-[Icon by Flatart](https://www.iconfinder.com/icons/4168597/3d_change_correction_modification_object_print_printing_icon)
