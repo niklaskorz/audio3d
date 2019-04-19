@@ -31,7 +31,10 @@ export default class Listener3D extends Object3D {
     this.matrixWorld.decompose(position, quaternion, scale);
     const orientation = new Vector3(0, 0, 1).applyQuaternion(quaternion);
 
-    this.webAudioListener.setPosition(-position.x, position.y, -position.z);
+    orientation.x = -orientation.x;
+    orientation.z = -orientation.z;
+
+    this.webAudioListener.setPosition(position.x, position.y, position.z);
     this.webAudioListener.setOrientation(
       orientation.x,
       orientation.y,
