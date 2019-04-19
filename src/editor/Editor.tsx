@@ -14,6 +14,7 @@ import Project from "../project/Project";
 import { ProjectData } from "../data/schema";
 import AudioImplementation from "../audio/AudioImplementation";
 import RuntimeContainer from "../runtime/RuntimeContainer";
+import DistanceModel from "../audio/DistanceModel";
 import CodeBlock from "../project/CodeBlock";
 import SpawnMarker from "../project/SpawnMarker";
 import AudioLibraryModal from "./AudioLibraryModal";
@@ -33,13 +34,15 @@ import {
 } from "./styled";
 import { EditorObject, EditorRoom, AudioEntry, EditorSpawn } from "./types";
 import ProjectManagerModal from "./ProjectManagerModal";
+import SettingsModal from "./SettingsModal";
 import SpawnEditor from "./SpawnEditor";
 
 enum ModalType {
   AudioLibrary,
   AudioSelection,
   ProjectManager,
-  ProjectSelection
+  ProjectSelection,
+  Settings
 }
 
 enum AudioSelectionTarget {
@@ -133,8 +136,18 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   importProject = async () => {
-    this.project.close();
-    this.project = await openZip();
+    try {
+      const project = await openZip();
+      this.project.close();
+      this.project = project;
+    } catch (ex) {
+      console.log("Opening project zip failed:", ex);
+      alert(
+        "The selected project could not be imported, please select a valid project archive."
+      );
+      return;
+    }
+
     this.project.events = {
       onSelectSpawn: this.onSelectSpawn,
       onSelectObject: this.onSelectObject,
@@ -223,6 +236,14 @@ export default class Editor extends React.Component<{}, State> {
   showAudioLibrary = () => {
     this.setState({ modal: ModalType.AudioLibrary });
   };
+  getDistanceModel = () => {
+    if (this.project != undefined) return this.project.getDistanceModel();
+    return DistanceModel.inverse;
+  };
+
+  selectDistanceModel = (distanceModel: DistanceModel) => {
+    this.project.selectDistanceModel(distanceModel);
+  };
 
   showProjectManager = () => {
     this.setState({ modal: ModalType.ProjectManager });
@@ -246,6 +267,10 @@ export default class Editor extends React.Component<{}, State> {
     );
     this.project.suspend();
     this.setState({ runningProject });
+  };
+
+  showSettings = () => {
+    this.setState({ modal: ModalType.Settings });
   };
 
   // Room specific editor functionality
@@ -637,6 +662,13 @@ export default class Editor extends React.Component<{}, State> {
             }
           />
         )}
+        {modal === ModalType.Settings && (
+          <SettingsModal
+            onDismiss={this.dismissModal}
+            getDistanceModel={this.getDistanceModel}
+            onDistanceModelChange={this.selectDistanceModel}
+          />
+        )}
         <MenuBar
           audioImplementation={audioImplementation}
           onAudioChange={this.selectAudioImplementation}
@@ -645,6 +677,7 @@ export default class Editor extends React.Component<{}, State> {
           onSaveProject={this.saveProject}
           onImportProject={this.importProject}
           onExportProject={this.exportProject}
+          onShowSettings={this.showSettings}
           onAddObject={this.addObject}
           onDeleteObject={this.deleteObject}
           onAddSpawn={this.addSpawn}

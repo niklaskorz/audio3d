@@ -12,6 +12,7 @@ import Serializable, { SerializedData } from "../data/Serializable";
 import { ProjectData } from "../data/schema";
 import { saveProject } from "../data/db";
 import AudioImplementation from "../audio/AudioImplementation";
+import DistanceModel from "../audio/DistanceModel";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 import Room from "./Room";
@@ -40,6 +41,7 @@ export default class Project implements Serializable {
 
   id?: number;
   name = "New project";
+  distanceModel: DistanceModel = DistanceModel.inverse;
 
   rooms: Room[] = [];
   audioType: number = 1;
@@ -93,6 +95,20 @@ export default class Project implements Serializable {
     this.rooms.push(room);
     this.selectRoom(room);
     return room;
+  }
+  selectDistanceModel(distanceModel: DistanceModel): void {
+    for (const room of this.rooms) {
+      for (const obj of room.children) {
+        if (obj instanceof GameObject) {
+          obj.audio.setDistanceModel(distanceModel);
+        }
+      }
+    }
+    this.distanceModel = distanceModel;
+  }
+
+  getDistanceModel(): DistanceModel {
+    return this.distanceModel;
   }
 
   selectAudioImplementation(audioImplementation: AudioImplementation): void {

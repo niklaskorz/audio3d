@@ -25,8 +25,9 @@ Note: Service workers are currently disabled by default until further progress i
   - [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
   - [BinauralFIR](https://github.com/Ircam-RnD/binauralFIR)
   - [Resonance Audio](https://resonance-audio.github.io/resonance-audio/)
-- Desktop Standalone:
+- Offline Availability (either of the two):
   - [NW.js](https://nwjs.io/)
+  - [Progressive Web App](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 
 ## Available Scripts
 
