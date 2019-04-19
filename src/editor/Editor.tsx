@@ -138,6 +138,7 @@ export default class Editor extends React.Component<{}, State> {
       this.project.close();
       this.project = project;
     } catch (ex) {
+      console.log("Opening project zip failed:", ex);
       alert(
         "The selected project could not be imported, please select a valid project archive."
       );
