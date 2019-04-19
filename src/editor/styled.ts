@@ -70,6 +70,10 @@ export const Group = styled.div`
   }
 `;
 
+export const BoldLabel = styled.label`
+  font-weight: bold;
+`;
+
 export const Hint = styled.p`
   font-size: 0.9em;
   color: hsl(210, 20%, 90%);

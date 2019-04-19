@@ -7,7 +7,7 @@ import React from "react";
 import styled from "styled-components";
 import DistanceModel from "../audio/DistanceModel";
 import Project from "../project/Project";
-import { Group, Select, Hint, CustomInput } from "./styled";
+import { Group, Select, Hint, CustomInput, BoldLabel } from "./styled";
 import Modal, { Action, ActionGroup } from "./Modal";
 import AudioLibraryModal from "./AudioLibraryModal";
 import { AudioEntry } from "./types";
@@ -137,7 +137,7 @@ export default class SettingsModal extends React.Component<Props, State> {
       <Modal onDismiss={onDismiss} title="Settings">
         <InnerContainer>
           <Group>
-            <label>General</label>
+            <BoldLabel>General</BoldLabel>
             <Group>
               <label>Footstep sound</label>
               <CustomInput
@@ -188,7 +188,7 @@ export default class SettingsModal extends React.Component<Props, State> {
             </Group>
           </Group>
           <Group>
-            <label>Web Audio API</label>
+            <BoldLabel>Web Audio API</BoldLabel>
             <Group>
               <label>Distance Model</label>
               <Select
@@ -202,10 +202,10 @@ export default class SettingsModal extends React.Component<Props, State> {
             </Group>
           </Group>
           <Group>
-            <label>Resonance Audio</label>
+            <BoldLabel>Resonance Audio</BoldLabel>
           </Group>
           <Group>
-            <label>BinauralFIR</label>
+            <BoldLabel>BinauralFIR</BoldLabel>
             <Hint>
               There are no settings currently available for the BinauralFIR
               implementation.
