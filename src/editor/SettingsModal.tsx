@@ -7,7 +7,7 @@ import React from "react";
 import styled from "styled-components";
 import DistanceModel from "../audio/DistanceModel";
 import Project from "../project/Project";
-import { Group, Select, Hint, CustomInput, BoldLabel } from "./styled";
+import { Group, Select, Hint, CustomInput, BoldLabel, Input } from "./styled";
 import Modal, { Action, ActionGroup } from "./Modal";
 import AudioLibraryModal from "./AudioLibraryModal";
 import { AudioEntry } from "./types";
@@ -33,6 +33,7 @@ interface Props {
 
 interface State {
   distanceModel: DistanceModel;
+  projectName?: string;
   footstepAudio?: AudioEntry;
   collisionAudio?: AudioEntry;
   interactAvailAudio?: AudioEntry;
@@ -42,13 +43,6 @@ interface State {
 export default class SettingsModal extends React.Component<Props, State> {
   state: State = {
     distanceModel: DistanceModel.Linear
-  };
-
-  selectDistanceModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { project } = this.props;
-    const distanceModel = e.currentTarget.value as DistanceModel;
-    project.selectDistanceModel(distanceModel);
-    this.setState({ distanceModel });
   };
 
   componentDidMount(): void {
@@ -65,6 +59,7 @@ export default class SettingsModal extends React.Component<Props, State> {
     const { project } = this.props;
     this.setState({
       distanceModel: project.distanceModel,
+      projectName: project.id != null ? project.name : undefined, // Only show the name field if the project has been saved before
       footstepAudio:
         project.footstepAudioID != null && project.footstepAudioFile
           ? {
@@ -88,6 +83,15 @@ export default class SettingsModal extends React.Component<Props, State> {
           : undefined
     });
   }
+
+  onProjectNameChanged: React.ChangeEventHandler<HTMLInputElement> = e => {
+    const name = e.currentTarget.value;
+    if (name) {
+      // Ensure that the project's name is not set to an empty string
+      this.props.project.name = name;
+    }
+    this.setState({ projectName: name });
+  };
 
   hideAudioSelection = () => {
     this.setState({ audioSelectionTarget: undefined });
@@ -114,9 +118,17 @@ export default class SettingsModal extends React.Component<Props, State> {
     this.hideAudioSelection();
   };
 
+  selectDistanceModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { project } = this.props;
+    const distanceModel = e.currentTarget.value as DistanceModel;
+    project.selectDistanceModel(distanceModel);
+    this.setState({ distanceModel });
+  };
+
   render(): React.ReactNode {
     const { project, onDismiss } = this.props;
     const {
+      projectName,
       footstepAudio,
       collisionAudio,
       interactAvailAudio,
@@ -138,8 +150,18 @@ export default class SettingsModal extends React.Component<Props, State> {
         <InnerContainer>
           <Group>
             <BoldLabel>General</BoldLabel>
+            {projectName != null && (
+              <Group>
+                <label>Project Name</label>
+                <Input
+                  type="text"
+                  value={projectName}
+                  onChange={this.onProjectNameChanged}
+                />
+              </Group>
+            )}
             <Group>
-              <label>Footstep sound</label>
+              <label>Footstep Sound</label>
               <CustomInput
                 onClick={() =>
                   this.setState({
@@ -155,7 +177,7 @@ export default class SettingsModal extends React.Component<Props, State> {
               </CustomInput>
             </Group>
             <Group>
-              <label>Collision sound</label>
+              <label>Collision Sound</label>
               <CustomInput
                 onClick={() =>
                   this.setState({
@@ -171,7 +193,7 @@ export default class SettingsModal extends React.Component<Props, State> {
               </CustomInput>
             </Group>
             <Group>
-              <label>Interaction available sound</label>
+              <label>Interaction Available Sound</label>
               <CustomInput
                 onClick={() =>
                   this.setState({
