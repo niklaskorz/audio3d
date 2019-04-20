@@ -72,7 +72,6 @@ export default class Audio3D extends Object3D {
     this.webAudioPannerNode.connect(webAudioContext.destination);
 
     this.webAudioBufferSource.onended = this.onAudioEnded;
-
   }
 
   setVolume(volume: number): void {
@@ -83,11 +82,10 @@ export default class Audio3D extends Object3D {
     }
   }
 
-  setDistanceModel(distanceModel: DistanceModel): void {
+  setDistanceModel(distanceModel: DistanceModelType): void {
     this.webAudioPannerNode.distanceModel = distanceModel;
     this.binauralBufferSource.onended = this.onAudioEnded;
     this.resonanceBufferSource.onended = this.onAudioEnded;
-
   }
 
   updateMatrixWorld(force: boolean): void {
