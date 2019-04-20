@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "975a79c58e18920d6c79",
+    "revision": "4aad1b5dca4dad8dda45",
     "url": "/audio3d/static/css/main.359453ec.chunk.css"
   },
   {
-    "revision": "975a79c58e18920d6c79",
-    "url": "/audio3d/static/js/main.975a79c5.chunk.js"
+    "revision": "4aad1b5dca4dad8dda45",
+    "url": "/audio3d/static/js/main.4aad1b5d.chunk.js"
   },
   {
     "revision": "64e3526e85df5019583e",
@@ -20,7 +20,7 @@ self.__precacheManifest = [
     "url": "/audio3d/static/js/runtime~main.55b42938.js"
   },
   {
-    "revision": "fa784ca4c617fa1dea979aed4cdaf50d",
+    "revision": "653af9e12ed2554c973064fd9294dc4c",
     "url": "/audio3d/index.html"
   }
 ];
