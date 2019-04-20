@@ -57,6 +57,8 @@ export default class Audio3D extends Object3D {
     this.webAudioPannerNode.connect(webAudioContext.destination);
 
     this.webAudioBufferSource.onended = this.onAudioEnded;
+    this.binauralBufferSource.onended = this.onAudioEnded;
+    this.resonanceBufferSource.onended = this.onAudioEnded;
   }
 
   setDistanceModel(distanceModel: DistanceModel): void {
@@ -108,6 +110,8 @@ export default class Audio3D extends Object3D {
       this.resonanceBufferSource.connect(this.resonanceSource.input);
 
       this.webAudioBufferSource.onended = this.onAudioEnded;
+      this.binauralBufferSource.onended = this.onAudioEnded;
+      this.resonanceBufferSource.onended = this.onAudioEnded;
     }
 
     this.webAudioBufferSource.buffer = buffer;
