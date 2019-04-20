@@ -203,6 +203,17 @@ export default class MenuBar extends React.Component<Props, State> {
             <MenuItem
               onClick={() =>
                 window.open(
+                  "https://github.com/niklaskorz/audio3d/wiki/Code-Blocks",
+                  "_blank"
+                )
+              }
+            >
+              How to use Code Blocks
+            </MenuItem>
+            <MenuDivider />
+            <MenuItem
+              onClick={() =>
+                window.open(
                   "https://github.com/niklaskorz/audio3d/issues",
                   "_blank"
                 )
