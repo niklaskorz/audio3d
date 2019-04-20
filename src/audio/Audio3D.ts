@@ -91,6 +91,7 @@ export default class Audio3D extends Object3D {
 
   onAudioEnded = () => {
     this.isPlaying = false;
+    this.stop();
   };
 
   setBuffer(buffer: AudioBuffer): void {
