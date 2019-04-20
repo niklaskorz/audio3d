@@ -290,7 +290,13 @@ export default class Runtime {
       nearestObj != null &&
       nearestObj.interactionType !== InteractionType.None
     ) {
-      //If the clostest GameObject is closer or equal than 1.5m (and not null for safety), select it
+      //If the clostest GameObject is closer or equal than 1.5m and interactable (and not null for safety), select it (visual representation)
+      if (!this.project.activeRoom.interactAvailAudio.isPlaying) {
+        this.project.activeRoom.interactAvailAudio.position.copy(
+          nearestObj.position
+        );
+        this.project.activeRoom.interactAvailAudio.play();
+      }
       this.project.selectObject(nearestObj);
     } else {
       //Otherwise, unselect all
