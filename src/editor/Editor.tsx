@@ -37,6 +37,7 @@ import ProjectManagerModal from "./ProjectManagerModal";
 import SettingsModal from "./SettingsModal";
 import SpawnEditor from "./SpawnEditor";
 import ProjectSaveModal from "./ProjectSaveModal";
+import ProjectLoadedModal from "./ProjectLoadedModal";
 
 enum ModalType {
   AudioLibrary,
@@ -44,6 +45,7 @@ enum ModalType {
   ProjectManager,
   ProjectSelection,
   ProjectSaver,
+  ProjectLoaded,
   Settings
 }
 
@@ -170,7 +172,7 @@ export default class Editor extends React.Component<{}, State> {
       selectedSpawn: null,
       selectedObject: null,
       project: this.project,
-      modal: null
+      modal: ModalType.ProjectLoaded
     });
   };
 
@@ -543,13 +545,18 @@ export default class Editor extends React.Component<{}, State> {
       selectedSpawn: null,
       selectedObject: null,
       project: this.project,
-      modal: null
+      modal: ModalType.ProjectLoaded
     });
   };
 
   saveNewProject = async (name: string) => {
     this.project.name = name;
     await this.project.save();
+    this.dismissModal();
+  };
+
+  resumeProject = () => {
+    this.project.resume();
     this.dismissModal();
   };
 
@@ -697,6 +704,9 @@ export default class Editor extends React.Component<{}, State> {
             onSave={this.saveNewProject}
             onDismiss={this.dismissModal}
           />
+        )}
+        {modal === ModalType.ProjectLoaded && (
+          <ProjectLoadedModal onConfirm={this.resumeProject} />
         )}
         {modal === ModalType.Settings && (
           <SettingsModal project={this.project} onDismiss={this.dismissModal} />

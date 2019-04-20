@@ -98,6 +98,10 @@ export default class Project implements Serializable {
     this.activeRoom.audioScene.suspend();
   }
 
+  resume(): void {
+    this.activeRoom.audioScene.resume();
+  }
+
   addRoom(): Room {
     const room = new Room(this.audioLibrary, "New room");
     room.addSpawn();
