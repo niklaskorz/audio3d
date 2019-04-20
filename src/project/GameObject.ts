@@ -30,7 +30,7 @@ export default class GameObject extends Mesh implements Serializable {
   audioLibrary: AudioLibrary;
   audioId?: number;
   audioFile?: AudioFile;
-
+  volume: number;
   audio: Audio3D;
 
   // Interaction specific
@@ -42,8 +42,9 @@ export default class GameObject extends Mesh implements Serializable {
   constructor(audioLibrary: AudioLibrary, audioScene: AudioScene) {
     super(cubeGeometry, cubeMaterial);
     this.audioLibrary = audioLibrary;
-
+    this.volume = 0.5;
     this.audio = audioScene.createAudio3D();
+    this.audio.setVolume(this.volume);
     this.add(this.audio);
   }
 
@@ -82,7 +83,7 @@ export default class GameObject extends Mesh implements Serializable {
       );
       this.audio.setBuffer(buffer);
       this.audio.setLoop(loop);
-      this.audio.setVolume(0.1);
+
       this.audio.play();
     } else {
       console.log(

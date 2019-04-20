@@ -27,6 +27,7 @@ export interface EditorSpawn {
 export interface EditorObject {
   id: number;
   name: string;
+  volume: number;
   position: Vector3;
   scale: Vector3;
   rotation: Euler;

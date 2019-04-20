@@ -389,6 +389,20 @@ export default class Editor extends React.Component<{}, State> {
     }));
   };
 
+  updateObjectVolume = (volume: number) => {
+    if (this.project.activeObject) {
+      this.project.activeObject.volume = volume;
+    }
+    this.setState(({ selectedObject }) => {
+      return {
+        selectedObject: selectedObject && {
+          ...selectedObject,
+          volume: volume
+        }
+      };
+    });
+  };
+
   updateObjectScale = (x: number, y: number, z: number) => {
     if (this.project.activeObject) {
       this.project.activeObject.scale.set(x, y, z);
@@ -584,6 +598,7 @@ export default class Editor extends React.Component<{}, State> {
       selectedObject: o && {
         id: o.id,
         name: o.name,
+        volume: o.volume,
         position: o.position,
         scale: o.scale,
         rotation: o.rotation,
@@ -767,6 +782,7 @@ export default class Editor extends React.Component<{}, State> {
                 object={o}
                 rooms={this.project.rooms}
                 onUpdateName={this.updateObjectName}
+                onUpdateVolume={this.updateObjectVolume}
                 onUpdatePosition={this.updateObjectPosition}
                 onUpdateRotation={this.updateObjectRotation}
                 onUpdateScale={this.updateObjectScale}
