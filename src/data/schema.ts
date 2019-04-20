@@ -9,6 +9,7 @@ import { InteractionType, TeleportTarget } from "../project/GameObject";
 export interface ObjectData {
   uuid: string;
   name: string;
+  volume: number;
   position: number[];
   scale: number[];
   rotation: number[];

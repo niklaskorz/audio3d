@@ -98,6 +98,7 @@ export default class GameObject extends Mesh implements Serializable {
     return {
       uuid: this.uuid,
       name: this.name,
+      volume: this.volume,
       position: this.position.toArray(),
       scale: this.scale.toArray(),
       rotation: this.rotation.toArray().slice(0, 3),
@@ -112,6 +113,7 @@ export default class GameObject extends Mesh implements Serializable {
   fromData(data: SerializedData): this {
     this.uuid = data.uuid != null ? data.uuid : this.uuid;
     this.name = data.name;
+    this.volume = data.volume;
     this.position.set(data.position[0], data.position[1], data.position[2]);
     this.scale.set(data.scale[0], data.scale[1], data.scale[2]);
     this.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2]);
@@ -119,7 +121,7 @@ export default class GameObject extends Mesh implements Serializable {
     if (data.audioId != null) {
       this.playAudio(data.audioId, true);
     }
-
+    this.audio.setVolume(data.volume);
     this.interactionType = data.interactionType || InteractionType.None;
     this.interactionAudioId = data.interactionAudioId;
     if (data.codeBlockSource) {
