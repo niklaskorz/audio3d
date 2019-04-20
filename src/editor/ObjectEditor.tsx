@@ -5,6 +5,7 @@ import React from "react";
 import { degToRad, radToDeg, roundToPrecision } from "../utils/math";
 import { InteractionType, TeleportTarget } from "../project/GameObject";
 import Room from "../project/Room";
+import { selectOnFocus } from "../utils/react";
 import {
   Group,
   Input,
@@ -114,7 +115,11 @@ export default class ObjectEditor extends React.Component<Props, State> {
     return (
       <div>
         <Group>
-          <label>Object Name</label>
+          <label>Object ID</label>
+          <Input type="text" readOnly value={o.uuid} onFocus={selectOnFocus} />
+        </Group>
+        <Group>
+          <label>Name</label>
           <Input
             type="text"
             placeholder="New object"
@@ -273,6 +278,18 @@ export default class ObjectEditor extends React.Component<Props, State> {
                 )} KiB)`
               : "No audio selected"}
           </CustomInput>
+          {o.audio != null && (
+            <>
+              <Group>
+                <label>Loop Pause (seconds)</label>
+                <Input type="number" min="0" max="60" step="1" />
+              </Group>
+              <Group>
+                <label>Volume (0% to 100%)</label>
+                <Input type="range" min="0" max="1" step="0.1" />
+              </Group>
+            </>
+          )}
         </Group>
         <Group>
           <label>Interaction</label>

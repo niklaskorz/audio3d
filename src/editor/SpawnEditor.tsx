@@ -3,6 +3,7 @@
  */
 import React from "react";
 import { degToRad, radToDeg, roundToPrecision } from "../utils/math";
+import { selectOnFocus } from "../utils/react";
 import { Group, Input, InputGroup } from "./styled";
 import { EditorSpawn } from "./types";
 
@@ -26,7 +27,11 @@ export default class SpawnEditor extends React.Component<Props> {
     return (
       <div>
         <Group>
-          <label>Spawn Name</label>
+          <label>Spawn ID</label>
+          <Input type="text" readOnly value={s.uuid} onFocus={selectOnFocus} />
+        </Group>
+        <Group>
+          <label>Name</label>
           <Input
             type="text"
             placeholder="New spawn"

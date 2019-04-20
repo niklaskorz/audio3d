@@ -3,6 +3,7 @@
  */
 import React from "react";
 import { RoomDimensions, ResonanceAudio, RoomMaterials } from "resonance-audio";
+import { selectOnFocus } from "../utils/react";
 import { Group, Input, InputGroup, Select, Hint } from "./styled";
 import { EditorRoom } from "./types";
 
@@ -37,7 +38,11 @@ export default class RoomEditor extends React.Component<Props> {
     return (
       <div>
         <Group>
-          <label>Room Name</label>
+          <label>Room ID</label>
+          <Input type="text" readOnly value={r.uuid} onFocus={selectOnFocus} />
+        </Group>
+        <Group>
+          <label>Name</label>
           <Input
             type="text"
             placeholder="Anonymous Room"

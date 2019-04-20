@@ -12,6 +12,7 @@ export interface AudioEntry extends AudioFile {
 
 export interface EditorRoom {
   id: number;
+  uuid: string;
   name: string;
   dimensions: RoomDimensions;
   materials: RoomMaterials;
@@ -19,6 +20,7 @@ export interface EditorRoom {
 
 export interface EditorSpawn {
   id: number;
+  uuid: string;
   name: string;
   position: Vector3;
   rotation: number; // Y axis
@@ -26,6 +28,7 @@ export interface EditorSpawn {
 
 export interface EditorObject {
   id: number;
+  uuid: string;
   name: string;
   volume: number;
   position: Vector3;
