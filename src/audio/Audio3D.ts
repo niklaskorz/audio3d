@@ -4,7 +4,6 @@
  */
 import { Object3D, Vector3, Quaternion } from "three";
 import { ResonanceAudio } from "resonance-audio";
-import { number } from "prop-types";
 import BinauralSource from "./binaural/BinauralSource";
 import DistanceModel from "./DistanceModel";
 
