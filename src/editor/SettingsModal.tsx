@@ -38,11 +38,17 @@ interface State {
   collisionAudio?: AudioEntry;
   interactAvailAudio?: AudioEntry;
   audioSelectionTarget?: AudioSelectionTarget;
+  ambisonicsOrder: number;
+  rollofModel: string;
+  panningModel: PanningModelType;
 }
 
 export default class SettingsModal extends React.Component<Props, State> {
   state: State = {
-    distanceModel: DistanceModel.Linear
+    distanceModel: DistanceModel.Linear,
+    ambisonicsOrder: 1,
+    rollofModel: "logarithmic",
+    panningModel: "equalpower"
   };
 
   componentDidMount(): void {
@@ -58,7 +64,10 @@ export default class SettingsModal extends React.Component<Props, State> {
   onProjectChanged(): void {
     const { project } = this.props;
     this.setState({
+      panningModel: project.panningModel,
+      rollofModel: project.rollofModel,
       distanceModel: project.distanceModel,
+      ambisonicsOrder: project.ambisonicsOrder,
       projectName: project.id != null ? project.name : undefined, // Only show the name field if the project has been saved before
       footstepAudio:
         project.footstepAudioId != null && project.footstepAudioFile
@@ -118,11 +127,32 @@ export default class SettingsModal extends React.Component<Props, State> {
     this.hideAudioSelection();
   };
 
+  selectAmbisonicsOrder = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { project } = this.props;
+    const selectedOrder = parseInt(e.currentTarget.value) as number;
+    project.selectAmbisonicsOrder(selectedOrder);
+    this.setState({ ambisonicsOrder: selectedOrder });
+  };
+
   selectDistanceModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { project } = this.props;
     const distanceModel = e.currentTarget.value as DistanceModel;
     project.selectDistanceModel(distanceModel);
-    this.setState({ distanceModel });
+    this.setState({ distanceModel: distanceModel });
+  };
+
+  selectRollofModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { project } = this.props;
+    const rollofModel = e.currentTarget.value;
+    project.selectRollofModel(rollofModel);
+    this.setState({ rollofModel: rollofModel });
+  };
+
+  selectPanningModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { project } = this.props;
+    const panningModel = e.currentTarget.value as PanningModelType;
+    project.selectPanningModel(panningModel);
+    this.setState({ panningModel: panningModel });
   };
 
   render(): React.ReactNode {
@@ -213,9 +243,12 @@ export default class SettingsModal extends React.Component<Props, State> {
             <BoldLabel>Web Audio API</BoldLabel>
             <Group>
               <label>Panning Model</label>
-              <Select>
+              <Select
+                value={this.state.panningModel}
+                onChange={this.selectPanningModel}
+              >
                 <option value="equalpower">Equalpower</option>
-                <option value="hrtf">HRTF</option>
+                <option value="HRTF">HRTF</option>
               </Select>
             </Group>
             <Group>
@@ -234,7 +267,10 @@ export default class SettingsModal extends React.Component<Props, State> {
             <BoldLabel>Resonance Audio</BoldLabel>
             <Group>
               <label>Ambisonic Order</label>
-              <Select>
+              <Select
+                value={this.state.ambisonicsOrder}
+                onChange={this.selectAmbisonicsOrder}
+              >
                 <option value={1}>First-Order Ambisonics</option>
                 <option value={2}>Second-Order Ambisonics</option>
                 <option value={3}>Third-Order Ambisonics</option>
@@ -242,7 +278,10 @@ export default class SettingsModal extends React.Component<Props, State> {
             </Group>
             <Group>
               <label>Rollof Model</label>
-              <Select>
+              <Select
+                value={this.state.rollofModel}
+                onChange={this.selectRollofModel}
+              >
                 <option value="logarithmic">Logarithmic</option>
                 <option value="linear">Linear</option>
                 <option value="none">None</option>
