@@ -8,6 +8,7 @@ import {
   PerspectiveCamera,
   Vector3
 } from "three";
+import { ResonanceAudio } from "resonance-audio";
 import Serializable, { SerializedData } from "../data/Serializable";
 import { ProjectData, AudioFile } from "../data/schema";
 import { saveProject } from "../data/db";
@@ -44,6 +45,7 @@ export default class Project implements Serializable {
   id?: number;
   name = "New project";
   distanceModel = DistanceModel.Inverse;
+  ambisonicsOrder = ResonanceAudio.Utils.DEFAULT_AMBISONIC_ORDER;
 
   rooms: Room[] = [];
   audioType: number = 1;
@@ -124,6 +126,13 @@ export default class Project implements Serializable {
       }
     }
     this.distanceModel = distanceModel;
+  }
+
+  selectAmbisonicsOrder(order: number): void {
+    for (const room of this.rooms) {
+      room.audioScene.resonanceScene.setAmbisonicOrder(order);
+    }
+    this.ambisonicsOrder = order;
   }
 
   selectAudioImplementation(audioImplementation: AudioImplementation): void {

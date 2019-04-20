@@ -38,11 +38,13 @@ interface State {
   collisionAudio?: AudioEntry;
   interactAvailAudio?: AudioEntry;
   audioSelectionTarget?: AudioSelectionTarget;
+  ambisonicsOrder: number;
 }
 
 export default class SettingsModal extends React.Component<Props, State> {
   state: State = {
-    distanceModel: DistanceModel.Linear
+    distanceModel: DistanceModel.Linear,
+    ambisonicsOrder: 1
   };
 
   componentDidMount(): void {
@@ -59,6 +61,7 @@ export default class SettingsModal extends React.Component<Props, State> {
     const { project } = this.props;
     this.setState({
       distanceModel: project.distanceModel,
+      ambisonicsOrder: project.ambisonicsOrder,
       projectName: project.id != null ? project.name : undefined, // Only show the name field if the project has been saved before
       footstepAudio:
         project.footstepAudioID != null && project.footstepAudioFile
@@ -118,11 +121,18 @@ export default class SettingsModal extends React.Component<Props, State> {
     this.hideAudioSelection();
   };
 
+  selectAmbisonicsOrder = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { project } = this.props;
+    const selectedOrder = parseInt(e.currentTarget.value) as number;
+    project.selectAmbisonicsOrder(selectedOrder);
+    this.setState({ ambisonicsOrder: selectedOrder });
+  };
+
   selectDistanceModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { project } = this.props;
     const distanceModel = e.currentTarget.value as DistanceModel;
     project.selectDistanceModel(distanceModel);
-    this.setState({ distanceModel });
+    this.setState({ distanceModel: distanceModel });
   };
 
   render(): React.ReactNode {
@@ -234,7 +244,10 @@ export default class SettingsModal extends React.Component<Props, State> {
             <BoldLabel>Resonance Audio</BoldLabel>
             <Group>
               <label>Ambisonic Order</label>
-              <Select>
+              <Select
+                value={this.state.ambisonicsOrder}
+                onChange={this.selectAmbisonicsOrder}
+              >
                 <option value={1}>First-Order Ambisonics</option>
                 <option value={2}>Second-Order Ambisonics</option>
                 <option value={3}>Third-Order Ambisonics</option>
