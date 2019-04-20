@@ -5,7 +5,6 @@
 import { Object3D, Vector3, Quaternion } from "three";
 import { ResonanceAudio } from "resonance-audio";
 import BinauralSource from "./binaural/BinauralSource";
-import DistanceModel from "./DistanceModel";
 
 /**
  * Class extends Object3D in order to work with the three.js scene graph.
@@ -61,10 +60,6 @@ export default class Audio3D extends Object3D {
     this.resonanceBufferSource.onended = this.onAudioEnded;
   }
 
-  setDistanceModel(distanceModel: DistanceModel): void {
-    this.webAudioPannerNode.distanceModel = distanceModel;
-  }
-
   updateMatrixWorld(force: boolean): void {
     super.updateMatrixWorld(force);
 
@@ -90,8 +85,8 @@ export default class Audio3D extends Object3D {
   }
 
   onAudioEnded = () => {
+    this.stopAll();
     this.isPlaying = false;
-    this.stop();
   };
 
   setBuffer(buffer: AudioBuffer): void {
@@ -147,7 +142,14 @@ export default class Audio3D extends Object3D {
   }
 
   stop(): void {
+    this.isPlaying = false;
     if (this.hasStarted) {
+      this.stopAll();
+    }
+  }
+
+  stopAll(): void {
+    try {
       this.webAudioBufferSource.stop();
       this.binauralBufferSource.stop();
       this.resonanceBufferSource.stop();
@@ -155,6 +157,8 @@ export default class Audio3D extends Object3D {
       this.webAudioBufferSource.disconnect();
       this.binauralBufferSource.disconnect();
       this.resonanceBufferSource.disconnect();
+    } catch (ex) {
+      console.log("Audio could not be stopped:", ex);
     }
   }
 }
