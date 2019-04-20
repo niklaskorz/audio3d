@@ -256,17 +256,28 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   runProject = () => {
+    // Detach the project canvas to avoid listening to any new gamepad input.
     this.projectCanvas.detach();
-    // Copy project so any changes made during runtime are not persisted
+    // Create a "new" project so any changes made during runtime are not persisted and
+    // copy the project data to it. We also pass along the audio library so it
+    // is shared between the editor project and the runtime. This is necessary so
+    // the runtime can access the audio of unsaved projects.
     const runningProject = new Project().fromData(
       this.project.toData(),
-      this.project.id
+      this.project.id,
+      this.project.audioLibrary
     );
-    runningProject.audioLibrary = this.project.audioLibrary;
+    // The audio implementation selection is not included in the project data
+    // and has to be set separately.
     runningProject.selectAudioImplementation(
       this.project.activeAudioImplementation
     );
+    // Only suspend the editor project instead of closing it.
+    // This way, we can safely return from the runtime to the editor and resume the
+    // editor project.
     this.project.suspend();
+    // Finally, update the UI state so React attaches the runtime container component
+    // instead of the editor's components to the DOM.
     this.setState({ runningProject });
   };
 
@@ -619,8 +630,13 @@ export default class Editor extends React.Component<{}, State> {
       return;
     }
     const { activeAudioImplementation } = this.state.runningProject;
+    // Close the running project. As we are not going to reuse it, there's no sense
+    // in keeping the memory allocated to its audio contexts around.
     this.state.runningProject.close();
+    // Ensure the audio implementation in the editor matches the one selected in the runtime
     this.project.selectAudioImplementation(activeAudioImplementation);
+    // Finally, update the UI state so React unmounts the runtime container and attaches
+    // the editor's components again.
     this.setState({
       runningProject: null,
       audioImplementation: activeAudioImplementation

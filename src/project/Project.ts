@@ -200,10 +200,18 @@ export default class Project implements Serializable {
   }
 
   // Load data from a plain JavaScript object into this instance
-  fromData(data: SerializedData, projectId?: number): this {
+  fromData(
+    data: SerializedData,
+    projectId?: number,
+    audioLibrary?: AudioLibrary
+  ): this {
     this.id = projectId;
-    this.audioLibrary.projectId = projectId;
-    this.audioLibrary.nextId = data.nextAudioId || 0;
+    if (audioLibrary) {
+      this.audioLibrary = audioLibrary;
+    } else {
+      this.audioLibrary.projectId = projectId;
+      this.audioLibrary.nextId = data.nextAudioId || 0;
+    }
 
     this.name = data.name;
     this.rooms = data.rooms.map((r: SerializedData) =>
