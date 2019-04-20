@@ -10,6 +10,7 @@ import AudioImplementation from "../audio/AudioImplementation";
 export interface ObjectData {
   uuid: string;
   name: string;
+  volume: number;
   position: number[];
   scale: number[];
   rotation: number[];

@@ -30,6 +30,7 @@ export interface EditorObject {
   id: number;
   uuid: string;
   name: string;
+  volume: number;
   position: Vector3;
   scale: Vector3;
   rotation: Euler;

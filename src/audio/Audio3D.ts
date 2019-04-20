@@ -20,6 +20,10 @@ export default class Audio3D extends Object3D {
   binauralSource: BinauralSource;
   resonanceSource: ResonanceAudio.Source;
 
+  webAudioGainNode: GainNode;
+  binauralGainNode: GainNode;
+  resonanceGainNode: GainNode;
+
   webAudioBufferSource: AudioBufferSourceNode;
   binauralBufferSource: AudioBufferSourceNode;
   resonanceBufferSource: AudioBufferSourceNode;
@@ -41,6 +45,14 @@ export default class Audio3D extends Object3D {
     this.binauralAudioContext = binauralAudioContext;
     this.resonanceAudioContext = resonanceAudioContext;
 
+    this.webAudioGainNode = webAudioContext.createGain();
+    this.binauralGainNode = binauralAudioContext.createGain();
+    this.resonanceGainNode = resonanceAudioContext.createGain();
+
+    this.webAudioGainNode.connect(webAudioContext.destination);
+    this.binauralGainNode.connect(binauralAudioContext.destination);
+    this.resonanceGainNode.connect(resonanceAudioContext.destination);
+
     this.webAudioPannerNode = webAudioPannerNode;
     this.binauralSource = binauralSource;
     this.resonanceSource = resonanceSource;
@@ -53,9 +65,25 @@ export default class Audio3D extends Object3D {
     this.binauralBufferSource.connect(binauralSource.input);
     this.resonanceBufferSource.connect(resonanceSource.input);
 
+    this.webAudioBufferSource.connect(this.webAudioGainNode);
+    this.binauralBufferSource.connect(this.binauralGainNode);
+    this.resonanceBufferSource.connect(this.resonanceGainNode);
+
     this.webAudioPannerNode.connect(webAudioContext.destination);
 
     this.webAudioBufferSource.onended = this.onAudioEnded;
+  }
+
+  setVolume(volume: number): void {
+    if (volume >= 0 && volume <= 2) {
+      this.webAudioGainNode.gain.value = volume;
+      this.binauralGainNode.gain.value = volume;
+      this.resonanceGainNode.gain.value = volume;
+    }
+  }
+
+  setDistanceModel(distanceModel: DistanceModelType): void {
+    this.webAudioPannerNode.distanceModel = distanceModel;
     this.binauralBufferSource.onended = this.onAudioEnded;
     this.resonanceBufferSource.onended = this.onAudioEnded;
   }
