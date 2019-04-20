@@ -240,12 +240,25 @@ export default class Runtime {
       }
     }
 
-    // Move to new position if no collision occured, otherwise play a collision sound
+    // Move to new position & play footstep sound if no collision occured, otherwise play a collision sound
     if (!collided) {
-      camera.position.copy(this.dummyCamera.position);
+      if (moveX != 0 || moveZ != 0) {
+        camera.position.copy(this.dummyCamera.position);
+        if (!this.project.activeRoom.footstepAudio.isPlaying) {
+          this.project.activeRoom.footstepAudio.play();
+        }
+      }
     } else if (this.lastCollisionSound + 1000 < Date.now()) {
-      //TODO - Play sound
-      this.lastCollisionSound = Date.now();
+      if (!this.project.activeRoom.collisionAudio.isPlaying) {
+        this.lastCollisionSound = Date.now();
+        this.project.activeRoom.collisionAudio.position.copy(
+          this.dummyCamera.position
+        );
+        this.project.activeRoom.collisionAudio.position.y -=
+          (this.project.playerHeight - 0.1) / 2;
+        this.project.activeRoom.collisionAudio.play();
+        console.log("playing collision");
+      }
     }
 
     //Check for an object to interact with. If found, mark it as active (mostly for debugging and visual help for possible spectators)
@@ -277,7 +290,13 @@ export default class Runtime {
       nearestObj != null &&
       nearestObj.interactionType !== InteractionType.None
     ) {
-      //If the clostest GameObject is closer or equal than 1.5m (and not null for safety), select it
+      //If the clostest GameObject is closer or equal than 1.5m and interactable (and not null for safety), select it (visual representation)
+      if (!this.project.activeRoom.interactAvailAudio.isPlaying) {
+        this.project.activeRoom.interactAvailAudio.position.copy(
+          nearestObj.position
+        );
+        this.project.activeRoom.interactAvailAudio.play();
+      }
       this.project.selectObject(nearestObj);
     } else {
       //Otherwise, unselect all
