@@ -82,6 +82,7 @@ export default class GameObject extends Mesh implements Serializable {
       );
       this.audio.setBuffer(buffer);
       this.audio.setLoop(loop);
+      this.audio.setVolume(0.1);
       this.audio.play();
     } else {
       console.log(

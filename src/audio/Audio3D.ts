@@ -4,6 +4,7 @@
  */
 import { Object3D, Vector3, Quaternion } from "three";
 import { ResonanceAudio } from "resonance-audio";
+import { number } from "prop-types";
 import BinauralSource from "./binaural/BinauralSource";
 import DistanceModel from "./DistanceModel";
 
@@ -20,6 +21,10 @@ export default class Audio3D extends Object3D {
   webAudioPannerNode: PannerNode;
   binauralSource: BinauralSource;
   resonanceSource: ResonanceAudio.Source;
+
+  webAudioGainNode: GainNode;
+  binauralGainNode: GainNode;
+  resonanceGainNode: GainNode;
 
   webAudioBufferSource: AudioBufferSourceNode;
   binauralBufferSource: AudioBufferSourceNode;
@@ -42,6 +47,14 @@ export default class Audio3D extends Object3D {
     this.binauralAudioContext = binauralAudioContext;
     this.resonanceAudioContext = resonanceAudioContext;
 
+    this.webAudioGainNode = webAudioContext.createGain();
+    this.binauralGainNode = binauralAudioContext.createGain();
+    this.resonanceGainNode = resonanceAudioContext.createGain();
+
+    this.webAudioGainNode.connect(webAudioContext.destination);
+    this.binauralGainNode.connect(binauralAudioContext.destination);
+    this.resonanceGainNode.connect(resonanceAudioContext.destination);
+
     this.webAudioPannerNode = webAudioPannerNode;
     this.binauralSource = binauralSource;
     this.resonanceSource = resonanceSource;
@@ -54,9 +67,21 @@ export default class Audio3D extends Object3D {
     this.binauralBufferSource.connect(binauralSource.input);
     this.resonanceBufferSource.connect(resonanceSource.input);
 
+    this.webAudioBufferSource.connect(this.webAudioGainNode);
+    this.binauralBufferSource.connect(this.binauralGainNode);
+    this.resonanceBufferSource.connect(this.resonanceGainNode);
+
     this.webAudioPannerNode.connect(webAudioContext.destination);
 
     this.webAudioBufferSource.onended = this.onAudioEnded;
+  }
+
+  setVolume(volume: number): void {
+    if (volume >= 0 && volume <= 1) {
+      this.webAudioGainNode.gain.value = volume;
+      this.binauralGainNode.gain.value = volume;
+      this.resonanceGainNode.gain.value = volume;
+    }
   }
 
   setDistanceModel(distanceModel: DistanceModel): void {
