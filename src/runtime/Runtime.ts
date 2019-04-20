@@ -240,12 +240,24 @@ export default class Runtime {
       }
     }
 
-    // Move to new position if no collision occured, otherwise play a collision sound
-    if (!collided) {
+    // Move to new position & play footstep sound if no collision occured, otherwise play a collision sound
+    if (!collided && (moveX != 0 || moveZ != 0)) {
       camera.position.copy(this.dummyCamera.position);
+      if (!this.project.activeRoom.footstepAudio.isPlaying) {
+        this.project.activeRoom.footstepAudio.position.setY(-0.5);
+        this.project.activeRoom.footstepAudio.play();
+        console.log("playing footstep");
+      }
     } else if (this.lastCollisionSound + 1000 < Date.now()) {
-      //TODO - Play sound
-      this.lastCollisionSound = Date.now();
+      if (!this.project.activeRoom.collisionAudio.isPlaying) {
+        this.lastCollisionSound = Date.now();
+        this.project.activeRoom.collisionAudio.position.copy(
+          this.dummyCamera.position
+        );
+        this.project.activeRoom.collisionAudio.position.y -=
+          (this.project.playerHeight - 0.1) / 2;
+        this.project.activeRoom.collisionAudio.play();
+      }
     }
 
     //Check for an object to interact with. If found, mark it as active (mostly for debugging and visual help for possible spectators)
