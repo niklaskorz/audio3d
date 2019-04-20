@@ -36,12 +36,14 @@ import { EditorObject, EditorRoom, AudioEntry, EditorSpawn } from "./types";
 import ProjectManagerModal from "./ProjectManagerModal";
 import SettingsModal from "./SettingsModal";
 import SpawnEditor from "./SpawnEditor";
+import ProjectSaveModal from "./ProjectSaveModal";
 
 enum ModalType {
   AudioLibrary,
   AudioSelection,
   ProjectManager,
   ProjectSelection,
+  ProjectSaver,
   Settings
 }
 
@@ -129,13 +131,11 @@ export default class Editor extends React.Component<{}, State> {
 
   saveProject = async () => {
     if (this.project.id == null) {
-      const name = prompt("Project name:", this.project.name);
-      if (!name) {
-        return;
-      }
-      this.project.name = name;
+      // The project hasn't been saved before
+      this.setState({ modal: ModalType.ProjectSaver });
+    } else {
+      await this.project.save();
     }
-    await this.project.save();
   };
 
   importProject = async () => {
@@ -536,6 +536,12 @@ export default class Editor extends React.Component<{}, State> {
     });
   };
 
+  saveNewProject = async (name: string) => {
+    this.project.name = name;
+    await this.project.save();
+    this.dismissModal();
+  };
+
   // Project canvas events
 
   onSelectSpawn = (s: SpawnMarker | null) => {
@@ -668,6 +674,12 @@ export default class Editor extends React.Component<{}, State> {
                 ? this.loadProject
                 : undefined
             }
+          />
+        )}
+        {modal === ModalType.ProjectSaver && (
+          <ProjectSaveModal
+            onSave={this.saveNewProject}
+            onDismiss={this.dismissModal}
           />
         )}
         {modal === ModalType.Settings && (

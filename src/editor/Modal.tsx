@@ -66,6 +66,13 @@ export const Action = styled.button`
     outline: none;
     border-color: #3498db;
   }
+
+  :disabled {
+    background: hsl(210, 19%, 20%);
+    color: hsl(210, 20%, 80%);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
 `;
 
 interface Props {
