@@ -1,5 +1,7 @@
 /**
  * @author Niklas Korz
+ * @author Leon Erath
+ * @author Daniel Salomon
  */
 import {
   BackSide,
@@ -54,9 +56,9 @@ export default class Project implements Serializable {
   playerHeight = 1.8; // 1.80m player height, eyes are ~10cm lower
   playerState = new Map<string, any>(); // Needed by runtime
 
-  collisionAudioID?: number; //Audio IDs, Files and buffer for collision/footstep/interaction sounds
-  footstepAudioID?: number;
-  interactAvailAudioID?: number;
+  collisionAudioId?: number; // Audio IDs, Files and buffer for collision/footstep/interaction sounds
+  footstepAudioId?: number;
+  interactAvailAudioId?: number;
   collisionAudioFile?: AudioFile;
   footstepAudioFile?: AudioFile;
   interactAvailAudioFile?: AudioFile;
@@ -210,11 +212,13 @@ export default class Project implements Serializable {
     this.events.onSelectObject(o);
   }
 
-  teleportPlayer(roomId: string, spawnId: string): void {
+  teleportPlayer(roomId: string, spawnId?: string): void {
     const room = this.rooms.find(r => r.uuid === roomId);
     if (room) {
       this.selectRoom(room);
-      const spawn = room.spawns.find(s => s.uuid === spawnId) || room.spawns[0];
+      const spawn =
+        (spawnId && room.spawns.find(s => s.uuid === spawnId)) ||
+        room.spawns[0];
       room.camera.position.set(
         spawn.position.x,
         this.playerHeight - 0.1,
@@ -273,7 +277,7 @@ export default class Project implements Serializable {
   }
 
   async setCollisionAudio(id: number): Promise<void> {
-    this.collisionAudioID = id;
+    this.collisionAudioId = id;
     this.collisionAudioFile = await this.audioLibrary.get(id);
     if (this.collisionAudioFile) {
       this.collisionAudioBuffer = await defaultAudioContext.decodeAudioData(
@@ -293,7 +297,7 @@ export default class Project implements Serializable {
   }
 
   async setFootstepAudio(id: number): Promise<void> {
-    this.footstepAudioID = id;
+    this.footstepAudioId = id;
     this.footstepAudioFile = await this.audioLibrary.get(id);
     if (this.footstepAudioFile) {
       this.footstepAudioBuffer = await defaultAudioContext.decodeAudioData(
@@ -313,7 +317,7 @@ export default class Project implements Serializable {
   }
 
   async setInteractAvailAudio(id: number): Promise<void> {
-    this.interactAvailAudioID = id;
+    this.interactAvailAudioId = id;
     this.interactAvailAudioFile = await this.audioLibrary.get(id);
     if (this.interactAvailAudioFile) {
       this.interactAvailAudioBuffer = await defaultAudioContext.decodeAudioData(
@@ -330,5 +334,65 @@ export default class Project implements Serializable {
         "could not be found and can't be played"
       );
     }
+  }
+
+  async save(): Promise<void> {
+    const id = await saveProject(this);
+    if (this.id == null) {
+      this.id = id;
+      await this.audioLibrary.saveToProject(id);
+    }
+  }
+
+  // Serialize instance to a plain JavaScript object
+  toData(): ProjectData {
+    return {
+      savedAt: new Date(),
+      name: this.name,
+      rooms: this.rooms.map(r => r.toData()),
+      nextAudioId: this.audioLibrary.nextId,
+      collisionAudioId: this.collisionAudioId,
+      footstepAudioId: this.footstepAudioId,
+      interactAvailAudioId: this.interactAvailAudioId
+    };
+  }
+
+  // Load data from a plain JavaScript object into this instance
+  fromData(
+    data: SerializedData,
+    projectId?: number,
+    audioLibrary?: AudioLibrary
+  ): this {
+    this.id = projectId;
+    if (audioLibrary) {
+      this.audioLibrary = audioLibrary;
+    } else {
+      this.audioLibrary.projectId = projectId;
+      this.audioLibrary.nextId = data.nextAudioId || 0;
+    }
+
+    this.name = data.name;
+    this.rooms = data.rooms.map((r: SerializedData) =>
+      new Room(this, this.audioLibrary).fromData(r)
+    );
+    this.activeRoom = this.rooms[0];
+
+    // Disable audio in all inactive rooms
+    for (let i = 1; i < this.rooms.length; i++) {
+      this.rooms[i].audioScene.suspend();
+    }
+
+    // Set sounds for collision, footstep and interaction available
+    if (data.collisionAudioId != null) {
+      this.setCollisionAudio(data.collisionAudioId);
+    }
+    if (data.footstepAudioId != null) {
+      this.setFootstepAudio(data.footstepAudioId);
+    }
+    if (data.interactAvailAudioId != null) {
+      this.setInteractAvailAudio(data.interactAvailAudioId);
+    }
+
+    return this;
   }
 }

@@ -70,24 +70,24 @@ export default class SettingsModal extends React.Component<Props, State> {
       ambisonicsOrder: project.ambisonicsOrder,
       projectName: project.id != null ? project.name : undefined, // Only show the name field if the project has been saved before
       footstepAudio:
-        project.footstepAudioID != null && project.footstepAudioFile
+        project.footstepAudioId != null && project.footstepAudioFile
           ? {
               ...project.footstepAudioFile,
-              id: project.footstepAudioID
+              id: project.footstepAudioId
             }
           : undefined,
       collisionAudio:
-        project.collisionAudioID != null && project.collisionAudioFile
+        project.collisionAudioId != null && project.collisionAudioFile
           ? {
               ...project.collisionAudioFile,
-              id: project.collisionAudioID
+              id: project.collisionAudioId
             }
           : undefined,
       interactAvailAudio:
-        project.interactAvailAudioID != null && project.interactAvailAudioFile
+        project.interactAvailAudioId != null && project.interactAvailAudioFile
           ? {
               ...project.interactAvailAudioFile,
-              id: project.interactAvailAudioID
+              id: project.interactAvailAudioId
             }
           : undefined
     });
