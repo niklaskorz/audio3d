@@ -1,5 +1,6 @@
 /**
- * @author Niklas Korz, Leon Erath
+ * @author Niklas Korz
+ * @author Leon Erath
  */
 
 import { Vector3 } from "three";

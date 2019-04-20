@@ -31,8 +31,8 @@ export default class Listener3D extends Object3D {
     this.matrixWorld.decompose(position, quaternion, scale);
     const orientation = new Vector3(0, 0, 1).applyQuaternion(quaternion);
 
-    orientation.x = -orientation.x;
-    orientation.z = -orientation.z;
+    //orientation.x = -orientation.x;
+    //orientation.z = -orientation.z;
 
     this.webAudioListener.setPosition(position.x, position.y, position.z);
     this.webAudioListener.setOrientation(
@@ -48,6 +48,7 @@ export default class Listener3D extends Object3D {
     this.binauralScene.listenerOrientation.copy(orientation);
     this.binauralScene.update();
 
+    // Resonance Audio already works with matrices similar to three.js internally.
     this.resonanceScene.setListenerFromMatrix(this.matrixWorld);
   }
 }

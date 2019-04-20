@@ -86,8 +86,6 @@ export default class Project implements Serializable {
       side: BackSide
     });
     this.outlineMesh.scale.multiplyScalar(1.05);
-
-    (window as any).p = this;
   }
 
   close(): void {

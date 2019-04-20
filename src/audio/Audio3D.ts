@@ -83,6 +83,7 @@ export default class Audio3D extends Object3D {
     this.binauralSource.orientation.copy(orientation);
     this.binauralSource.update();
 
+    // Resonance Audio already works with matrices similar to three.js internally.
     this.resonanceSource.setFromMatrix(this.matrixWorld);
   }
 
