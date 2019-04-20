@@ -7,7 +7,7 @@ import React from "react";
 import styled from "styled-components";
 import DistanceModel from "../audio/DistanceModel";
 import Project from "../project/Project";
-import { Group, Select, Hint, CustomInput, BoldLabel, Input } from "./styled";
+import { Group, Select, CustomInput, BoldLabel, Input } from "./styled";
 import Modal, { Action, ActionGroup } from "./Modal";
 import AudioLibraryModal from "./AudioLibraryModal";
 import { AudioEntry } from "./types";
@@ -287,13 +287,6 @@ export default class SettingsModal extends React.Component<Props, State> {
                 <option value="none">None</option>
               </Select>
             </Group>
-          </Group>
-          <Group>
-            <BoldLabel>BinauralFIR</BoldLabel>
-            <Hint>
-              There are no settings currently available for the BinauralFIR
-              implementation.
-            </Hint>
           </Group>
         </InnerContainer>
         <ActionGroup>
