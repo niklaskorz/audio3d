@@ -41,7 +41,7 @@ interface State {
 export default class ObjectEditor extends React.Component<Props, State> {
   codeCheckTimeout: number | null = null;
   state: State = {
-    volume: 0.5
+    volume: 1
   };
 
   checkCode = () => {

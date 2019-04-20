@@ -394,7 +394,7 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   updateObjectVolume = (volume: number) => {
-    if (volume >= 0 && volume <= 1) {
+    if (volume >= 0 && volume <= 2) {
       if (this.project.activeObject) {
         this.project.activeObject.volume = volume;
         this.project.activeObject.audio.setVolume(volume);

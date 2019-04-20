@@ -42,7 +42,7 @@ export default class GameObject extends Mesh implements Serializable {
   constructor(audioLibrary: AudioLibrary, audioScene: AudioScene) {
     super(cubeGeometry, cubeMaterial);
     this.audioLibrary = audioLibrary;
-    this.volume = 0.5;
+    this.volume = 1;
     this.audio = audioScene.createAudio3D();
     this.audio.setVolume(this.volume);
     this.add(this.audio);

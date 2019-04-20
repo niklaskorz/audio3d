@@ -76,7 +76,7 @@ export default class Audio3D extends Object3D {
   }
 
   setVolume(volume: number): void {
-    if (volume >= 0 && volume <= 1) {
+    if (volume >= 0 && volume <= 2) {
       this.webAudioGainNode.gain.value = volume;
       this.binauralGainNode.gain.value = volume;
       this.resonanceGainNode.gain.value = volume;
