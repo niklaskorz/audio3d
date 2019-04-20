@@ -230,52 +230,6 @@ export default class Project implements Serializable {
     }
   }
 
-  // Serialize instance to a plain JavaScript object
-  toData(): ProjectData {
-    return {
-      savedAt: new Date(),
-      name: this.name,
-      rooms: this.rooms.map(r => r.toData()),
-      nextAudioId: this.audioLibrary.nextId
-    };
-  }
-
-  // Load data from a plain JavaScript object into this instance
-  fromData(
-    data: SerializedData,
-    projectId?: number,
-    audioLibrary?: AudioLibrary
-  ): this {
-    this.id = projectId;
-    if (audioLibrary) {
-      this.audioLibrary = audioLibrary;
-    } else {
-      this.audioLibrary.projectId = projectId;
-      this.audioLibrary.nextId = data.nextAudioId || 0;
-    }
-
-    this.name = data.name;
-    this.rooms = data.rooms.map((r: SerializedData) =>
-      new Room(this, this.audioLibrary).fromData(r)
-    );
-    this.activeRoom = this.rooms[0];
-
-    // Disable audio in all inactive rooms
-    for (let i = 1; i < this.rooms.length; i++) {
-      this.rooms[i].audioScene.suspend();
-    }
-
-    return this;
-  }
-
-  async save(): Promise<void> {
-    const id = await saveProject(this);
-    if (this.id == null) {
-      this.id = id;
-      await this.audioLibrary.saveToProject(id);
-    }
-  }
-
   async setCollisionAudio(id: number): Promise<void> {
     this.collisionAudioId = id;
     this.collisionAudioFile = await this.audioLibrary.get(id);
