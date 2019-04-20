@@ -30,7 +30,6 @@ export default class GameObject extends Mesh implements Serializable {
   audioLibrary: AudioLibrary;
   audioId?: number;
   audioFile?: AudioFile;
-  volume: number = 1;
   audio: Audio3D;
 
   // Interaction specific
@@ -39,11 +38,18 @@ export default class GameObject extends Mesh implements Serializable {
   codeBlock?: CodeBlock;
   teleportTarget?: TeleportTarget;
 
+  get volume(): number {
+    return this.audio.volume;
+  }
+
+  set volume(volume: number) {
+    this.audio.volume = volume;
+  }
+
   constructor(audioLibrary: AudioLibrary, audioScene: AudioScene) {
     super(cubeGeometry, cubeMaterial);
     this.audioLibrary = audioLibrary;
     this.audio = audioScene.createAudio3D();
-    this.audio.setVolume(this.volume);
     this.add(this.audio);
   }
 
@@ -112,7 +118,6 @@ export default class GameObject extends Mesh implements Serializable {
   fromData(data: SerializedData): this {
     this.uuid = data.uuid != null ? data.uuid : this.uuid;
     this.name = data.name;
-    this.volume = data.volume;
     this.position.set(data.position[0], data.position[1], data.position[2]);
     this.scale.set(data.scale[0], data.scale[1], data.scale[2]);
     this.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2]);
@@ -122,7 +127,7 @@ export default class GameObject extends Mesh implements Serializable {
     }
 
     if (data.volume != null) {
-      this.audio.setVolume(data.volume);
+      this.volume = data.volume;
     }
 
     this.interactionType = data.interactionType || InteractionType.None;
