@@ -15,7 +15,6 @@ import Serializable, { SerializedData } from "../data/Serializable";
 import { ProjectData, AudioFile } from "../data/schema";
 import { saveProject } from "../data/db";
 import AudioImplementation from "../audio/AudioImplementation";
-import DistanceModel from "../audio/DistanceModel";
 import defaultAudioContext from "../audio/defaultAudioContext";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
@@ -46,12 +45,12 @@ export default class Project implements Serializable {
 
   id?: number;
   name = "New project";
-  distanceModel = DistanceModel.Inverse;
-  ambisonicsOrder = ResonanceAudio.Utils.DEFAULT_AMBISONIC_ORDER;
-  rollofModel = ResonanceAudio.Utils.DEFAULT_ATTENUATION_ROLLOFF;
-  panningModel = "equalpower" as PanningModelType;
   rooms: Room[] = [];
-  audioType: number = 1;
+
+  panningModel: PanningModelType = "equalpower";
+  distanceModel: DistanceModelType = "inverse";
+  ambisonicOrder = ResonanceAudio.Utils.DEFAULT_AMBISONIC_ORDER;
+  rollofModel = ResonanceAudio.Utils.DEFAULT_ATTENUATION_ROLLOFF;
 
   playerHeight = 1.8; // 1.80m player height, eyes are ~10cm lower
   playerState = new Map<string, any>(); // Needed by runtime
@@ -111,8 +110,9 @@ export default class Project implements Serializable {
     const room = new Room(this, this.audioLibrary, "New room");
     room.addSpawn();
     room.addObject();
-    //options
-    room.audioScene.resonanceScene.setAmbisonicOrder(this.ambisonicsOrder);
+
+    // Options
+    room.audioScene.resonanceScene.setAmbisonicOrder(this.ambisonicOrder);
 
     if (this.collisionAudioBuffer)
       room.collisionAudio.setBuffer(this.collisionAudioBuffer);
@@ -120,38 +120,10 @@ export default class Project implements Serializable {
       room.footstepAudio.setBuffer(this.footstepAudioBuffer);
     if (this.interactAvailAudioBuffer)
       room.interactAvailAudio.setBuffer(this.interactAvailAudioBuffer);
+
     this.rooms.push(room);
     this.selectRoom(room);
     return room;
-  }
-
-  selectDistanceModel(distanceModel: DistanceModel): void {
-    for (const room of this.rooms) {
-      for (const obj of room.children) {
-        if (obj instanceof GameObject) {
-          obj.audio.setDistanceModel(distanceModel);
-        }
-      }
-    }
-    this.distanceModel = distanceModel;
-  }
-
-  selectAmbisonicsOrder(order: number): void {
-    for (const room of this.rooms) {
-      room.audioScene.resonanceScene.setAmbisonicOrder(order);
-    }
-    this.ambisonicsOrder = order;
-  }
-
-  selectRollofModel(model: string): void {
-    for (const room of this.rooms) {
-      for (const obj of room.children) {
-        if (obj instanceof GameObject) {
-          obj.audio.resonanceSource.setRolloff(model);
-        }
-      }
-    }
-    this.rollofModel = model;
   }
 
   selectPanningModel(model: PanningModelType): void {
@@ -163,6 +135,35 @@ export default class Project implements Serializable {
       }
     }
     this.panningModel = model;
+  }
+
+  selectDistanceModel(distanceModel: DistanceModelType): void {
+    for (const room of this.rooms) {
+      for (const obj of room.children) {
+        if (obj instanceof GameObject) {
+          obj.audio.webAudioPannerNode.distanceModel = distanceModel;
+        }
+      }
+    }
+    this.distanceModel = distanceModel;
+  }
+
+  selectAmbisonicOrder(order: number): void {
+    for (const room of this.rooms) {
+      room.audioScene.resonanceScene.setAmbisonicOrder(order);
+    }
+    this.ambisonicOrder = order;
+  }
+
+  selectRollofModel(model: string): void {
+    for (const room of this.rooms) {
+      for (const obj of room.children) {
+        if (obj instanceof GameObject) {
+          obj.audio.resonanceSource.setRolloff(model);
+        }
+      }
+    }
+    this.rollofModel = model;
   }
 
   selectAudioImplementation(audioImplementation: AudioImplementation): void {
@@ -305,6 +306,14 @@ export default class Project implements Serializable {
       name: this.name,
       rooms: this.rooms.map(r => r.toData()),
       nextAudioId: this.audioLibrary.nextId,
+
+      audioImplementation: this.activeAudioImplementation,
+
+      panningModel: this.panningModel,
+      distanceModel: this.distanceModel,
+      ambisonicOrder: this.ambisonicOrder,
+      rollofModel: this.rollofModel,
+
       collisionAudioId: this.collisionAudioId,
       footstepAudioId: this.footstepAudioId,
       interactAvailAudioId: this.interactAvailAudioId
@@ -334,6 +343,24 @@ export default class Project implements Serializable {
     // Disable audio in all inactive rooms
     for (let i = 1; i < this.rooms.length; i++) {
       this.rooms[i].audioScene.suspend();
+    }
+
+    if (data.audioImplementation) {
+      this.selectAudioImplementation(data.audioImplementation);
+    }
+
+    // Project options
+    if (data.panningModel) {
+      this.selectPanningModel(data.panningModel);
+    }
+    if (data.distanceModel) {
+      this.selectDistanceModel(data.distanceModel);
+    }
+    if (data.ambisonicOrder) {
+      this.selectAmbisonicOrder(data.ambisonicOrder);
+    }
+    if (data.rollofModel) {
+      this.selectRollofModel(data.rollofModel);
     }
 
     // Set sounds for collision, footstep and interaction available

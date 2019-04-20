@@ -5,7 +5,6 @@
  */
 import React from "react";
 import styled from "styled-components";
-import DistanceModel from "../audio/DistanceModel";
 import Project from "../project/Project";
 import { Group, Select, CustomInput, BoldLabel, Input } from "./styled";
 import Modal, { Action, ActionGroup } from "./Modal";
@@ -15,6 +14,7 @@ import { AudioEntry } from "./types";
 const InnerContainer = styled.div`
   overflow: auto;
   max-height: 400px;
+  min-width: 500px;
   /* Add some space between content and scrollbar */
   padding: 0 10px;
   margin: 0 -10px;
@@ -32,23 +32,23 @@ interface Props {
 }
 
 interface State {
-  distanceModel: DistanceModel;
+  panningModel: PanningModelType;
+  distanceModel: DistanceModelType;
+  ambisonicOrder: number;
+  rollofModel: string;
   projectName?: string;
   footstepAudio?: AudioEntry;
   collisionAudio?: AudioEntry;
   interactAvailAudio?: AudioEntry;
   audioSelectionTarget?: AudioSelectionTarget;
-  ambisonicsOrder: number;
-  rollofModel: string;
-  panningModel: PanningModelType;
 }
 
 export default class SettingsModal extends React.Component<Props, State> {
   state: State = {
-    distanceModel: DistanceModel.Linear,
-    ambisonicsOrder: 1,
-    rollofModel: "logarithmic",
-    panningModel: "equalpower"
+    panningModel: "equalpower",
+    distanceModel: "inverse",
+    ambisonicOrder: 1,
+    rollofModel: "logarithmic"
   };
 
   componentDidMount(): void {
@@ -67,7 +67,7 @@ export default class SettingsModal extends React.Component<Props, State> {
       panningModel: project.panningModel,
       rollofModel: project.rollofModel,
       distanceModel: project.distanceModel,
-      ambisonicsOrder: project.ambisonicsOrder,
+      ambisonicOrder: project.ambisonicOrder,
       projectName: project.id != null ? project.name : undefined, // Only show the name field if the project has been saved before
       footstepAudio:
         project.footstepAudioId != null && project.footstepAudioFile
@@ -127,18 +127,25 @@ export default class SettingsModal extends React.Component<Props, State> {
     this.hideAudioSelection();
   };
 
-  selectAmbisonicsOrder = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  selectPanningModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { project } = this.props;
-    const selectedOrder = parseInt(e.currentTarget.value) as number;
-    project.selectAmbisonicsOrder(selectedOrder);
-    this.setState({ ambisonicsOrder: selectedOrder });
+    const panningModel = e.currentTarget.value as PanningModelType;
+    project.selectPanningModel(panningModel);
+    this.setState({ panningModel: panningModel });
   };
 
   selectDistanceModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { project } = this.props;
-    const distanceModel = e.currentTarget.value as DistanceModel;
+    const distanceModel = e.currentTarget.value as DistanceModelType;
     project.selectDistanceModel(distanceModel);
-    this.setState({ distanceModel: distanceModel });
+    this.setState({ distanceModel });
+  };
+
+  selectAmbisonicOrder = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { project } = this.props;
+    const selectedOrder = parseInt(e.currentTarget.value) as number;
+    project.selectAmbisonicOrder(selectedOrder);
+    this.setState({ ambisonicOrder: selectedOrder });
   };
 
   selectRollofModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -146,13 +153,6 @@ export default class SettingsModal extends React.Component<Props, State> {
     const rollofModel = e.currentTarget.value;
     project.selectRollofModel(rollofModel);
     this.setState({ rollofModel: rollofModel });
-  };
-
-  selectPanningModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { project } = this.props;
-    const panningModel = e.currentTarget.value as PanningModelType;
-    project.selectPanningModel(panningModel);
-    this.setState({ panningModel: panningModel });
   };
 
   render(): React.ReactNode {
@@ -257,9 +257,9 @@ export default class SettingsModal extends React.Component<Props, State> {
                 value={this.state.distanceModel}
                 onChange={this.selectDistanceModel}
               >
-                <option value={DistanceModel.Inverse}>Inverse</option>
-                <option value={DistanceModel.Linear}>Linear</option>
-                <option value={DistanceModel.Exponential}>Exponential</option>
+                <option value="inverse">Inverse</option>
+                <option value="linear">Linear</option>
+                <option value="exponential">Exponential</option>
               </Select>
             </Group>
           </Group>
@@ -268,8 +268,8 @@ export default class SettingsModal extends React.Component<Props, State> {
             <Group>
               <label>Ambisonic Order</label>
               <Select
-                value={this.state.ambisonicsOrder}
-                onChange={this.selectAmbisonicsOrder}
+                value={this.state.ambisonicOrder}
+                onChange={this.selectAmbisonicOrder}
               >
                 <option value={1}>First-Order Ambisonics</option>
                 <option value={2}>Second-Order Ambisonics</option>

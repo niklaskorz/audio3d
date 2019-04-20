@@ -5,6 +5,7 @@
 import { DBSchema } from "idb";
 import { RoomDimensions, RoomMaterials } from "resonance-audio";
 import { InteractionType, TeleportTarget } from "../project/GameObject";
+import AudioImplementation from "../audio/AudioImplementation";
 
 export interface ObjectData {
   uuid: string;
@@ -41,6 +42,13 @@ export interface ProjectData {
   rooms: RoomData[];
   savedAt: Date;
   nextAudioId: number; // Used for generating keys for new audio files
+
+  audioImplementation?: AudioImplementation;
+
+  panningModel?: PanningModelType;
+  distanceModel?: DistanceModelType;
+  ambisonicOrder?: number;
+  rollofModel?: string;
 
   collisionAudioId?: number;
   footstepAudioId?: number;

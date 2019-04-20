@@ -14,7 +14,6 @@ import Project from "../project/Project";
 import { ProjectData } from "../data/schema";
 import AudioImplementation from "../audio/AudioImplementation";
 import RuntimeContainer from "../runtime/RuntimeContainer";
-import DistanceModel from "../audio/DistanceModel";
 import CodeBlock from "../project/CodeBlock";
 import SpawnMarker from "../project/SpawnMarker";
 import AudioLibraryModal from "./AudioLibraryModal";
@@ -248,10 +247,6 @@ export default class Editor extends React.Component<{}, State> {
     this.setState({ modal: ModalType.AudioLibrary });
   };
 
-  selectDistanceModel = (distanceModel: DistanceModel) => {
-    this.project.selectDistanceModel(distanceModel);
-  };
-
   showProjectManager = () => {
     this.setState({ modal: ModalType.ProjectManager });
   };
@@ -272,11 +267,6 @@ export default class Editor extends React.Component<{}, State> {
       this.project.toData(),
       this.project.id,
       this.project.audioLibrary
-    );
-    // The audio implementation selection is not included in the project data
-    // and has to be set separately.
-    runningProject.selectAudioImplementation(
-      this.project.activeAudioImplementation
     );
     // Only suspend the editor project instead of closing it.
     // This way, we can safely return from the runtime to the editor and resume the

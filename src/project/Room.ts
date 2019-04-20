@@ -147,10 +147,11 @@ export default class Room extends Scene implements Serializable {
     object.position.y += 0.5;
     object.name = "New object";
 
-    //options
-    object.audio.setDistanceModel(this.project.distanceModel);
-    object.audio.resonanceSource.setRolloff(this.project.rollofModel);
+    // Options
     object.audio.webAudioPannerNode.panningModel = this.project.panningModel;
+    object.audio.webAudioPannerNode.distanceModel = this.project.distanceModel;
+    object.audio.resonanceSource.setRolloff(this.project.rollofModel);
+
     this.add(object);
     return object;
   }
