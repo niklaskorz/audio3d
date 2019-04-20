@@ -22,6 +22,7 @@ import Audio3D from "../audio/Audio3D";
 import AudioLibrary from "./AudioLibrary";
 import GameObject from "./GameObject";
 import SpawnMarker from "./SpawnMarker";
+import Project from "./Project";
 
 const wallGeometry = new BoxGeometry(1, 1, 1);
 const wallMaterial = new MeshLambertMaterial();
@@ -34,7 +35,7 @@ export default class Room extends Scene implements Serializable {
   audioLibrary: AudioLibrary;
   roomDimensions: RoomDimensions;
   roomMaterials: RoomMaterials;
-
+  project: Project;
   grid: GridHelper;
   wallNorth = new Mesh(wallGeometry, wallMaterial);
   wallEast = new Mesh(wallGeometry, wallMaterial);
@@ -80,6 +81,7 @@ export default class Room extends Scene implements Serializable {
   }
 
   constructor(
+    project: Project,
     audioLibrary: AudioLibrary,
     name: string = "",
     dimensions: RoomDimensions = { width: 15, depth: 15, height: 3 },
@@ -91,7 +93,7 @@ export default class Room extends Scene implements Serializable {
     this.name = name;
     this.roomDimensions = dimensions;
     this.roomMaterials = materials;
-
+    this.project = project;
     const ambientLight = new AmbientLight(0xffffff, 0.5);
     this.add(ambientLight);
     const light = new PointLight(0xffffff, 0.5);
@@ -145,6 +147,10 @@ export default class Room extends Scene implements Serializable {
     object.position.y += 0.5;
     object.name = "New object";
 
+    //options
+    object.audio.setDistanceModel(this.project.distanceModel);
+    object.audio.resonanceSource.setRolloff(this.project.rollofModel);
+    object.audio.webAudioPannerNode.panningModel = this.project.panningModel;
     this.add(object);
     return object;
   }

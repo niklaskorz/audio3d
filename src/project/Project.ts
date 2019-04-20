@@ -10,6 +10,7 @@ import {
   PerspectiveCamera,
   Vector3
 } from "three";
+import { ResonanceAudio } from "resonance-audio";
 import Serializable, { SerializedData } from "../data/Serializable";
 import { ProjectData, AudioFile } from "../data/schema";
 import { saveProject } from "../data/db";
@@ -46,16 +47,18 @@ export default class Project implements Serializable {
   id?: number;
   name = "New project";
   distanceModel = DistanceModel.Inverse;
-
+  ambisonicsOrder = ResonanceAudio.Utils.DEFAULT_AMBISONIC_ORDER;
+  rollofModel = ResonanceAudio.Utils.DEFAULT_ATTENUATION_ROLLOFF;
+  panningModel = "equalpower" as PanningModelType;
   rooms: Room[] = [];
   audioType: number = 1;
 
   playerHeight = 1.8; // 1.80m player height, eyes are ~10cm lower
   playerState = new Map<string, any>(); // Needed by runtime
 
-  collisionAudioID?: number; // Audio IDs, Files and buffer for collision/footstep/interaction sounds
-  footstepAudioID?: number;
-  interactAvailAudioID?: number;
+  collisionAudioId?: number; // Audio IDs, Files and buffer for collision/footstep/interaction sounds
+  footstepAudioId?: number;
+  interactAvailAudioId?: number;
   collisionAudioFile?: AudioFile;
   footstepAudioFile?: AudioFile;
   interactAvailAudioFile?: AudioFile;
@@ -77,7 +80,7 @@ export default class Project implements Serializable {
   constructor(events: ProjectEvents = defaultEvents) {
     this.events = events;
 
-    const firstRoom = new Room(this.audioLibrary, "First room");
+    const firstRoom = new Room(this, this.audioLibrary, "First room");
     firstRoom.addSpawn();
     firstRoom.addObject();
     this.rooms.push(firstRoom);
@@ -105,9 +108,12 @@ export default class Project implements Serializable {
   }
 
   addRoom(): Room {
-    const room = new Room(this.audioLibrary, "New room");
+    const room = new Room(this, this.audioLibrary, "New room");
     room.addSpawn();
     room.addObject();
+    //options
+    room.audioScene.resonanceScene.setAmbisonicOrder(this.ambisonicsOrder);
+
     if (this.collisionAudioBuffer)
       room.collisionAudio.setBuffer(this.collisionAudioBuffer);
     if (this.footstepAudioBuffer)
@@ -128,6 +134,35 @@ export default class Project implements Serializable {
       }
     }
     this.distanceModel = distanceModel;
+  }
+
+  selectAmbisonicsOrder(order: number): void {
+    for (const room of this.rooms) {
+      room.audioScene.resonanceScene.setAmbisonicOrder(order);
+    }
+    this.ambisonicsOrder = order;
+  }
+
+  selectRollofModel(model: string): void {
+    for (const room of this.rooms) {
+      for (const obj of room.children) {
+        if (obj instanceof GameObject) {
+          obj.audio.resonanceSource.setRolloff(model);
+        }
+      }
+    }
+    this.rollofModel = model;
+  }
+
+  selectPanningModel(model: PanningModelType): void {
+    for (const room of this.rooms) {
+      for (const obj of room.children) {
+        if (obj instanceof GameObject) {
+          obj.audio.webAudioPannerNode.panningModel = model;
+        }
+      }
+    }
+    this.panningModel = model;
   }
 
   selectAudioImplementation(audioImplementation: AudioImplementation): void {
@@ -195,54 +230,8 @@ export default class Project implements Serializable {
     }
   }
 
-  // Serialize instance to a plain JavaScript object
-  toData(): ProjectData {
-    return {
-      savedAt: new Date(),
-      name: this.name,
-      rooms: this.rooms.map(r => r.toData()),
-      nextAudioId: this.audioLibrary.nextId
-    };
-  }
-
-  // Load data from a plain JavaScript object into this instance
-  fromData(
-    data: SerializedData,
-    projectId?: number,
-    audioLibrary?: AudioLibrary
-  ): this {
-    this.id = projectId;
-    if (audioLibrary) {
-      this.audioLibrary = audioLibrary;
-    } else {
-      this.audioLibrary.projectId = projectId;
-      this.audioLibrary.nextId = data.nextAudioId || 0;
-    }
-
-    this.name = data.name;
-    this.rooms = data.rooms.map((r: SerializedData) =>
-      new Room(this.audioLibrary).fromData(r)
-    );
-    this.activeRoom = this.rooms[0];
-
-    // Disable audio in all inactive rooms
-    for (let i = 1; i < this.rooms.length; i++) {
-      this.rooms[i].audioScene.suspend();
-    }
-
-    return this;
-  }
-
-  async save(): Promise<void> {
-    const id = await saveProject(this);
-    if (this.id == null) {
-      this.id = id;
-      await this.audioLibrary.saveToProject(id);
-    }
-  }
-
   async setCollisionAudio(id: number): Promise<void> {
-    this.collisionAudioID = id;
+    this.collisionAudioId = id;
     this.collisionAudioFile = await this.audioLibrary.get(id);
     if (this.collisionAudioFile) {
       this.collisionAudioBuffer = await defaultAudioContext.decodeAudioData(
@@ -262,7 +251,7 @@ export default class Project implements Serializable {
   }
 
   async setFootstepAudio(id: number): Promise<void> {
-    this.footstepAudioID = id;
+    this.footstepAudioId = id;
     this.footstepAudioFile = await this.audioLibrary.get(id);
     if (this.footstepAudioFile) {
       this.footstepAudioBuffer = await defaultAudioContext.decodeAudioData(
@@ -282,7 +271,7 @@ export default class Project implements Serializable {
   }
 
   async setInteractAvailAudio(id: number): Promise<void> {
-    this.interactAvailAudioID = id;
+    this.interactAvailAudioId = id;
     this.interactAvailAudioFile = await this.audioLibrary.get(id);
     if (this.interactAvailAudioFile) {
       this.interactAvailAudioBuffer = await defaultAudioContext.decodeAudioData(
@@ -299,5 +288,65 @@ export default class Project implements Serializable {
         "could not be found and can't be played"
       );
     }
+  }
+
+  async save(): Promise<void> {
+    const id = await saveProject(this);
+    if (this.id == null) {
+      this.id = id;
+      await this.audioLibrary.saveToProject(id);
+    }
+  }
+
+  // Serialize instance to a plain JavaScript object
+  toData(): ProjectData {
+    return {
+      savedAt: new Date(),
+      name: this.name,
+      rooms: this.rooms.map(r => r.toData()),
+      nextAudioId: this.audioLibrary.nextId,
+      collisionAudioId: this.collisionAudioId,
+      footstepAudioId: this.footstepAudioId,
+      interactAvailAudioId: this.interactAvailAudioId
+    };
+  }
+
+  // Load data from a plain JavaScript object into this instance
+  fromData(
+    data: SerializedData,
+    projectId?: number,
+    audioLibrary?: AudioLibrary
+  ): this {
+    this.id = projectId;
+    if (audioLibrary) {
+      this.audioLibrary = audioLibrary;
+    } else {
+      this.audioLibrary.projectId = projectId;
+      this.audioLibrary.nextId = data.nextAudioId || 0;
+    }
+
+    this.name = data.name;
+    this.rooms = data.rooms.map((r: SerializedData) =>
+      new Room(this, this.audioLibrary).fromData(r)
+    );
+    this.activeRoom = this.rooms[0];
+
+    // Disable audio in all inactive rooms
+    for (let i = 1; i < this.rooms.length; i++) {
+      this.rooms[i].audioScene.suspend();
+    }
+
+    // Set sounds for collision, footstep and interaction available
+    if (data.collisionAudioId != null) {
+      this.setCollisionAudio(data.collisionAudioId);
+    }
+    if (data.footstepAudioId != null) {
+      this.setFootstepAudio(data.footstepAudioId);
+    }
+    if (data.interactAvailAudioId != null) {
+      this.setInteractAvailAudio(data.interactAvailAudioId);
+    }
+
+    return this;
   }
 }

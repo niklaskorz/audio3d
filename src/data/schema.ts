@@ -41,6 +41,10 @@ export interface ProjectData {
   rooms: RoomData[];
   savedAt: Date;
   nextAudioId: number; // Used for generating keys for new audio files
+
+  collisionAudioId?: number;
+  footstepAudioId?: number;
+  interactAvailAudioId?: number;
 }
 
 export interface AudioFile {
