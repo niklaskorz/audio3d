@@ -81,7 +81,6 @@ export const Hint = styled.p`
 
 export const Input = styled.input`
   display: block;
-  appearance: none;
   background: hsl(210, 29%, 24%);
   border-radius: 0.2em;
   border: 0.15em solid hsl(210, 29%, 24%);
@@ -89,6 +88,10 @@ export const Input = styled.input`
   width: 100%;
   padding: 0.7em 0.85em;
   margin: 0.35em 0;
+
+  [type^="range"] {
+    appearance: none;
+  }
 
   transition: 0.2s ease border-color;
   :focus {
