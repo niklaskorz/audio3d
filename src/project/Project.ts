@@ -47,7 +47,7 @@ export default class Project implements Serializable {
   distanceModel = DistanceModel.Inverse;
   ambisonicsOrder = ResonanceAudio.Utils.DEFAULT_AMBISONIC_ORDER;
   rollofModel = ResonanceAudio.Utils.DEFAULT_ATTENUATION_ROLLOFF;
-
+  panningModel = "equalpower" as PanningModelType;
   rooms: Room[] = [];
   audioType: number = 1;
 
@@ -78,7 +78,7 @@ export default class Project implements Serializable {
   constructor(events: ProjectEvents = defaultEvents) {
     this.events = events;
 
-    const firstRoom = new Room(this.audioLibrary, "First room");
+    const firstRoom = new Room(this, this.audioLibrary, "First room");
     firstRoom.addSpawn();
     firstRoom.addObject();
     this.rooms.push(firstRoom);
@@ -106,9 +106,12 @@ export default class Project implements Serializable {
   }
 
   addRoom(): Room {
-    const room = new Room(this.audioLibrary, "New room");
+    const room = new Room(this, this.audioLibrary, "New room");
     room.addSpawn();
     room.addObject();
+    //options
+    room.audioScene.resonanceScene.setAmbisonicOrder(this.ambisonicsOrder);
+
     if (this.collisionAudioBuffer)
       room.collisionAudio.setBuffer(this.collisionAudioBuffer);
     if (this.footstepAudioBuffer)
@@ -147,6 +150,17 @@ export default class Project implements Serializable {
       }
     }
     this.rollofModel = model;
+  }
+
+  selectPanningModel(model: PanningModelType): void {
+    for (const room of this.rooms) {
+      for (const obj of room.children) {
+        if (obj instanceof GameObject) {
+          obj.audio.webAudioPannerNode.panningModel = model;
+        }
+      }
+    }
+    this.panningModel = model;
   }
 
   selectAudioImplementation(audioImplementation: AudioImplementation): void {
@@ -238,7 +252,7 @@ export default class Project implements Serializable {
 
     this.name = data.name;
     this.rooms = data.rooms.map((r: SerializedData) =>
-      new Room(this.audioLibrary).fromData(r)
+      new Room(this, this.audioLibrary).fromData(r)
     );
     this.activeRoom = this.rooms[0];
 

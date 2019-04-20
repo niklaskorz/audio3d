@@ -40,13 +40,15 @@ interface State {
   audioSelectionTarget?: AudioSelectionTarget;
   ambisonicsOrder: number;
   rollofModel: string;
+  panningModel: PanningModelType;
 }
 
 export default class SettingsModal extends React.Component<Props, State> {
   state: State = {
     distanceModel: DistanceModel.Linear,
     ambisonicsOrder: 1,
-    rollofModel: "logarithmic"
+    rollofModel: "logarithmic",
+    panningModel: "equalpower"
   };
 
   componentDidMount(): void {
@@ -62,6 +64,7 @@ export default class SettingsModal extends React.Component<Props, State> {
   onProjectChanged(): void {
     const { project } = this.props;
     this.setState({
+      panningModel: project.panningModel,
       rollofModel: project.rollofModel,
       distanceModel: project.distanceModel,
       ambisonicsOrder: project.ambisonicsOrder,
@@ -143,6 +146,13 @@ export default class SettingsModal extends React.Component<Props, State> {
     const rollofModel = e.currentTarget.value;
     project.selectRollofModel(rollofModel);
     this.setState({ rollofModel: rollofModel });
+  };
+
+  selectPanningModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { project } = this.props;
+    const panningModel = e.currentTarget.value as PanningModelType;
+    project.selectPanningModel(panningModel);
+    this.setState({ panningModel: panningModel });
   };
 
   render(): React.ReactNode {
@@ -233,9 +243,12 @@ export default class SettingsModal extends React.Component<Props, State> {
             <BoldLabel>Web Audio API</BoldLabel>
             <Group>
               <label>Panning Model</label>
-              <Select>
+              <Select
+                value={this.state.panningModel}
+                onChange={this.selectPanningModel}
+              >
                 <option value="equalpower">Equalpower</option>
-                <option value="hrtf">HRTF</option>
+                <option value="HRTF">HRTF</option>
               </Select>
             </Group>
             <Group>

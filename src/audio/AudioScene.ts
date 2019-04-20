@@ -40,7 +40,6 @@ export default class AudioScene {
       options.materials || ResonanceAudio.Utils.DEFAULT_ROOM_MATERIALS
     );
     this.resonanceScene.output.connect(this.resonanceAudioContext.destination);
-
     this.suspend();
   }
 
