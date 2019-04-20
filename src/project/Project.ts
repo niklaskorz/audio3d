@@ -53,7 +53,7 @@ export default class Project implements Serializable {
   playerHeight = 1.8; // 1.80m player height, eyes are ~10cm lower
   playerState = new Map<string, any>(); // Needed by runtime
 
-  collisionAudioID?: number; //Audio IDs, Files and buffer for collision/footstep/interaction sounds
+  collisionAudioID?: number; // Audio IDs, Files and buffer for collision/footstep/interaction sounds
   footstepAudioID?: number;
   interactAvailAudioID?: number;
   collisionAudioFile?: AudioFile;
