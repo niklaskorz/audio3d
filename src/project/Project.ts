@@ -175,11 +175,13 @@ export default class Project implements Serializable {
     this.events.onSelectObject(o);
   }
 
-  teleportPlayer(roomId: string, spawnId: string): void {
+  teleportPlayer(roomId: string, spawnId?: string): void {
     const room = this.rooms.find(r => r.uuid === roomId);
     if (room) {
       this.selectRoom(room);
-      const spawn = room.spawns.find(s => s.uuid === spawnId) || room.spawns[0];
+      const spawn =
+        (spawnId && room.spawns.find(s => s.uuid === spawnId)) ||
+        room.spawns[0];
       room.camera.position.set(
         spawn.position.x,
         this.playerHeight - 0.1,

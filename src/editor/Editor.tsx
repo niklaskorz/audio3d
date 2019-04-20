@@ -73,6 +73,7 @@ export default class Editor extends React.Component<{}, State> {
     audioImplementation: this.project.activeAudioImplementation,
     rooms: this.project.rooms.map(r => ({
       id: r.id,
+      uuid: r.uuid,
       name: r.name,
       dimensions: r.dimensions,
       materials: r.materials
@@ -113,6 +114,7 @@ export default class Editor extends React.Component<{}, State> {
       audioImplementation: this.project.activeAudioImplementation,
       rooms: this.project.rooms.map(r => ({
         id: r.id,
+        uuid: r.uuid,
         name: r.name,
         dimensions: r.dimensions,
         materials: r.materials
@@ -164,6 +166,7 @@ export default class Editor extends React.Component<{}, State> {
       audioImplementation: this.project.activeAudioImplementation,
       rooms: this.project.rooms.map(r => ({
         id: r.id,
+        uuid: r.uuid,
         name: r.name,
         dimensions: r.dimensions,
         materials: r.materials
@@ -217,6 +220,7 @@ export default class Editor extends React.Component<{}, State> {
         ...s.rooms,
         {
           id: room.id,
+          uuid: room.uuid,
           name: room.name,
           dimensions: room.dimensions,
           materials: room.materials
@@ -537,6 +541,7 @@ export default class Editor extends React.Component<{}, State> {
       audioImplementation: this.project.activeAudioImplementation,
       rooms: this.project.rooms.map(r => ({
         id: r.id,
+        uuid: r.uuid,
         name: r.name,
         dimensions: r.dimensions,
         materials: r.materials
@@ -566,6 +571,7 @@ export default class Editor extends React.Component<{}, State> {
     this.setState({
       selectedSpawn: s && {
         id: s.id,
+        uuid: s.uuid,
         name: s.name,
         position: s.position,
         rotation: s.rotation.y
@@ -583,6 +589,7 @@ export default class Editor extends React.Component<{}, State> {
       selectedSpawn: null,
       selectedObject: o && {
         id: o.id,
+        uuid: o.uuid,
         name: o.name,
         position: o.position,
         scale: o.scale,

@@ -5,6 +5,7 @@ import React from "react";
 import { degToRad, radToDeg, roundToPrecision } from "../utils/math";
 import { InteractionType, TeleportTarget } from "../project/GameObject";
 import Room from "../project/Room";
+import { selectOnFocus } from "../utils/react";
 import {
   Group,
   Input,
@@ -109,7 +110,11 @@ export default class ObjectEditor extends React.Component<Props, State> {
     return (
       <div>
         <Group>
-          <label>Object Name</label>
+          <label>Object ID</label>
+          <Input type="text" readOnly value={o.uuid} onFocus={selectOnFocus} />
+        </Group>
+        <Group>
+          <label>Name</label>
           <Input
             type="text"
             placeholder="New object"
