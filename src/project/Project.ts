@@ -46,6 +46,7 @@ export default class Project implements Serializable {
   name = "New project";
   distanceModel = DistanceModel.Inverse;
   ambisonicsOrder = ResonanceAudio.Utils.DEFAULT_AMBISONIC_ORDER;
+  rollofModel = ResonanceAudio.Utils.DEFAULT_ATTENUATION_ROLLOFF;
 
   rooms: Room[] = [];
   audioType: number = 1;
@@ -135,6 +136,17 @@ export default class Project implements Serializable {
       room.audioScene.resonanceScene.setAmbisonicOrder(order);
     }
     this.ambisonicsOrder = order;
+  }
+
+  selectRollofModel(model: string): void {
+    for (const room of this.rooms) {
+      for (const obj of room.children) {
+        if (obj instanceof GameObject) {
+          obj.audio.resonanceSource.setRolloff(model);
+        }
+      }
+    }
+    this.rollofModel = model;
   }
 
   selectAudioImplementation(audioImplementation: AudioImplementation): void {

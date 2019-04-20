@@ -39,12 +39,14 @@ interface State {
   interactAvailAudio?: AudioEntry;
   audioSelectionTarget?: AudioSelectionTarget;
   ambisonicsOrder: number;
+  rollofModel: string;
 }
 
 export default class SettingsModal extends React.Component<Props, State> {
   state: State = {
     distanceModel: DistanceModel.Linear,
-    ambisonicsOrder: 1
+    ambisonicsOrder: 1,
+    rollofModel: "logarithmic"
   };
 
   componentDidMount(): void {
@@ -60,6 +62,7 @@ export default class SettingsModal extends React.Component<Props, State> {
   onProjectChanged(): void {
     const { project } = this.props;
     this.setState({
+      rollofModel: project.rollofModel,
       distanceModel: project.distanceModel,
       ambisonicsOrder: project.ambisonicsOrder,
       projectName: project.id != null ? project.name : undefined, // Only show the name field if the project has been saved before
@@ -133,6 +136,13 @@ export default class SettingsModal extends React.Component<Props, State> {
     const distanceModel = e.currentTarget.value as DistanceModel;
     project.selectDistanceModel(distanceModel);
     this.setState({ distanceModel: distanceModel });
+  };
+
+  selectRollofModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { project } = this.props;
+    const rollofModel = e.currentTarget.value;
+    project.selectRollofModel(rollofModel);
+    this.setState({ rollofModel: rollofModel });
   };
 
   render(): React.ReactNode {
@@ -255,7 +265,10 @@ export default class SettingsModal extends React.Component<Props, State> {
             </Group>
             <Group>
               <label>Rollof Model</label>
-              <Select>
+              <Select
+                value={this.state.rollofModel}
+                onChange={this.selectRollofModel}
+              >
                 <option value="logarithmic">Logarithmic</option>
                 <option value="linear">Linear</option>
                 <option value="none">None</option>
