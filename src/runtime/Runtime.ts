@@ -245,7 +245,6 @@ export default class Runtime {
       if (moveX != 0 || moveZ != 0) {
         camera.position.copy(this.dummyCamera.position);
         if (!this.project.activeRoom.footstepAudio.isPlaying) {
-          //this.project.activeRoom.footstepAudio.position.setY(-0.5);
           this.project.activeRoom.footstepAudio.play();
         }
       }

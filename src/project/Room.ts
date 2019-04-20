@@ -130,6 +130,7 @@ export default class Room extends Scene implements Serializable {
 
     //Add audio objects for collision/footstep/... sounds to their parents
     this.camera.add(this.footstepAudio);
+    //this.footstepAudio.position.setY(-1.3); //Causes strange problems at some implementations (Footsteps only right or left)
     this.add(this.collisionAudio);
     this.add(this.interactAvailAudio);
   }
