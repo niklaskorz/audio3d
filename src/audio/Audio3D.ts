@@ -36,10 +36,7 @@ export default class Audio3D extends Object3D {
     return this.webAudioGainNode.gain.value;
   }
 
-  set volume(volume: number) {
-    // Cap between 0% and 200%
-    const value = Math.min(2, Math.max(0, volume));
-
+  set volume(value: number) {
     this.webAudioGainNode.gain.value = value;
     this.binauralGainNode.gain.value = value;
     this.resonanceGainNode.gain.value = value;
