@@ -10,11 +10,11 @@ import AudioImplementation from "../audio/AudioImplementation";
 export interface ObjectData {
   uuid: string;
   name: string;
-  volume: number;
   position: number[];
   scale: number[];
   rotation: number[];
   audioId?: number;
+  volume?: number;
   interactionType: InteractionType;
   interactionAudioId?: number;
   codeBlockSource?: string;
