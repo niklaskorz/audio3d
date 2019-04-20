@@ -45,11 +45,9 @@ export default class BinauralSource {
     // We also have to take the listener's rotation into consideration.
     // I.e., we take the listener orientation to calculate the total rotation instead
     // of the Euler angles.
-    // The result is the inverted angle.
+    // The result is the inverted angle as the z-axis is inverted.
     const listenerAzimuth = Math.atan2(
       this.scene.listenerOrientation.x,
-      // The three.js z-axis is negative on the front and positive on the back of the listener,
-      // so we have to invert it to match the mathematical unit circle.
       this.scene.listenerOrientation.z
     );
 
