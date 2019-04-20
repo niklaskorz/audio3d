@@ -2,6 +2,11 @@
  * @author Niklas Korz
  */
 
+// Make sure character keys are lowercased, as KeyboardEvent.key might report an uppercase
+// character if the Shift-key is pressed.
+const normalizeKey = (key: string): string =>
+  key.length > 1 ? key : key.toLocaleLowerCase();
+
 export default class KeyboardListener {
   target: HTMLElement;
   keysPressed = new Set<string>();
@@ -38,17 +43,19 @@ export default class KeyboardListener {
 
   onKeyDown = (e: KeyboardEvent): void => {
     e.preventDefault();
+    const key = normalizeKey(e.key);
     // Workaround for browsers firing a queued keydown shortly after a keyup
     // Ignore keydown if the last keyup was triggered +-100ms from now
-    if (Math.abs(e.timeStamp - (this.lastKeyUp.get(e.key) || 0)) >= 100) {
-      this.keysPressed.add(e.key);
+    if (Math.abs(e.timeStamp - (this.lastKeyUp.get(key) || 0)) >= 100) {
+      this.keysPressed.add(key);
     }
   };
 
   onKeyUp = (e: KeyboardEvent): void => {
     e.preventDefault();
-    this.keysPressed.delete(e.key);
-    this.lastKeyUp.set(e.key, e.timeStamp);
+    const key = normalizeKey(e.key);
+    this.keysPressed.delete(key);
+    this.lastKeyUp.set(key, e.timeStamp);
   };
 
   onClick = (e: MouseEvent): void => {

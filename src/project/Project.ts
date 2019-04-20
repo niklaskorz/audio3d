@@ -88,8 +88,6 @@ export default class Project implements Serializable {
       side: BackSide
     });
     this.outlineMesh.scale.multiplyScalar(1.05);
-
-    (window as any).p = this;
   }
 
   close(): void {
@@ -100,6 +98,10 @@ export default class Project implements Serializable {
 
   suspend(): void {
     this.activeRoom.audioScene.suspend();
+  }
+
+  resume(): void {
+    this.activeRoom.audioScene.resume();
   }
 
   addRoom(): Room {
