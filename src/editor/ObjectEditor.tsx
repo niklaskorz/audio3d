@@ -20,6 +20,7 @@ import { EditorObject } from "./types";
 interface Props {
   object: EditorObject;
   rooms: Room[];
+  onUpdateVolume(volume: number): void;
   onUpdateName(name: string): void;
   onUpdatePosition(x: number, y: number, z: number): void;
   onUpdateRotation(x: number, y: number, z: number): void;
@@ -33,12 +34,15 @@ interface Props {
 
 interface State {
   codeError?: string;
+  volume: number;
 }
 
 // UI component for editing properties specific to objects inside a room
 export default class ObjectEditor extends React.Component<Props, State> {
   codeCheckTimeout: number | null = null;
-  state: State = {};
+  state: State = {
+    volume: 1
+  };
 
   checkCode = () => {
     const { codeBlockSource } = this.props.object;
@@ -98,6 +102,7 @@ export default class ObjectEditor extends React.Component<Props, State> {
       onUpdateName,
       onUpdatePosition,
       onUpdateRotation,
+      onUpdateVolume,
       onUpdateScale,
       onUpdateInteractionType,
       onShowAudioSelection,
@@ -120,6 +125,19 @@ export default class ObjectEditor extends React.Component<Props, State> {
             placeholder="New object"
             value={o.name}
             onChange={e => onUpdateName(e.currentTarget.value)}
+          />
+        </Group>
+        <Group>
+          <label>Volume</label>
+          <Input
+            type="number"
+            step={0.01}
+            value={o.volume.toFixed(2)}
+            onChange={e =>
+              onUpdateVolume(
+                roundToPrecision(e.currentTarget.valueAsNumber, 0.01)
+              )
+            }
           />
         </Group>
         <Group>
