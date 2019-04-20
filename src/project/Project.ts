@@ -1,5 +1,7 @@
 /**
  * @author Niklas Korz
+ * @author Leon Erath
+ * @author Daniel Salomon
  */
 import {
   BackSide,
