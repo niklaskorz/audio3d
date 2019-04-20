@@ -128,19 +128,6 @@ export default class ObjectEditor extends React.Component<Props, State> {
           />
         </Group>
         <Group>
-          <label>Volume</label>
-          <Input
-            type="number"
-            step={0.01}
-            value={o.volume.toFixed(2)}
-            onChange={e =>
-              onUpdateVolume(
-                roundToPrecision(e.currentTarget.valueAsNumber, 0.01)
-              )
-            }
-          />
-        </Group>
-        <Group>
           <label>Position (x, y, z)</label>
           <InputGroup>
             <Input
@@ -285,8 +272,15 @@ export default class ObjectEditor extends React.Component<Props, State> {
                 <Input type="number" min="0" max="60" step="1" />
               </Group>
               <Group>
-                <label>Volume (0% to 100%)</label>
-                <Input type="range" min="0" max="1" step="0.1" />
+                <label>Volume (0% to 200%)</label>
+                <Input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  value={o.volume}
+                  onChange={e => onUpdateVolume(e.currentTarget.valueAsNumber)}
+                />
               </Group>
             </>
           )}

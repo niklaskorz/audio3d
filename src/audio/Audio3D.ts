@@ -30,6 +30,20 @@ export default class Audio3D extends Object3D {
 
   hasStarted = false;
   isPlaying = false;
+  isLooped = false;
+
+  get volume(): number {
+    return this.webAudioGainNode.gain.value;
+  }
+
+  set volume(volume: number) {
+    // Cap between 0% and 200%
+    const value = Math.min(2, Math.max(0, volume));
+
+    this.webAudioGainNode.gain.value = value;
+    this.binauralGainNode.gain.value = value;
+    this.resonanceGainNode.gain.value = value;
+  }
 
   constructor(
     webAudioContext: AudioContext,
@@ -72,20 +86,6 @@ export default class Audio3D extends Object3D {
     this.webAudioPannerNode.connect(webAudioContext.destination);
 
     this.webAudioBufferSource.onended = this.onAudioEnded;
-  }
-
-  setVolume(volume: number): void {
-    if (volume >= 0 && volume <= 2) {
-      this.webAudioGainNode.gain.value = volume;
-      this.binauralGainNode.gain.value = volume;
-      this.resonanceGainNode.gain.value = volume;
-    }
-  }
-
-  setDistanceModel(distanceModel: DistanceModelType): void {
-    this.webAudioPannerNode.distanceModel = distanceModel;
-    this.binauralBufferSource.onended = this.onAudioEnded;
-    this.resonanceBufferSource.onended = this.onAudioEnded;
   }
 
   updateMatrixWorld(force: boolean): void {
@@ -146,12 +146,6 @@ export default class Audio3D extends Object3D {
     this.isPlaying = false;
   }
 
-  setLoop(loop: boolean): void {
-    this.webAudioBufferSource.loop = loop;
-    this.binauralBufferSource.loop = loop;
-    this.resonanceBufferSource.loop = loop;
-  }
-
   play(): void {
     if (this.webAudioBufferSource.buffer) {
       if (this.hasStarted) {
@@ -188,5 +182,17 @@ export default class Audio3D extends Object3D {
     } catch (ex) {
       console.log("Audio could not be stopped:", ex);
     }
+  }
+
+  setLoop(loop: boolean): void {
+    this.webAudioBufferSource.loop = loop;
+    this.binauralBufferSource.loop = loop;
+    this.resonanceBufferSource.loop = loop;
+  }
+
+  setDistanceModel(distanceModel: DistanceModelType): void {
+    this.webAudioPannerNode.distanceModel = distanceModel;
+    this.binauralBufferSource.onended = this.onAudioEnded;
+    this.resonanceBufferSource.onended = this.onAudioEnded;
   }
 }
