@@ -5,7 +5,6 @@
 import { Object3D, Vector3, Quaternion } from "three";
 import { ResonanceAudio } from "resonance-audio";
 import BinauralSource from "./binaural/BinauralSource";
-import DistanceModel from "./DistanceModel";
 
 /**
  * Class extends Object3D in order to work with the three.js scene graph.
@@ -73,6 +72,7 @@ export default class Audio3D extends Object3D {
     this.webAudioPannerNode.connect(webAudioContext.destination);
 
     this.webAudioBufferSource.onended = this.onAudioEnded;
+
   }
 
   setVolume(volume: number): void {
@@ -85,6 +85,9 @@ export default class Audio3D extends Object3D {
 
   setDistanceModel(distanceModel: DistanceModel): void {
     this.webAudioPannerNode.distanceModel = distanceModel;
+    this.binauralBufferSource.onended = this.onAudioEnded;
+    this.resonanceBufferSource.onended = this.onAudioEnded;
+
   }
 
   updateMatrixWorld(force: boolean): void {
@@ -112,6 +115,7 @@ export default class Audio3D extends Object3D {
   }
 
   onAudioEnded = () => {
+    this.stopAll();
     this.isPlaying = false;
   };
 
@@ -132,6 +136,8 @@ export default class Audio3D extends Object3D {
       this.resonanceBufferSource.connect(this.resonanceSource.input);
 
       this.webAudioBufferSource.onended = this.onAudioEnded;
+      this.binauralBufferSource.onended = this.onAudioEnded;
+      this.resonanceBufferSource.onended = this.onAudioEnded;
     }
 
     this.webAudioBufferSource.buffer = buffer;
@@ -166,7 +172,14 @@ export default class Audio3D extends Object3D {
   }
 
   stop(): void {
+    this.isPlaying = false;
     if (this.hasStarted) {
+      this.stopAll();
+    }
+  }
+
+  stopAll(): void {
+    try {
       this.webAudioBufferSource.stop();
       this.binauralBufferSource.stop();
       this.resonanceBufferSource.stop();
@@ -174,6 +187,8 @@ export default class Audio3D extends Object3D {
       this.webAudioBufferSource.disconnect();
       this.binauralBufferSource.disconnect();
       this.resonanceBufferSource.disconnect();
+    } catch (ex) {
+      console.log("Audio could not be stopped:", ex);
     }
   }
 }

@@ -89,7 +89,7 @@ export const Input = styled.input`
   padding: 0.7em 0.85em;
   margin: 0.35em 0;
 
-  [type^="range"] {
+  :not([type="range"]) {
     appearance: none;
   }
 
