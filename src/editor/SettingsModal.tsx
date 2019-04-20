@@ -212,19 +212,42 @@ export default class SettingsModal extends React.Component<Props, State> {
           <Group>
             <BoldLabel>Web Audio API</BoldLabel>
             <Group>
+              <label>Panning Model</label>
+              <Select>
+                <option value="equalpower">Equalpower</option>
+                <option value="hrtf">HRTF</option>
+              </Select>
+            </Group>
+            <Group>
               <label>Distance Model</label>
               <Select
                 value={this.state.distanceModel}
                 onChange={this.selectDistanceModel}
               >
-                <option value={DistanceModel.Linear}>Linear</option>
                 <option value={DistanceModel.Inverse}>Inverse</option>
+                <option value={DistanceModel.Linear}>Linear</option>
                 <option value={DistanceModel.Exponential}>Exponential</option>
               </Select>
             </Group>
           </Group>
           <Group>
             <BoldLabel>Resonance Audio</BoldLabel>
+            <Group>
+              <label>Ambisonic Order</label>
+              <Select>
+                <option value={1}>First-Order Ambisonics</option>
+                <option value={2}>Second-Order Ambisonics</option>
+                <option value={3}>Third-Order Ambisonics</option>
+              </Select>
+            </Group>
+            <Group>
+              <label>Rollof Model</label>
+              <Select>
+                <option value="logarithmic">Logarithmic</option>
+                <option value="linear">Linear</option>
+                <option value="none">None</option>
+              </Select>
+            </Group>
           </Group>
           <Group>
             <BoldLabel>BinauralFIR</BoldLabel>
