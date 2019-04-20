@@ -90,8 +90,8 @@ export default class Audio3D extends Object3D {
   }
 
   onAudioEnded = () => {
+    this.stopAll();
     this.isPlaying = false;
-    this.stop();
   };
 
   setBuffer(buffer: AudioBuffer): void {
@@ -147,7 +147,14 @@ export default class Audio3D extends Object3D {
   }
 
   stop(): void {
+    this.isPlaying = false;
     if (this.hasStarted) {
+      this.stopAll();
+    }
+  }
+
+  stopAll(): void {
+    try {
       this.webAudioBufferSource.stop();
       this.binauralBufferSource.stop();
       this.resonanceBufferSource.stop();
@@ -155,6 +162,8 @@ export default class Audio3D extends Object3D {
       this.webAudioBufferSource.disconnect();
       this.binauralBufferSource.disconnect();
       this.resonanceBufferSource.disconnect();
+    } catch (ex) {
+      console.log("Audio could not be stopped:", ex);
     }
   }
 }
