@@ -390,17 +390,20 @@ export default class Editor extends React.Component<{}, State> {
   };
 
   updateObjectVolume = (volume: number) => {
-    if (this.project.activeObject) {
-      this.project.activeObject.volume = volume;
+    if (volume >= 0 && volume <= 1) {
+      if (this.project.activeObject) {
+        this.project.activeObject.volume = volume;
+        this.project.activeObject.audio.setVolume(volume);
+      }
+      this.setState(({ selectedObject }) => {
+        return {
+          selectedObject: selectedObject && {
+            ...selectedObject,
+            volume: volume
+          }
+        };
+      });
     }
-    this.setState(({ selectedObject }) => {
-      return {
-        selectedObject: selectedObject && {
-          ...selectedObject,
-          volume: volume
-        }
-      };
-    });
   };
 
   updateObjectScale = (x: number, y: number, z: number) => {

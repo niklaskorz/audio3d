@@ -127,8 +127,12 @@ export default class ObjectEditor extends React.Component<Props, State> {
           <Input
             type="number"
             step={0.01}
-            value={o.volume}
-            onChange={e => onUpdateVolume(parseInt(e.currentTarget.value))}
+            value={o.volume.toFixed(2)}
+            onChange={e =>
+              onUpdateVolume(
+                roundToPrecision(e.currentTarget.valueAsNumber, 0.01)
+              )
+            }
           />
         </Group>
         <Group>
