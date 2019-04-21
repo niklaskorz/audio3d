@@ -53,6 +53,13 @@ export default class GameObject extends Mesh implements Serializable {
     this.add(this.audio);
   }
 
+  destroy(): void {
+    this.audio.stop();
+    if (this.parent) {
+      this.parent.remove(this);
+    }
+  }
+
   triggerInteraction(project: Project): void {
     switch (this.interactionType) {
       case InteractionType.CodeBlock:
