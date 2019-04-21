@@ -272,12 +272,12 @@ export default class ObjectEditor extends React.Component<Props, State> {
                 <Input type="number" min="0" max="60" step="1" />
               </Group>
               <Group>
-                <label>Volume (0% to 100%)</label>
+                <label>Volume (0% to 200%)</label>
                 <Input
                   type="range"
                   min="0"
-                  max="1"
-                  step="0.01"
+                  max="2"
+                  step="0.05"
                   value={o.volume}
                   onChange={e => onUpdateVolume(e.currentTarget.valueAsNumber)}
                 />

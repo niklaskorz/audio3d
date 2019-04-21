@@ -30,7 +30,6 @@ export default class Audio3D extends Object3D {
 
   hasStarted = false;
   isPlaying = false;
-  isLooped = false;
 
   get volume(): number {
     return this.webAudioGainNode.gain.value;
@@ -56,33 +55,37 @@ export default class Audio3D extends Object3D {
     this.binauralAudioContext = binauralAudioContext;
     this.resonanceAudioContext = resonanceAudioContext;
 
-    this.webAudioGainNode = webAudioContext.createGain();
-    this.binauralGainNode = binauralAudioContext.createGain();
-    this.resonanceGainNode = resonanceAudioContext.createGain();
-
-    this.webAudioGainNode.connect(webAudioContext.destination);
-    this.binauralGainNode.connect(binauralAudioContext.destination);
-    this.resonanceGainNode.connect(resonanceAudioContext.destination);
-
     this.webAudioPannerNode = webAudioPannerNode;
     this.binauralSource = binauralSource;
     this.resonanceSource = resonanceSource;
+
+    this.webAudioGainNode = webAudioContext.createGain();
+    this.binauralGainNode = binauralAudioContext.createGain();
+    this.resonanceGainNode = resonanceAudioContext.createGain();
 
     this.webAudioBufferSource = webAudioContext.createBufferSource();
     this.binauralBufferSource = binauralAudioContext.createBufferSource();
     this.resonanceBufferSource = resonanceAudioContext.createBufferSource();
 
-    this.webAudioBufferSource.connect(webAudioPannerNode);
-    this.binauralBufferSource.connect(binauralSource.input);
-    this.resonanceBufferSource.connect(resonanceSource.input);
+    // Audio graph:
+    // input: buffer source node
+    // => gain node
+    // => 3D audio node
+    // => output
 
     this.webAudioBufferSource.connect(this.webAudioGainNode);
     this.binauralBufferSource.connect(this.binauralGainNode);
     this.resonanceBufferSource.connect(this.resonanceGainNode);
 
+    this.webAudioGainNode.connect(webAudioPannerNode);
+    this.binauralGainNode.connect(binauralSource.input);
+    this.resonanceGainNode.connect(resonanceSource.input);
+
     this.webAudioPannerNode.connect(webAudioContext.destination);
 
     this.webAudioBufferSource.onended = this.onAudioEnded;
+    this.binauralBufferSource.onended = this.onAudioEnded;
+    this.resonanceBufferSource.onended = this.onAudioEnded;
   }
 
   updateMatrixWorld(force: boolean): void {
@@ -126,9 +129,9 @@ export default class Audio3D extends Object3D {
       this.binauralBufferSource = this.binauralAudioContext.createBufferSource();
       this.resonanceBufferSource = this.resonanceAudioContext.createBufferSource();
 
-      this.webAudioBufferSource.connect(this.webAudioPannerNode);
-      this.binauralBufferSource.connect(this.binauralSource.input);
-      this.resonanceBufferSource.connect(this.resonanceSource.input);
+      this.webAudioBufferSource.connect(this.webAudioGainNode);
+      this.binauralBufferSource.connect(this.binauralGainNode);
+      this.resonanceBufferSource.connect(this.resonanceGainNode);
 
       this.webAudioBufferSource.onended = this.onAudioEnded;
       this.binauralBufferSource.onended = this.onAudioEnded;
