@@ -266,23 +266,17 @@ export default class ObjectEditor extends React.Component<Props, State> {
               : "No audio selected"}
           </CustomInput>
           {o.audio != null && (
-            <>
-              <Group>
-                <label>Loop Pause (seconds)</label>
-                <Input type="number" min="0" max="60" step="1" />
-              </Group>
-              <Group>
-                <label>Volume (0% to 200%)</label>
-                <Input
-                  type="range"
-                  min="0"
-                  max="2"
-                  step="0.05"
-                  value={o.volume}
-                  onChange={e => onUpdateVolume(e.currentTarget.valueAsNumber)}
-                />
-              </Group>
-            </>
+            <Group>
+              <label>Volume (0% to 200%)</label>
+              <Input
+                type="range"
+                min="0"
+                max="2"
+                step="0.05"
+                value={o.volume}
+                onChange={e => onUpdateVolume(e.currentTarget.valueAsNumber)}
+              />
+            </Group>
           )}
         </Group>
         <Group>
