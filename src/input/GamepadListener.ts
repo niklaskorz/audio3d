@@ -1,8 +1,9 @@
 /**
  * @author Niklas Korz
+ * @author Daniel Salomon
  */
 
-const AXIS_THRESHOLD = 0.15; //Inaccuracy of gamepads (tested XBOX One S gamepad up to 0.11 - Daniel)
+const AXIS_THRESHOLD = 0.15; // Inaccuracy of gamepads (tested on XBOX One S gamepad up to 0.11)
 
 export default class GamepadListener {
   listen(): void {
