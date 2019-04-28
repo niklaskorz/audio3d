@@ -315,7 +315,5 @@ export default class Runtime {
     } else if (!this.gamepads.getButtonStatus(0) && !this.keys.isPressed("e")) {
       this.lastKnownButtonStatus = false; //Last known button status was unpressed, so clear the value
     }
-
-    //TODO - sounds for footsteps
   }
 }
