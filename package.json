@@ -1,7 +1,7 @@
 {
   "name": "audio3d",
   "version": "0.1.0",
-  "homepage": "https://niklaskorz.github.io/audio3d",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@types/file-saver": "^2.0.0",
