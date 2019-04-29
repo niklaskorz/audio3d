@@ -8,8 +8,6 @@ An editor and test environment for experimenting with 3D audio.
 Requires Node and Yarn to run locally.
 You can run the [most recent online version](https://niklaskorz.github.io/audio3d/) directly from your browser. After the first load, it will also work offline (if your [browser supports service workers](https://caniuse.com/#feat=serviceworkers) and you didn't disable caching of files for offline usage in your browser settings.)
 
-Note: Service workers are currently disabled by default until further progress is made
-
 [Logo by Flatart](https://www.iconfinder.com/icons/4168597/3d_change_correction_modification_object_print_printing_icon)
 
 ## Based on...
